@@ -2,9 +2,7 @@
 CC ?= g++
 LD ?= g++
 
-# space separated list of directories with header files
 INCLUDE_DIRS := client server .
-# this creates a space separated list of -I<dir> where <dir> is each of the values in INCLUDE_DIRS
 INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
 
 SOURCES  := $(wildcard */*.c)
@@ -18,7 +16,6 @@ vpath %.h $(INCLUDE_DIRS)
 
 CFLAGS = -std=c++11 -O3
 CFLAGS += $(INCLUDES)
-
 # Warnings
 CFLAGS += -fdiagnostics-color=always -Wall -Werror
 
