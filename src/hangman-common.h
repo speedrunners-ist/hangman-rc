@@ -23,9 +23,9 @@
 // Below, function prototypes
 
 /*
- * @brief: Amount of guesses a player can make before failing.
+ * @brief: Amount of wrong guesses a player can make before failing.
  *
  * @param: wordLength: length of the word to guess
  * @return: number of guesses
  */
-unsigned int initialGuesses(unsigned int wordLength);
+unsigned int initialAvailableMistakes(unsigned int wordLength);

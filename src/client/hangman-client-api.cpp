@@ -2,14 +2,14 @@
 
 class Play {
   unsigned int wordLength;
-  unsigned int guessesLeft;
+  unsigned int mistakesLeft;
   std::map<char, bool> guessedLetters;
   std::map<unsigned int, char> word;
 
 public:
   Play(int wordLength) {
     this->wordLength = wordLength;
-    this->guessesLeft = initialGuesses(wordLength);
+    this->mistakesLeft = initialAvailableMistakes(wordLength);
     for (int i = 0; i < wordLength; i++) {
       word[i] = '_';
     }
@@ -18,11 +18,30 @@ public:
     }
   }
 
-  unsigned int getRemainingGuesses() { return guessesLeft; }
+  unsigned int getAvailableMistakes() { return mistakesLeft; }
 
   void printWord() {
     for (int i = 0; i < wordLength; i++) {
       std::cout << word[i] << " ";
+    }
+  }
+
+  void guessLetter(char c) {
+    if (guessedLetters[c]) {
+      // FIXME: this isn't the right error
+      std::cout << "You already guessed that letter!" << std::endl;
+      return;
+    }
+    guessedLetters[c] = true;
+    bool found = false;
+    for (int i = 0; i < wordLength; i++) {
+      if (word[i] == c) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      mistakesLeft--;
     }
   }
 };
@@ -31,28 +50,23 @@ int main(int argc, char *argv[]) {
   // command format: ./player [-n GSIP] [-p GSport]
   // GSIP: IP address of the game server
   // GSport: port number of the game server
-  // If no arguments are provided, use default values: DEFAULT_GSIP and DEFAULT_GSPORT
+  // both arguments are optional, with default values being DEFAULT_GSIP and DEFAULT_GSPORT
 
   int opt;
-  std::string GSIP;
-  std::string GSport;
+  std::string GSIP = DEFAULT_GSIP;
+  std::string GSport = DEFAULT_GSPORT;
 
-  if (argc == 1) {
-    GSIP = DEFAULT_GSIP;
-    GSport = DEFAULT_GSPORT;
-  } else {
-    while ((opt = getopt(argc, argv, "n:p:")) != -1) {
-      switch (opt) {
-        case 'n':
-          GSIP = optarg;
-          break;
-        case 'p':
-          GSport = optarg;
-          break;
-        default:
-          std::cerr << "[ERR] Usage: " << argv[0] << " [-n GSIP] [-p GSport]" << std::endl;
-          exit(EXIT_FAILURE);
-      }
+  while ((opt = getopt(argc, argv, "n:p:")) != -1) {
+    switch (opt) {
+      case 'n':
+        GSIP = optarg;
+        break;
+      case 'p':
+        GSport = optarg;
+        break;
+      default:
+        std::cout << "Usage: ./player [-n GSIP] [-p GSport]" << std::endl;
+        return 1;
     }
   }
 

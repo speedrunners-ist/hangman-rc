@@ -6,7 +6,7 @@
 
 // Below, miscellaneous functions
 
-unsigned int initialGuesses(unsigned int wordLength) {
+unsigned int initialAvailableMistakes(unsigned int wordLength) {
   if (wordLength <= 6) {
     return 7;
   } else if (7 >= wordLength && wordLength <= 10) {
