@@ -23,8 +23,6 @@
 #define UDP_TRIES 3
 #define UDP_RECV_SIZE 256
 
-#endif
-
 // Below, function prototypes
 
 /*
@@ -34,3 +32,5 @@
  * @return: number of guesses
  */
 unsigned int initialAvailableMistakes(unsigned int wordLength);
+
+#endif
