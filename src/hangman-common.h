@@ -20,6 +20,9 @@
 #define DEFAULT_GSPORT "58050"
 // TODO: change this to the correct port number (i.e 58000 + group number)
 
+#define UDP_TRIES 3
+#define UDP_RECV_SIZE 256
+
 #endif
 
 // Below, function prototypes

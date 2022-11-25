@@ -47,10 +47,12 @@ public:
 };
 
 // TODO: standardize error messages with macros
+// TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
 int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port) {
   const int fd = socket(AF_INET, type, 0);
   if (fd == -1) {
+    // FIXME: should we really exit here?
     std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -62,7 +64,7 @@ int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::stri
   const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
   if (status != 0) {
     std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
-    exit(EXIT_FAILURE);
+    return -1;
   }
   return fd;
 }
@@ -94,8 +96,12 @@ int main(int argc, char *argv[]) {
 
   struct addrinfo *serverInfo;
   const int fd = newSocket(serverInfo, SOCK_DGRAM, GSIP, GSport);
+  if (fd == -1) {
+    std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
-  int res = mkdir("hints", 0777);
+  int res = mkdir("hints", 0700);
   if (res == -1 && errno != EEXIST) {
     // if the directory can't be created and it doesn't already exist
     std::cout << "[ERR]: Failed to create hints directory. Exiting." << std::endl;
