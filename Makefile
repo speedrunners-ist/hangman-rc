@@ -8,6 +8,7 @@ INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
 SOURCES  := $(wildcard */*.c)
 HEADERS  := $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.c=.o)
+TARGET_EXECS := $(SOURCES:.c=)
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>
@@ -26,6 +27,9 @@ endif
 .PHONY: all clean fmt
 
 all: $(TARGET_EXECS)
+
+clean:
+	rm -f $(OBJECTS) $(TARGET_EXECS)
 
 fmt: $(SOURCES) $(HEADERS)
 	clang-format -i $^
