@@ -10,4 +10,4 @@ int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr,
 
 int parseUDPResponse(char *response, std::string &message, Play &play);
 
-#endif /* CLIENT_API_H */
+#endif /* CLIENT_PROTOCOL_H */
