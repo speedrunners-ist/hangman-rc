@@ -14,14 +14,14 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #define DEFAULT_GSIP "127.0.0.1"
-#define DEFAULT_GSPORT "58050"
-// TODO: change this to the correct port number (i.e 58000 + group number)
+#define DEFAULT_GSPORT "58045"
+
+#define MAX_USER_INPUT 1024
 
 #define UDP_TRIES 3
-#define UDP_RECV_SIZE 256
+#define UDP_RECV_SIZE 4096
 
 #endif
 

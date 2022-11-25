@@ -1,9 +1,8 @@
 // TODO: add client-side functions for actions requiring UDP
 // start, play, guess, exit
-#include <../hangman-common.h>
 #include <hangman-client-api.h>
 
-int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
+int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
   unsigned int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
@@ -30,7 +29,7 @@ int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr,
     response[bytesReceived - 1] = '\0';
     return 0;
 
-  } while (--triesLeft > 0);
+  } while (--triesLeft >= 0);
 
   std::cout << "[ERR]: Failed to receive response." << std::endl;
   return -1;
@@ -56,7 +55,7 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
         return -1;
       }
 
-      // TODO: check if the word length is valid
+      // TODO: check if the word length is valid?
       play = Play(std::stoi(responseStr.substr(pos2 + 1, pos3 - pos2 - 1)),
                   std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1)));
       std::cout << "New game started (max " << play.getAvailableMistakes()
@@ -113,6 +112,6 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
       std::cout << "RLG ERR" << std::endl;
     }
   } else if (code == "RWG") {
-  }
+  } // TODO: implement the rest
   return -1;
 }

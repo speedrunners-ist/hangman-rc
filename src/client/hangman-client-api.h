@@ -1,5 +1,22 @@
 #include <../hangman-common.h>
 #include <algorithm>
+#include <functional>
+
+// Player message handlers
+int handleStart(std::string *message);
+int handlePlay(std::string *message);
+int handleGuess(std::string *message);
+int handleScoreboard(std::string *message);
+int handleHint(std::string *message);
+int handleState(std::string *message);
+int handleQuit(std::string *message);
+int handleExit(std::string *message);
+
+// UDP socket functions
+int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response);
+int parseUDPResponse(char *response, std::string &message, Play &play);
+
+// TCP socket functions
 
 class Play {
   unsigned int wordLength;

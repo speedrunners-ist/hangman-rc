@@ -1,7 +1,14 @@
-#include <../hangman-common.h>
+#include <hangman-client-api.h>
 
-// TODO: standardize error messages with macros
+// TODO: standardize messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
+
+std::map<std::string, std::function<int(std::string *message)>> handlePlayerMessage = {
+    {"start", handleStart}, {"play", handlePlay},
+    {"guess", handleGuess}, {"scoreboard", handleScoreboard},
+    {"hint", handleHint},   {"state", handleState},
+    {"quit", handleQuit},   {"exit", handleExit},
+};
 
 int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port) {
   const int fd = socket(AF_INET, type, 0);
@@ -65,7 +72,45 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  // TODO: implement the client's main loop
+  Play play = Play(1, 1); // default constructor
+  int ret;
+  char buffer[MAX_USER_INPUT];
+  char response[UDP_RECV_SIZE];
+  std::string message;
+  memset(buffer, 0, MAX_USER_INPUT);
+
+  std::cout << "> ";
+  while (fgets(buffer, MAX_USER_INPUT, stdin) != NULL) {
+    if (strlen(buffer) == 1 && buffer[0] == '\n') {
+      // if the user just pressed enter
+      memset(buffer, 0, MAX_USER_INPUT);
+      std::cout << "> ";
+      continue;
+    }
+
+    std::string input(buffer);
+    std::string command = input.substr(0, input.find(' '));
+    message.clear();
+    ret = handlePlayerMessage[command](&message);
+    if (ret == -1) {
+      // error has already been handled, just continue
+      continue;
+    }
+    memset(response, 0, UDP_RECV_SIZE);
+    ret = exchangeUDPMessage(fd, message, serverInfo, response);
+    if (ret == -1) {
+      // error has already been handled, just continue
+      continue;
+    }
+    ret = parseUDPResponse(response, message, play);
+    if (ret == -1) {
+      // error has already been handled, just continue
+      continue;
+    }
+
+    memset(buffer, 0, MAX_USER_INPUT);
+    std::cout << "> ";
+  }
 
   // delete the directory and its contents - should we really do it like this?
   system("rm -rf hints");
