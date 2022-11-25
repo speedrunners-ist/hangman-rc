@@ -1,7 +1,7 @@
 // TODO: add client-side functions for actions requiring UDP
 // start, play, guess, exit
-#include <../hangman-common.h>
-#include <hangman-client-api.h>
+#include "../hangman-common.h"
+#include "hangman-client-api.h"
 
 int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
   unsigned int triesLeft = UDP_TRIES;

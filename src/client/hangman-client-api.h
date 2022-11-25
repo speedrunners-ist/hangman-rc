@@ -1,4 +1,4 @@
-#include <../hangman-common.h>
+#include "../hangman-common.h"
 #include <algorithm>
 
 class Play {
