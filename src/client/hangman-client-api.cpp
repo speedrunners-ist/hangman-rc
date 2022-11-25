@@ -46,7 +46,29 @@ public:
   }
 };
 
+// TODO: standardize error messages with macros
+
+int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port) {
+  const int fd = socket(AF_INET, type, 0);
+  if (fd == -1) {
+    std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = type;
+
+  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
+  if (status != 0) {
+    std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  return fd;
+}
+
 int main(int argc, char *argv[]) {
+  // TODO: maybe consider a parsing function?
   // command format: ./player [-n GSIP] [-p GSport]
   // GSIP: IP address of the game server
   // GSport: port number of the game server
@@ -65,10 +87,27 @@ int main(int argc, char *argv[]) {
         GSport = optarg;
         break;
       default:
-        std::cout << "Usage: ./player [-n GSIP] [-p GSport]" << std::endl;
-        return 1;
+        std::cerr << "[ERR] Usage: ./player [-n GSIP] [-p GSport]" << std::endl;
+        exit(EXIT_FAILURE);
     }
   }
 
-  exit(0);
+  struct addrinfo *serverInfo;
+  const int fd = newSocket(serverInfo, SOCK_DGRAM, GSIP, GSport);
+
+  int res = mkdir("hints", 0777);
+  if (res == -1 && errno != EEXIST) {
+    // if the directory can't be created and it doesn't already exist
+    std::cout << "[ERR]: Failed to create hints directory. Exiting." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  // TODO: implement the client's main loop
+
+  // delete the directory and its contents
+  system("rm -rf hints");
+
+  close(fd);
+  freeaddrinfo(serverInfo);
+  exit(EXIT_SUCCESS);
 }
