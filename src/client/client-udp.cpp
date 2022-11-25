@@ -1,7 +1,6 @@
 // TODO: add client-side functions for actions requiring UDP
 // start, play, guess, exit
 #include "client-protocol.h"
-#include "common/common.h"
 
 // TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
