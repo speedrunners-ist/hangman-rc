@@ -37,13 +37,9 @@ int main(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, "n:p:")) != -1) {
     switch (opt) {
       case 'n':
-        // TODO: probably macro this
         GSIP = std::string(optarg);
-        if (!std::string(optarg).ends_with("tecnico.ulisboa.pt")) {
-          GSIP = std::string(optarg) + ".tecnico.ulisboa.pt";
-        }
-        // TODO: it's also possible to receive an actual ipv4 address, so we've got to check for
-        // that (and if it's well formatted and such)
+        // TODO: it's possible to receive both an IPv4 or a hostname, so we've
+        // got to check for both
         break;
       case 'p':
         // TODO: check if the port is valid?
@@ -71,7 +67,7 @@ int main(int argc, char *argv[]) {
 
   // TODO: implement the client's main loop
 
-  // delete the directory and its contents
+  // delete the directory and its contents - should we really do it like this?
   system("rm -rf hints");
 
   close(fd);
