@@ -1,6 +1,7 @@
 // TODO: add client-side functions for actions requiring UDP
 // start, play, guess, exit
 #include <../hangman-common.h>
+#include <hangman-client-api.h>
 
 int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
   unsigned int triesLeft = UDP_TRIES;
@@ -32,5 +33,41 @@ int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr,
   } while (--triesLeft > 0);
 
   std::cout << "[ERR]: Failed to receive response." << std::endl;
+  return -1;
+}
+
+int parseUDPResponse(char *response, std::string &message, Play &play) {
+  std::string responseStr(response);
+  size_t pos1 = responseStr.find(' ');
+  size_t pos2 = responseStr.find(' ', pos1 + 1);
+  if (pos1 == std::string::npos || pos2 == std::string::npos) {
+    std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+    return -1;
+  }
+  const std::string code = responseStr.substr(0, pos1);
+  const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
+  if (code == "RSG") {
+    if (status == "OK") {
+      size_t pos3 = responseStr.find(' ', pos2 + 1);
+      size_t pos4 = responseStr.find(' ', pos3 + 1);
+      if (pos3 == std::string::npos || pos4 == std::string::npos) {
+        std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+        return -1;
+      }
+
+      play = Play(std::stoi(responseStr.substr(pos2 + 1, pos3 - pos2 - 1)),
+                  std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1)));
+      std::cout << "New game started (max " << play.getAvailableMistakes()
+                << " errors): " << play.getWord() << std::endl;
+      return 0;
+    } else if (status == "NOK") {
+      std::cout << "Failed to start a new game. Try again later" << std::endl;
+      return 0;
+    } else {
+      // unknown status
+      std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+      return -1;
+    }
+  } // TODO: add more cases
   return -1;
 }

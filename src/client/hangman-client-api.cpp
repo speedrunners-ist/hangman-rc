@@ -1,51 +1,5 @@
 #include <../hangman-common.h>
 
-class Play {
-  unsigned int wordLength;
-  unsigned int mistakesLeft;
-  std::map<char, bool> guessedLetters;
-  std::map<unsigned int, char> word;
-
-public:
-  Play(int wordLength) {
-    this->wordLength = wordLength;
-    this->mistakesLeft = initialAvailableMistakes(wordLength);
-    for (int i = 0; i < wordLength; i++) {
-      word[i] = '_';
-    }
-    for (char c = 'a'; c <= 'z'; c++) {
-      guessedLetters[c] = false;
-    }
-  }
-
-  unsigned int getAvailableMistakes() { return mistakesLeft; }
-
-  void printWord() {
-    for (int i = 0; i < wordLength; i++) {
-      std::cout << word[i] << " ";
-    }
-  }
-
-  void guessLetter(char c) {
-    if (guessedLetters[c]) {
-      // FIXME: this isn't the right error
-      std::cout << "You already guessed that letter!" << std::endl;
-      return;
-    }
-    guessedLetters[c] = true;
-    bool found = false;
-    for (int i = 0; i < wordLength; i++) {
-      if (word[i] == c) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      mistakesLeft--;
-    }
-  }
-};
-
 // TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
@@ -83,10 +37,17 @@ int main(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, "n:p:")) != -1) {
     switch (opt) {
       case 'n':
-        GSIP = optarg;
+        // TODO: probably macro this
+        GSIP = std::string(optarg);
+        if (!std::string(optarg).ends_with("tecnico.ulisboa.pt")) {
+          GSIP = std::string(optarg) + ".tecnico.ulisboa.pt";
+        }
+        // TODO: it's also possible to receive an actual ipv4 address, so we've got to check for
+        // that (and if it's well formatted and such)
         break;
       case 'p':
-        GSport = optarg;
+        // TODO: check if the port is valid?
+        GSport = std::string(optarg);
         break;
       default:
         std::cerr << "[ERR] Usage: ./player [-n GSIP] [-p GSport]" << std::endl;

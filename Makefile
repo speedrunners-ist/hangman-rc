@@ -15,7 +15,7 @@ TARGET_EXECS := src/server/server-main src/client/client-main
 vpath # clears VPATH
 vpath %.h $(INCLUDE_DIRS)
 
-CFLAGS = -std=c++11 -O3
+CFLAGS = -std=c++20 -O3
 CFLAGS += $(INCLUDES)
 # Warnings
 CFLAGS += -fdiagnostics-color=always -Wall -Werror
