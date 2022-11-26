@@ -8,7 +8,7 @@ INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
 SOURCES  := $(wildcard */*.cpp)
 HEADERS  := $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.cpp=.o)
-TARGET_EXECS := client/client 
+TARGET_EXECS := client/client server/GS
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>
@@ -18,7 +18,7 @@ vpath %.h $(INCLUDE_DIRS)
 CXXFLAGS = -std=c++20 -O3
 CXXFLAGS += $(INCLUDES)
 # Warnings
-CXXFLAGS += -fdiagnostics-color=always -Wall -Werror -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
+CXXFLAGS += -fdiagnostics-color=always -Wall  -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 CXXFLAGS += -Wno-sign-compare
 
 ifneq ($(strip $(DEBUG)), no)
@@ -43,4 +43,4 @@ depend : $(SOURCES)
 
 
 client/client: client/client-api.o client/client-protocol.o common/common.o
-server/server: server/server-api.o server/server-protocol.o common/common.o
+server/GS: server/server-api.o server/server-tcp.o server/server-udp.o common/common.o
