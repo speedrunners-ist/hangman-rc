@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 
 # Compiled artifacts
-server/server
+server/GS
 client/client
 
 
