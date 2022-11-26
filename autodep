@@ -1,8 +1,7 @@
 client-api.o: client/client-api.cpp
-client.o: client/client.cpp client/client-api.h client/client-protocol.h \
- common/common.h
-client-tcp.o: client/client-tcp.cpp
-client-udp.o: client/client-udp.cpp client/client-protocol.h \
+client.o: client/client.cpp client/client-api.h common/common.h \
+ client/client-protocol.h
+client-protocol.o: client/client-protocol.cpp client/client-protocol.h \
  client/client-api.h common/common.h
 common.o: common/common.cpp
 server-api.o: server/server-api.cpp
