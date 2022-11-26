@@ -6,6 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void openUDP();
+void openUDP(std::string GSport);
 
 #endif /* SERVER_PROTOCOL_H */
