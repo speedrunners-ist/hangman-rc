@@ -23,20 +23,18 @@ int newSocket(int type, std::string addr, std::string port) {
   return socketFd;
 }
 
-int exchangeUDPMessage(int socketFd, std::string message, struct addrinfo *serverAddr,
-                       char *response) {
+int exchangeUDPMessage(std::string message, char *response) {
   int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
-    if (sendto(socketFd, message.c_str(), message.length() - 1, 0, serverAddr->ai_addr,
-               serverAddr->ai_addrlen) == -1) {
+    if (sendto(fd, message.c_str(), message.length() - 1, 0, serverInfo->ai_addr,
+               serverInfo->ai_addrlen) == -1) {
       std::cerr << SENDTO_ERROR << std::endl;
       return -1;
     }
 
-    socklen_t addrLen = sizeof(serverAddr->ai_addr);
-    ssize_t bytesReceived =
-        recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverAddr->ai_addr, &addrLen);
+    socklen_t addrLen = sizeof(serverInfo->ai_addr);
+    ssize_t bytesReceived = recvfrom(fd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;
