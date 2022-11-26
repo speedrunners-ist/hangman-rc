@@ -3,27 +3,12 @@
 // TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
-int newSocket(int type, std::string addr, std::string port) {
-  const int socketFd = socket(AF_INET, type, 0);
-  if (socketFd == -1) {
-    // FIXME: should we really exit here?
-    std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  struct addrinfo hints;
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = type;
-
-  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
-  if (status != 0) {
-    std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
+int exchangeUDPMessage(std::string message, char *response) {
+  if (serverInfo == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
-  return socketFd;
-}
 
-int exchangeUDPMessage(std::string message, char *response) {
   int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
