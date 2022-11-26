@@ -36,7 +36,7 @@ int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr,
 }
 
 // make sure we test formatting for every parameter in every response
-int parseUDPResponse(char *response, std::string &message, Play &play) {
+int parseUDPResponse(char *response, std::string &message) {
   std::string responseStr(response);
   size_t pos1 = responseStr.find(' ');
   size_t pos2 = responseStr.find(' ', pos1 + 1);
@@ -88,23 +88,28 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
         return -1;
       }
       if (play.correctGuess(responseStr.substr(pos4 + 1), n) == 0) {
+        trials++;
         return 0;
       }
     } else if (status == "WIN") {
       play.correctFinalGuess();
       std::cout << "WELL DONE! You guessed: " << play.getWord() << std::endl;
+      trials++;
       return 0;
     } else if (status == "DUP") {
       std::cout << "You have already guessed this letter." << std::endl;
+      // TODO: check if we should increment trials here (ig not?)
       return 0;
     } else if (status == "NOK") {
       play.incorrectGuess();
       std::cout << "Wrong guess. " << play.getAvailableMistakes() << " errors left." << std::endl;
+      trials++;
       return 0;
     } else if (status == "OVR") {
       play.incorrectGuess();
       std::cout << "GAME OVER! You do not have any more errors left. The word was: "
                 << play.getWord() << std::endl;
+      trials++;
       return 0;
     } else if (status == "INV") {
       std::cout << "An invalid trial parameter was sent. Try again." << std::endl;
@@ -112,6 +117,7 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
       std::cout << "RLG ERR" << std::endl;
     }
   } else if (code == "RWG") {
+    // TODO: don't forget to increment trials here
   } // TODO: implement the rest
   return -1;
 }

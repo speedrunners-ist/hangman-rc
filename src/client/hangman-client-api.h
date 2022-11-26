@@ -26,6 +26,8 @@ public:
 
   char getLastGuess() { return lastGuess; }
 
+  int getWordLength() { return wordLength; }
+
   std::string getWord() {
     std::string wordStr;
     for (int i = 0; i < wordLength; i++) {
@@ -89,18 +91,25 @@ public:
   }
 };
 
+// Global variables - the current game state and current player ID
+// perhaps we should consider a different way to store these?
+Play play = Play(1, 1); // default constructor
+std::string playerID;
+int trials = 0;
+
 // Player message handlers
-int handleStart(std::string *message);
-int handlePlay(std::string *message);
-int handleGuess(std::string *message);
-int handleScoreboard(std::string *message);
-int handleHint(std::string *message);
-int handleState(std::string *message);
-int handleQuit(std::string *message);
-int handleExit(std::string *message);
+// TODO: try to find a better way to handle functions with two arguments
+int handleStart(std::string *message, std::string input);
+int handlePlay(std::string *message, std::string input);
+int handleGuess(std::string *message, std::string input);
+int handleScoreboard(std::string *message, std::string input);
+int handleHint(std::string *message, std::string input);
+int handleState(std::string *message, std::string input);
+int handleQuit(std::string *message, std::string input);
+int handleExit(std::string *message, std::string input);
 
 // UDP socket functions
 int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response);
-int parseUDPResponse(char *response, std::string &message, Play &play);
+int parseUDPResponse(char *response, std::string &message);
 
 // TCP socket functions
