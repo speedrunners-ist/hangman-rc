@@ -14,8 +14,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define DEFAULT_GSIP "127.0.0.1"
-#define DEFAULT_GSPORT "58045"
+#define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
+#define DEFAULT_GSPORT "58001"
 
 #define MAX_USER_INPUT 1024
 

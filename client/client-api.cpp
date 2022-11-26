@@ -1,25 +1,5 @@
 #include "client-api.h"
 
-int newSocket(int type, std::string addr, std::string port) {
-  const int socketFd = socket(AF_INET, type, 0);
-  if (socketFd == -1) {
-    // FIXME: should we really exit here?
-    std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  struct addrinfo hints;
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = type;
-
-  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
-  if (status != 0) {
-    std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
-    return -1;
-  }
-  return socketFd;
-}
-
 int validateSingleArgCommand(std::string input) {
   size_t pos1 = input.find(' ');
   if (pos1 != std::string::npos) {
@@ -60,7 +40,7 @@ int handleStart(std::string *message, std::string input) {
   }
 
   playerID = plid;
-  *message = "RSG " + plid + "\n";
+  *message = "SNG " + plid + "\n";
   // DEBUG: checking if last character is a newline
   if (message->back() != '\n') {
     std::cerr << "[ERR]: Last character is not a newline. Not sending a message." << std::endl;
@@ -144,11 +124,14 @@ int handleDebug(std::string *message, std::string input) {
 
 void exitGracefully(std::string errorMessage) {
   std::cerr << errorMessage << std::endl;
-  close(fd);
-  freeaddrinfo(serverInfo);
-  exit(EXIT_SUCCESS);
+
+  // TODO: close socket in case of error
+  // close(fd);
+  // freeaddrinfo(serverInfo);
+  // exit(EXIT_SUCCESS);
 }
 
+// Clears the buffer and prints new terminal prompt
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
   std::cout << "> ";

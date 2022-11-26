@@ -151,8 +151,6 @@ int handleDebug(std::string *message, std::string input);
 static Play play = Play(1, 1);
 static std::string playerID;
 static int trials;
-static int fd;
-static struct addrinfo *serverInfo;
 static messageHandler handlePlayerMessage = {{"start", handleStart},
                                              {"sg", handleStart},
                                              {"play", handlePlay},

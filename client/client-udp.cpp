@@ -1,7 +1,31 @@
 #include "client-protocol.h"
 
+static struct addrinfo *serverInfo;
+static int socketFd;
+
 // TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
+
+// Creates a new socket and connects to the server
+int newSocket(int type, std::string addr, std::string port) {
+  socketFd = socket(AF_INET, type, 0);
+  if (socketFd == -1) {
+    // FIXME: should we really exit here?
+    std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = type;
+
+  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
+  if (status != 0) {
+    std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
+    return -1;
+  }
+  return 0;
+}
 
 int exchangeUDPMessage(std::string message, char *response) {
   if (serverInfo == NULL) {
@@ -9,17 +33,23 @@ int exchangeUDPMessage(std::string message, char *response) {
     return -1;
   }
 
+  std::cout << "[INFO]: Sending message: " << message;
+
+  std::cout << message.length() << std::endl;
+
   int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
-    if (sendto(fd, message.c_str(), message.length() - 1, 0, serverInfo->ai_addr,
+    if (sendto(socketFd, message.c_str(), message.length(), 0, serverInfo->ai_addr,
                serverInfo->ai_addrlen) == -1) {
       std::cerr << SENDTO_ERROR << std::endl;
       return -1;
     }
 
     socklen_t addrLen = sizeof(serverInfo->ai_addr);
-    ssize_t bytesReceived = recvfrom(fd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
+    ssize_t bytesReceived =
+        recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
+
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;
