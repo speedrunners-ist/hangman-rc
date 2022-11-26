@@ -1,5 +1,5 @@
-#ifndef HANGMAN_COMMON_H
-#define HANGMAN_COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
 #include <arpa/inet.h>
 #include <cstring>
@@ -23,8 +23,6 @@
 #define UDP_TRIES 3
 #define UDP_RECV_SIZE 4096
 
-#endif
-
 // Below, function prototypes
 
 /*
@@ -34,3 +32,5 @@
  * @return: number of guesses
  */
 unsigned int initialAvailableMistakes(unsigned int wordLength);
+
+#endif /* COMMON_H */

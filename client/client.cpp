@@ -1,4 +1,5 @@
-#include "hangman-client-api.h"
+#include "client-api.h"
+#include "client-protocol.h"
 
 // TODO: standardize messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
