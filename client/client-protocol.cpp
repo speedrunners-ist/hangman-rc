@@ -25,7 +25,7 @@ int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::stri
   return fd;
 }
 
-int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
+int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
   unsigned int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
@@ -52,14 +52,14 @@ int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr,
     response[bytesReceived - 1] = '\0';
     return 0;
 
-  } while (--triesLeft > 0);
+  } while (--triesLeft >= 0);
 
   std::cout << "[ERR]: Failed to receive response." << std::endl;
   return -1;
 }
 
 // make sure we test formatting for every parameter in every response
-int parseUDPResponse(char *response, std::string &message, Play &play) {
+int parseUDPResponse(char *response, std::string &message) {
   std::string responseStr(response);
   size_t pos1 = responseStr.find(' ');
   size_t pos2 = responseStr.find(' ', pos1 + 1);
@@ -78,7 +78,7 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
         return -1;
       }
 
-      // TODO: check if the word length is valid
+      // TODO: check if the word length is valid?
       play = Play(std::stoi(responseStr.substr(pos2 + 1, pos3 - pos2 - 1)),
                   std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1)));
       std::cout << "New game started (max " << play.getAvailableMistakes()
@@ -106,28 +106,33 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
         return -1;
       }
       int n = std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1));
-      if (n <= 0) {
+      if (n < 3 || n > 30) {
         std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
         return -1;
       }
-      if (play.correctGuess(responseStr.substr(pos4 + 1)) == 0) {
+      if (play.correctGuess(responseStr.substr(pos4 + 1), n) == 0) {
+        trials++;
         return 0;
       }
     } else if (status == "WIN") {
       play.correctFinalGuess();
       std::cout << "WELL DONE! You guessed: " << play.getWord() << std::endl;
+      trials++;
       return 0;
     } else if (status == "DUP") {
       std::cout << "You have already guessed this letter." << std::endl;
+      // TODO: check if we should increment trials here (ig not?)
       return 0;
     } else if (status == "NOK") {
       play.incorrectGuess();
       std::cout << "Wrong guess. " << play.getAvailableMistakes() << " errors left." << std::endl;
+      trials++;
       return 0;
     } else if (status == "OVR") {
       play.incorrectGuess();
       std::cout << "GAME OVER! You do not have any more errors left. The word was: "
                 << play.getWord() << std::endl;
+      trials++;
       return 0;
     } else if (status == "INV") {
       std::cout << "An invalid trial parameter was sent. Try again." << std::endl;
@@ -135,6 +140,7 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
       std::cout << "RLG ERR" << std::endl;
     }
   } else if (code == "RWG") {
-  }
+    // TODO: don't forget to increment trials here
+  } // TODO: implement the rest
   return -1;
 }
