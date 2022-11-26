@@ -1,4 +1,7 @@
-#include "../hangman-common.h"
+#ifndef CLIENT_API_H
+#define CLIENT_API_H
+
+#include "common/common.h"
 #include <algorithm>
 #include <functional>
 
@@ -165,3 +168,5 @@ int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr,
 int parseUDPResponse(char *response, std::string &message);
 
 // TCP socket functions
+
+#endif

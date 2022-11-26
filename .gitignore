@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Compiled artifacts
+server/server
+client/client
+
+
+.vscode
