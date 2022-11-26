@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <functional>
 
+typedef std::map<std::string, std::function<int(std::string *message, std::string input)>>
+    messageHandler;
+
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
@@ -139,29 +142,25 @@ int handleDebug(std::string *message, std::string input);
 
 // Global variables - the current game state and current player ID
 // perhaps we should consider a different way to store these?
-Play play = Play(1, 1); // default constructor
-std::string playerID;
-int trials = 0;
-int fd;
-struct addrinfo *serverInfo = NULL;
-
-// FIXME: try to find a better way to handle start/sg (etc) w/ the same handler
-// this is ugly
-std::map<std::string, std::function<int(std::string *message, std::string input)>>
-    handlePlayerMessage = {{"start", handleStart},
-                           {"sg", handleStart},
-                           {"play", handlePlay},
-                           {"pl", handlePlay},
-                           {"guess", handleGuess},
-                           {"gw", handleGuess},
-                           {"scoreboard", handleScoreboard},
-                           {"sb", handleScoreboard},
-                           {"hint", handleHint},
-                           {"h", handleHint},
-                           {"state", handleState},
-                           {"st", handleState},
-                           {"quit", handleQuit},
-                           {"exit", handleExit},
-                           {"rev", handleDebug}};
+static Play play = Play(1, 1);
+static std::string playerID;
+static int trials = 0;
+static int fd;
+static struct addrinfo *serverInfo;
+static messageHandler handlePlayerMessage = {{"start", handleStart},
+                                             {"sg", handleStart},
+                                             {"play", handlePlay},
+                                             {"pl", handlePlay},
+                                             {"guess", handleGuess},
+                                             {"gw", handleGuess},
+                                             {"scoreboard", handleScoreboard},
+                                             {"sb", handleScoreboard},
+                                             {"hint", handleHint},
+                                             {"h", handleHint},
+                                             {"state", handleState},
+                                             {"st", handleState},
+                                             {"quit", handleQuit},
+                                             {"exit", handleExit},
+                                             {"rev", handleDebug}};
 
 #endif

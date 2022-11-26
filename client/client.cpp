@@ -1,4 +1,3 @@
-#include "client-api.h"
 #include "client-protocol.h"
 
 int validateSingleArgCommand(std::string input) {
@@ -114,6 +113,8 @@ int handleQuit(std::string *message, std::string input) {
   return 0;
 }
 
+int handleExit(std::string *message, std::string input) { return handleQuit(message, input); }
+
 int handleDebug(std::string *message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
@@ -204,7 +205,7 @@ int main(int argc, char *argv[]) {
       continue;
     }
     memset(response, 0, UDP_RECV_SIZE);
-    ret = exchangeUDPMessage(fd, message, serverInfo, response);
+    ret = exchangeUDPMessage(message, response);
     if (ret == -1) {
       // error has already been handled, just continue
       memset(buffer, 0, MAX_USER_INPUT);
