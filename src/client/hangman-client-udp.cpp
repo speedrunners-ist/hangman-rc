@@ -1,6 +1,6 @@
 // TODO: add client-side functions for actions requiring UDP
 // start, play, guess, exit
-#include <hangman-client-api.h>
+#include "hangman-client-api.h"
 
 int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
   unsigned int triesLeft = UDP_TRIES;
@@ -83,11 +83,11 @@ int parseUDPResponse(char *response, std::string &message, Play &play) {
         return -1;
       }
       int n = std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1));
-      if (n <= 0) {
+      if (n < 3 || n > 30) {
         std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
         return -1;
       }
-      if (play.correctGuess(responseStr.substr(pos4 + 1)) == 0) {
+      if (play.correctGuess(responseStr.substr(pos4 + 1), n) == 0) {
         return 0;
       }
     } else if (status == "WIN") {

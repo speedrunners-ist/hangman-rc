@@ -1,4 +1,4 @@
-#include <hangman-client-api.h>
+#include "hangman-client-api.h"
 
 // TODO: standardize messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  struct addrinfo *serverInfo;
+  struct addrinfo *serverInfo = NULL;
   const int fd = newSocket(serverInfo, SOCK_DGRAM, GSIP, GSport);
   if (fd == -1) {
     std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
