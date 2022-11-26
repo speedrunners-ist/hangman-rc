@@ -128,6 +128,12 @@ public:
   }
 };
 
+int newSocket(int type, std::string addr, std::string port);
+int validateSingleArgCommand(std::string input);
+int validateTwoArgsCommand(std::string input);
+void exitGracefully(std::string errorMessage);
+void continueReading(char *buffer);
+
 // Player message handlers
 // TODO: try to find a better way to handle functions with two arguments
 int handleStart(std::string *message, std::string input);
@@ -144,7 +150,7 @@ int handleDebug(std::string *message, std::string input);
 // perhaps we should consider a different way to store these?
 static Play play = Play(1, 1);
 static std::string playerID;
-static int trials = 0;
+static int trials;
 static int fd;
 static struct addrinfo *serverInfo;
 static messageHandler handlePlayerMessage = {{"start", handleStart},
