@@ -137,12 +137,6 @@ int handleQuit(std::string *message, std::string input);
 int handleExit(std::string *message, std::string input);
 int handleDebug(std::string *message, std::string input);
 
-// UDP socket functions
-int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response);
-int parseUDPResponse(char *response);
-
-// TCP socket functions
-
 // Global variables - the current game state and current player ID
 // perhaps we should consider a different way to store these?
 Play play = Play(1, 1); // default constructor

@@ -1,5 +1,3 @@
-// TODO: add client-side functions for actions requiring UDP
-// start, play, guess, exit
 #include "client-protocol.h"
 
 // TODO: standardize error messages with macros
