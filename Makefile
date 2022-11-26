@@ -1,8 +1,8 @@
 # Compiler flags
-CC ?= g++
+CXX ?= g++
 LD ?= g++
 
-INCLUDE_DIRS := client common
+INCLUDE_DIRS := client server .
 INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
 
 SOURCES  := $(wildcard */*.cpp)
@@ -15,18 +15,17 @@ TARGET_EXECS := client/client
 vpath # clears VPATH
 vpath %.h $(INCLUDE_DIRS)
 
-CFLAGS = -std=c++20 -O3
-CFLAGS += $(INCLUDES)
+CXXFLAGS = -std=c++20 -O3
+CXXFLAGS += $(INCLUDES)
 # Warnings
-CFLAGS += -fdiagnostics-color=always -Wall -Werror -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
-
-CFLAGS += -Wno-sign-compare
+CXXFLAGS += -fdiagnostics-color=always -Wall -Werror -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
+CXXFLAGS += -Wno-sign-compare
 
 ifneq ($(strip $(DEBUG)), no)
-  CFLAGS += -g
+  CXXFLAGS += -g
 endif
 
-.PHONY: all clean fmt autodep
+.PHONY: all clean fmt depend
 
 all: $(TARGET_EXECS)
 

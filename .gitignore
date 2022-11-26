@@ -53,8 +53,8 @@ dkms.conf
 
 
 # Compiled artifacts
-src/server
-src/client
-src/common
+server
+client
+common
 
 .vscode
