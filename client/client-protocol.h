@@ -2,12 +2,11 @@
 #define CLIENT_PROTOCOL_H
 
 #include "client-api.h"
-#include "common/common.h"
 
-int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port);
+int newSocket(int type, std::string addr, std::string port);
 
-int exchangeMessageUDP(int fd, std::string message, struct addrinfo *serverAddr, char *response);
-
-int parseUDPResponse(char *response, std::string &message, Play &play);
+// UDP related functions
+int exchangeUDPMessage(std::string message, char *response);
+int parseUDPResponse(char *response);
 
 #endif /* CLIENT_PROTOCOL_H */

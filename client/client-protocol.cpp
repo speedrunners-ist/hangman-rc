@@ -1,13 +1,11 @@
-// TODO: add client-side functions for actions requiring UDP
-// start, play, guess, exit
 #include "client-protocol.h"
 
 // TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
-int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port) {
-  const int fd = socket(AF_INET, type, 0);
-  if (fd == -1) {
+int newSocket(int type, std::string addr, std::string port) {
+  const int socketFd = socket(AF_INET, type, 0);
+  if (socketFd == -1) {
     // FIXME: should we really exit here?
     std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
     exit(EXIT_FAILURE);
@@ -22,31 +20,30 @@ int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::stri
     std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
     return -1;
   }
-  return fd;
+  return socketFd;
 }
 
-int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
-  unsigned int triesLeft = UDP_TRIES;
+int exchangeUDPMessage(std::string message, char *response) {
+  int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
-    if (sendto(fd, message.c_str(), message.length() - 1, 0, serverAddr->ai_addr,
-               serverAddr->ai_addrlen) == -1) {
-      std::cout << "[ERR]: Failed to send message." << std::endl;
+    if (sendto(fd, message.c_str(), message.length() - 1, 0, serverInfo->ai_addr,
+               serverInfo->ai_addrlen) == -1) {
+      std::cerr << SENDTO_ERROR << std::endl;
       return -1;
     }
 
-    socklen_t addrLen = sizeof(serverAddr->ai_addr);
-    ssize_t bytesReceived = recvfrom(fd, response, UDP_RECV_SIZE, 0, serverAddr->ai_addr, &addrLen);
+    socklen_t addrLen = sizeof(serverInfo->ai_addr);
+    ssize_t bytesReceived = recvfrom(fd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
-        std::cout << "[ERR]: Failed to receive response." << std::endl;
-        return -1;
+        break;
       }
       continue;
     }
 
     if (response[bytesReceived - 1] != '\n') {
-      std::cout << "[ERR]: Response does not match the UDP protocol." << std::endl;
+      std::cerr << UDP_RESPONSE_ERROR << std::endl;
       return -1;
     }
     response[bytesReceived - 1] = '\0';
@@ -54,17 +51,17 @@ int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr,
 
   } while (--triesLeft >= 0);
 
-  std::cout << "[ERR]: Failed to receive response." << std::endl;
+  std::cerr << RECVFROM_ERROR << std::endl;
   return -1;
 }
 
 // make sure we test formatting for every parameter in every response
-int parseUDPResponse(char *response, std::string &message) {
+int parseUDPResponse(char *response) {
   std::string responseStr(response);
   size_t pos1 = responseStr.find(' ');
   size_t pos2 = responseStr.find(' ', pos1 + 1);
   if (pos1 == std::string::npos || pos2 == std::string::npos) {
-    std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
   const std::string code = responseStr.substr(0, pos1);
@@ -74,40 +71,37 @@ int parseUDPResponse(char *response, std::string &message) {
       size_t pos3 = responseStr.find(' ', pos2 + 1);
       size_t pos4 = responseStr.find(' ', pos3 + 1);
       if (pos3 == std::string::npos || pos4 == std::string::npos) {
-        std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+        std::cerr << RSG_ERROR << std::endl;
         return -1;
       }
 
       // TODO: check if the word length is valid?
       play = Play(std::stoi(responseStr.substr(pos2 + 1, pos3 - pos2 - 1)),
                   std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1)));
-      std::cout << "New game started (max " << play.getAvailableMistakes()
-                << " errors): " << play.getWord() << std::endl;
+      std::cout << RSG_OK(play.getAvailableMistakes(), play.getWord()) << std::endl;
       return 0;
     } else if (status == "NOK") {
-      std::cout << "Failed to start a new game. Try again later" << std::endl;
+      std::cout << RSG_NOK << std::endl;
       return 0;
-    } else {
-      // unknown status
-      std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
-      return -1;
     }
+    // unknown status
+    std::cerr << RSG_ERROR << std::endl;
   } else if (code == "RLG") {
     size_t pos3 = responseStr.find(' ', pos2 + 1);
     if (pos3 == std::string::npos) {
-      std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+      std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
     if (status == "OK") {
       size_t pos4 = responseStr.find(' ', pos3 + 1);
       size_t pos5 = responseStr.find(' ', pos4 + 1);
       if (pos4 == std::string::npos || pos5 == std::string::npos) {
-        std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+        std::cerr << RLG_ERROR << std::endl;
         return -1;
       }
       int n = std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1));
       if (n < 3 || n > 30) {
-        std::cout << "[ERR]: Server response does not match any protocol." << std::endl;
+        std::cerr << RLG_INVALID_WORD_LEN << std::endl;
         return -1;
       }
       if (play.correctGuess(responseStr.substr(pos4 + 1), n) == 0) {
@@ -116,28 +110,26 @@ int parseUDPResponse(char *response, std::string &message) {
       }
     } else if (status == "WIN") {
       play.correctFinalGuess();
-      std::cout << "WELL DONE! You guessed: " << play.getWord() << std::endl;
+      std::cout << RLG_WIN(play.getWord()) << std::endl;
       trials++;
       return 0;
     } else if (status == "DUP") {
-      std::cout << "You have already guessed this letter." << std::endl;
-      // TODO: check if we should increment trials here (ig not?)
+      std::cout << RLG_DUP << std::endl;
       return 0;
     } else if (status == "NOK") {
       play.incorrectGuess();
-      std::cout << "Wrong guess. " << play.getAvailableMistakes() << " errors left." << std::endl;
+      std::cout << RLG_NOK(play.getAvailableMistakes()) << std::endl;
       trials++;
       return 0;
     } else if (status == "OVR") {
       play.incorrectGuess();
-      std::cout << "GAME OVER! You do not have any more errors left. The word was: "
-                << play.getWord() << std::endl;
+      std::cout << RLG_OVR << std::endl;
       trials++;
       return 0;
     } else if (status == "INV") {
-      std::cout << "An invalid trial parameter was sent. Try again." << std::endl;
+      std::cout << RLG_INV << std::endl;
     } else if (status == "ERR") {
-      std::cout << "RLG ERR" << std::endl;
+      std::cout << RLG_ERR << std::endl;
     }
   } else if (code == "RWG") {
     // TODO: don't forget to increment trials here
