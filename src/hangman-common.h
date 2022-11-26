@@ -4,16 +4,15 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <map>
-#include <string>
 
 #define DEFAULT_GSIP "127.0.0.1"
 #define DEFAULT_GSPORT "58045"
