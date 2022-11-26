@@ -163,4 +163,4 @@ static messageHandler handlePlayerMessage = {{"start", handleStart},
                                              {"exit", handleExit},
                                              {"rev", handleDebug}};
 
-#endif
+#endif /* CLIENT_API_H */

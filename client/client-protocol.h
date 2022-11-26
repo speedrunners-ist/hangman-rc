@@ -9,4 +9,4 @@ int newSocket(int type, std::string addr, std::string port);
 int exchangeUDPMessage(std::string message, char *response);
 int parseUDPResponse(char *response);
 
-#endif
+#endif /* CLIENT_PROTOCOL_H */
