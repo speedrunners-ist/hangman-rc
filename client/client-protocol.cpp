@@ -5,9 +5,9 @@
 // TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
-int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port) {
-  const int fd = socket(AF_INET, type, 0);
-  if (fd == -1) {
+int newSocket(int type, std::string addr, std::string port) {
+  const int socketFd = socket(AF_INET, type, 0);
+  if (socketFd == -1) {
     // FIXME: should we really exit here?
     std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
     exit(EXIT_FAILURE);
@@ -22,21 +22,23 @@ int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::stri
     std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
     return -1;
   }
-  return fd;
+  return socketFd;
 }
 
-int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response) {
-  unsigned int triesLeft = UDP_TRIES;
+int exchangeUDPMessage(int socketFd, std::string message, struct addrinfo *serverAddr,
+                       char *response) {
+  int triesLeft = UDP_TRIES;
   do {
     // note: we don't send the null terminator, hence the -1
-    if (sendto(fd, message.c_str(), message.length() - 1, 0, serverAddr->ai_addr,
+    if (sendto(socketFd, message.c_str(), message.length() - 1, 0, serverAddr->ai_addr,
                serverAddr->ai_addrlen) == -1) {
       std::cerr << SENDTO_ERROR << std::endl;
       return -1;
     }
 
     socklen_t addrLen = sizeof(serverAddr->ai_addr);
-    ssize_t bytesReceived = recvfrom(fd, response, UDP_RECV_SIZE, 0, serverAddr->ai_addr, &addrLen);
+    ssize_t bytesReceived =
+        recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverAddr->ai_addr, &addrLen);
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;
@@ -58,7 +60,7 @@ int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr,
 }
 
 // make sure we test formatting for every parameter in every response
-int parseUDPResponse(char *response, std::string &message) {
+int parseUDPResponse(char *response) {
   std::string responseStr(response);
   size_t pos1 = responseStr.find(' ');
   size_t pos2 = responseStr.find(' ', pos1 + 1);

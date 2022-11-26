@@ -37,15 +37,15 @@
 #define RLG_ERR "RLG ERR"
 
 class Play {
-  unsigned int wordLength;
-  unsigned int mistakesLeft;
-  unsigned int guessesMade = 0;
+  int wordLength;
+  int mistakesLeft;
+  int guessesMade = 0;
   char lastGuess;
   std::map<char, bool> guessedLetters;
   std::map<int, char> word;
 
 public:
-  Play(unsigned int length, unsigned int mistakes) {
+  Play(int length, int mistakes) {
     this->wordLength = length;
     this->mistakesLeft = mistakes;
     for (int i = 0; i < length; i++) {
@@ -56,7 +56,7 @@ public:
     }
   }
 
-  unsigned int getAvailableMistakes() { return mistakesLeft; }
+  int getAvailableMistakes() { return mistakesLeft; }
 
   char getLastGuess() { return lastGuess; }
 
@@ -125,6 +125,24 @@ public:
   }
 };
 
+// Player message handlers
+// TODO: try to find a better way to handle functions with two arguments
+int handleStart(std::string *message, std::string input);
+int handlePlay(std::string *message, std::string input);
+int handleGuess(std::string *message, std::string input);
+int handleScoreboard(std::string *message, std::string input);
+int handleHint(std::string *message, std::string input);
+int handleState(std::string *message, std::string input);
+int handleQuit(std::string *message, std::string input);
+int handleExit(std::string *message, std::string input);
+int handleDebug(std::string *message, std::string input);
+
+// UDP socket functions
+int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response);
+int parseUDPResponse(char *response);
+
+// TCP socket functions
+
 // Global variables - the current game state and current player ID
 // perhaps we should consider a different way to store these?
 Play play = Play(1, 1); // default constructor
@@ -151,22 +169,5 @@ std::map<std::string, std::function<int(std::string *message, std::string input)
                            {"quit", handleQuit},
                            {"exit", handleExit},
                            {"rev", handleDebug}};
-
-// Player message handlers
-// TODO: try to find a better way to handle functions with two arguments
-int handleStart(std::string *message, std::string input);
-int handlePlay(std::string *message, std::string input);
-int handleGuess(std::string *message, std::string input);
-int handleScoreboard(std::string *message, std::string input);
-int handleHint(std::string *message, std::string input);
-int handleState(std::string *message, std::string input);
-int handleQuit(std::string *message, std::string input);
-int handleExit(std::string *message, std::string input);
-
-// UDP socket functions
-int exchangeUDPMessage(int fd, std::string message, struct addrinfo *serverAddr, char *response);
-int parseUDPResponse(char *response, std::string &message);
-
-// TCP socket functions
 
 #endif

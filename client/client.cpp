@@ -1,26 +1,6 @@
 #include "client-api.h"
 #include "client-protocol.h"
 
-// TODO: standardize messages with macros
-// TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
-
-int newSocket(struct addrinfo *serverInfo, int type, std::string addr, std::string port) {
-  const int fd = socket(AF_INET, type, 0);
-  if (fd == -1) {
-    exitGracefully(SOCKET_ERROR);
-  }
-  struct addrinfo hints;
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = type;
-
-  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
-  if (status != 0) {
-    exitGracefully(GETADDRINFO_ERROR);
-  }
-  return fd;
-}
-
 int validateSingleArgCommand(std::string input) {
   size_t pos1 = input.find(' ');
   if (pos1 != std::string::npos) {
@@ -53,12 +33,13 @@ int handleStart(std::string *message, std::string input) {
     std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
     return -1;
   }
-  std::for_each(plid.begin(), plid.end(), [](char c) {
-    if (!std::isdigit(c)) {
+
+  for (size_t i = 0; i < plid.length(); i++) {
+    if (!isdigit(plid[i])) {
       std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
       return -1;
     }
-  });
+  }
 
   playerID = plid;
   *message = "RSG " + plid + "\n";
@@ -174,7 +155,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  fd = newSocket(serverInfo, SOCK_DGRAM, GSIP, GSport);
+  fd = newSocket(SOCK_DGRAM, GSIP, GSport);
   int res = mkdir("hints", 0700);
   if (res == -1 && errno != EEXIST) {
     // if the directory can't be created and it doesn't already exist
@@ -230,7 +211,7 @@ int main(int argc, char *argv[]) {
       std::cout << "> ";
       continue;
     }
-    ret = parseUDPResponse(response, message);
+    ret = parseUDPResponse(response);
 
     memset(buffer, 0, MAX_USER_INPUT);
     std::cout << "> ";
