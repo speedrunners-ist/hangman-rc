@@ -22,7 +22,7 @@ void openUDP(std::string GSport) {
   // Listen for incoming connections
   while (1) {
     addrlen = sizeof(addr);
-    nread = recvfrom(fd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
+    nread = recvfrom(fd, buffer, UDP_RECV_SIZE, 0, (struct sockaddr *)&addr, &addrlen);
     if (nread == -1) /*error*/
       exit(1);
 
