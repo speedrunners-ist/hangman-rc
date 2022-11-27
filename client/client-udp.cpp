@@ -81,11 +81,7 @@ int exchangeUDPMessage(std::string message, char *response) {
   return -1;
 }
 
-int handleRSG(struct serverResponse response) { return 0; }
-
-// make sure we test formatting for every parameter in every response
 int parseUDPResponse(char *response) {
-  // TODO: abstract this into separate functions
   std::string responseStr(response);
   size_t pos1 = responseStr.find(' ');
   size_t pos2 = responseStr.find(' ', pos1 + 1);
@@ -97,80 +93,9 @@ int parseUDPResponse(char *response) {
   const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
   struct serverResponse serverResponse = {code, pos1, status, pos2, responseStr};
   return handleUDPServerMessage[code](serverResponse);
-  // TODO: move code below to handlers
-  if (code == "RSG") {
-    if (status == "OK") {
-      size_t pos3 = responseStr.find(' ', pos2 + 1);
-      size_t pos4 = responseStr.find(' ', pos3 + 1);
-      if (pos3 == std::string::npos || pos4 == std::string::npos) {
-        std::cerr << RSG_ERROR << std::endl;
-        return -1;
-      }
-
-      // TODO: check if the word length is valid?
-      play = Play(std::stoi(responseStr.substr(pos2 + 1, pos3 - pos2 - 1)),
-                  std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1)));
-      std::cout << RSG_OK(play.getAvailableMistakes(), play.getWord()) << std::endl;
-      return 0;
-    } else if (status == "NOK") {
-      std::cout << RSG_NOK << std::endl;
-      return 0;
-    }
-    // unknown status
-    std::cerr << RSG_ERROR << std::endl;
-  } else if (code == "RLG") {
-    size_t pos3 = responseStr.find(' ', pos2 + 1);
-    if (pos3 == std::string::npos) {
-      std::cerr << RLG_ERROR << std::endl;
-      return -1;
-    }
-    if (status == "OK") {
-      size_t pos4 = responseStr.find(' ', pos3 + 1);
-      size_t pos5 = responseStr.find(' ', pos4 + 1);
-      if (pos4 == std::string::npos || pos5 == std::string::npos) {
-        std::cerr << RLG_ERROR << std::endl;
-        return -1;
-      }
-      int n = std::stoi(responseStr.substr(pos3 + 1, pos4 - pos3 - 1));
-      if (n < 3 || n > 30) {
-        std::cerr << RLG_INVALID_WORD_LEN << std::endl;
-        return -1;
-      }
-      if (play.correctGuess(responseStr.substr(pos4 + 1), n) == 0) {
-        trials++;
-        return 0;
-      }
-    } else if (status == "WIN") {
-      play.correctFinalGuess();
-      std::cout << RLG_WIN(play.getWord()) << std::endl;
-      trials++;
-      return 0;
-    } else if (status == "DUP") {
-      std::cout << RLG_DUP << std::endl;
-      return 0;
-    } else if (status == "NOK") {
-      play.incorrectGuess();
-      std::cout << RLG_NOK(play.getAvailableMistakes()) << std::endl;
-      trials++;
-      return 0;
-    } else if (status == "OVR") {
-      play.incorrectGuess();
-      std::cout << RLG_OVR << std::endl;
-      trials++;
-      return 0;
-    } else if (status == "INV") {
-      std::cout << RLG_INV << std::endl;
-    } else if (status == "ERR") {
-      std::cout << RLG_ERR << std::endl;
-    }
-  } else if (code == "RWG") {
-    // TODO: don't forget to increment trials here
-  } // TODO: implement the rest
-  return -1;
 }
 
 // UDP handlers
-
 int generalUDPHandler(std::string message) {
   memset(responseUDP, 0, UDP_RECV_SIZE);
   int ret = exchangeUDPMessage(message, responseUDP);
@@ -180,6 +105,90 @@ int generalUDPHandler(std::string message) {
   return parseUDPResponse(responseUDP);
 }
 
+// handlers: server responses
+int handleRSG(struct serverResponse response) {
+  if (response.status == "OK") {
+    const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
+    const size_t pos_n_max_erros = response.body.find(' ', pos_n_letters + 1);
+    if (pos_n_letters == std::string::npos || pos_n_max_erros == std::string::npos) {
+      std::cerr << RSG_ERROR << std::endl;
+      return -1;
+    }
+    // TODO: check if n_letters and n_max_errors are valid
+    const int n_letters = std::stoi(response.body.substr(response.statusPos + 1, pos_n_letters));
+    const int n_max_errors = std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_erros));
+    play = Play(n_letters, n_max_errors);
+    std::cout << RSG_OK(play.getAvailableMistakes(), play.getWord()) << std::endl;
+    return 0;
+  } else if (response.status == "NOK") {
+    std::cout << RSG_NOK << std::endl;
+    return 0;
+  }
+
+  return -1;
+}
+
+int handleRLG(struct serverResponse response) {
+  const size_t pos_trial = response.body.find(' ', response.statusPos + 1);
+  if (pos_trial == std::string::npos) {
+    std::cerr << RLG_ERROR << std::endl;
+    return -1;
+  }
+  const int trial = std::stoi(response.body.substr(response.statusPos + 1, pos_trial));
+  // TODO: check if trial checks out
+  // TODO: if there have been 2 trials, do we (client) send 2 or 3 in trial?
+  // also, does the server send back 2 or 3?
+  if (response.status == "OK") {
+    size_t pos_n = response.body.find(' ', pos_trial + 1);
+    size_t pos_correct_positions = response.body.find(' ', pos_n + 1);
+    if (pos_n == std::string::npos || pos_correct_positions == std::string::npos) {
+      std::cerr << RLG_ERROR << std::endl;
+      return -1;
+    }
+    const int n = std::stoi(response.body.substr(pos_trial + 1, pos_n));
+    if (n < 3 || n > 30) {
+      std::cerr << RLG_INVALID_WORD_LEN << std::endl;
+      return -1;
+    }
+    if (play.correctGuess(response.body.substr(pos_n + 1), n) == 0) {
+      trials++;
+      return 0;
+    }
+  } else if (response.status == "WIN") {
+    play.correctFinalGuess();
+    std::cout << RLG_WIN(play.getWord()) << std::endl;
+    trials++;
+    return 0;
+  } else if (response.status == "DUP") {
+    std::cout << RLG_DUP << std::endl;
+    return 0;
+  } else if (response.status == "NOK") {
+    play.incorrectGuess();
+    std::cout << RLG_NOK(play.getAvailableMistakes()) << std::endl;
+    trials++;
+    return 0;
+  } else if (response.status == "OVR") {
+    // the server itself ends the game on its end, so we should add a mechanism on our end
+    // to end the game as well ig
+    play.incorrectGuess();
+    std::cout << RLG_OVR << std::endl;
+    trials++;
+    return 0;
+  } else if (response.status == "INV") {
+    std::cout << RLG_INV << std::endl;
+  } else if (response.status == "ERR") {
+    std::cout << RLG_ERR << std::endl;
+  }
+  return -1;
+}
+
+int handleRWG(struct serverResponse response) { return 0; }
+
+int handleRQT(struct serverResponse response) { return 0; }
+
+int handleRRV(struct serverResponse response) { return 0; }
+
+// handlers: player requests
 int handleStart(std::string message, std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
