@@ -81,6 +81,8 @@ int exchangeUDPMessage(std::string message, char *response) {
   return -1;
 }
 
+int handleRSG(struct serverResponse response) { return 0; }
+
 // make sure we test formatting for every parameter in every response
 int parseUDPResponse(char *response) {
   // TODO: abstract this into separate functions
@@ -93,6 +95,9 @@ int parseUDPResponse(char *response) {
   }
   const std::string code = responseStr.substr(0, pos1);
   const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
+  struct serverResponse serverResponse = {code, pos1, status, pos2, responseStr};
+  return handleUDPServerMessage[code](serverResponse);
+  // TODO: move code below to handlers
   if (code == "RSG") {
     if (status == "OK") {
       size_t pos3 = responseStr.find(' ', pos2 + 1);

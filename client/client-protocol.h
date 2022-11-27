@@ -7,10 +7,16 @@
 #define UDP_RECV_SIZE 4096
 #define TCP_READ_SIZE 4096
 
+struct serverResponse {
+  std::string code;
+  size_t codePos;
+  std::string status;
+  size_t statusPos;
+  std::string body;
+};
 typedef std::map<std::string, std::function<int(std::string message, std::string input)>>
     messageHandler;
-typedef std::map<std::string, std::function<int(std::string message)>> responseHandler;
-
+typedef std::map<std::string, std::function<int(struct serverResponse response)>> responseHandler;
 int newSocket(int type, std::string addr, std::string port);
 
 // UDP utils functions
@@ -36,16 +42,16 @@ int handleExit(std::string message, std::string input);
 int handleDebug(std::string message, std::string input);
 
 // UDP server message handlers
-int handleRSG(std::string response);
-int handleRLG(std::string response);
-int handleRWG(std::string response);
-int handleRQT(std::string response);
-int handleRRV(std::string response);
+int handleRSG(struct serverResponse response);
+int handleRLG(struct serverResponse response);
+int handleRWG(struct serverResponse response);
+int handleRQT(struct serverResponse response);
+int handleRRV(struct serverResponse response);
 
 // TCP server message handlers
-int handleRSB(std::string response);
-int handleRHL(std::string response);
-int handleRST(std::string response);
+int handleRSB(struct serverResponse response);
+int handleRHL(struct serverResponse response);
+int handleRST(struct serverResponse response);
 
 // clang-format off
 static messageHandler handlePlayerMessage = {
