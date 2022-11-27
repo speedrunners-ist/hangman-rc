@@ -64,7 +64,9 @@ int main(int argc, char *argv[]) {
     }
 
     // if the command is valid, call the appropriate function
-    handlePlayerMessage[command](message, input);
+    if (handlePlayerMessage[command](message, input) == EXIT_HANGMAN) {
+      break;
+    }
     continueReading(buffer);
   }
 

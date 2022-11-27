@@ -3,6 +3,7 @@
 
 #include "client-api.h"
 
+#define EXIT_HANGMAN 1
 #define UDP_TRIES 3
 #define UDP_RECV_SIZE 4096
 #define TCP_READ_SIZE 4096

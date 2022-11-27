@@ -251,6 +251,7 @@ int handleGuess(std::string message, std::string input) {
 }
 
 int handleQuit(std::string message, std::string input) {
+  // TODO: can't forget to close all open TCP connections
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
@@ -258,7 +259,10 @@ int handleQuit(std::string message, std::string input) {
   return generalUDPHandler(message);
 }
 
-int handleExit(std::string message, std::string input) { return handleQuit(message, input); }
+int handleExit(std::string message, std::string input) {
+  handleQuit(message, input);
+  return EXIT_HANGMAN;
+}
 
 int handleDebug(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
