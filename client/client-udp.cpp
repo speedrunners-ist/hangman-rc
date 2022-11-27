@@ -5,6 +5,16 @@ static int socketFd;
 static char responseUDP[UDP_RECV_SIZE];
 static int trials = 0;
 
+// clang-format off
+static responseHandler handleUDPServerMessage = {
+  {"RSG", handleRSG},
+  {"RLG", handleRLG},
+  {"RWG", handleRWG},
+  {"RQT", handleRQT},
+  {"RRV", handleRRV}
+};
+// clang-format on
+
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
 // Creates a new socket and connects to the server

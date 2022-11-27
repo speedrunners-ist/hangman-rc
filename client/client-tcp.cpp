@@ -2,6 +2,14 @@
 
 static char responseTCP[TCP_READ_SIZE];
 
+// clang-format off
+static responseHandler handleTCPServerMessage = {
+  {"RSB", handleRSB},
+  {"RHL", handleRHL},
+  {"RST", handleRST}
+};
+// clang-format on
+
 int exchangeTCPMessage(std::string message, char *response) {
   // TODO, w/ placeholders in order to compile
   std::cout << "[INFO]: Sending message: " << message;

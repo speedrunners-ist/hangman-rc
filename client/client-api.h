@@ -5,9 +5,6 @@
 #include <algorithm>
 #include <functional>
 
-typedef std::map<std::string, std::function<int(std::string message, std::string input)>>
-    messageHandler;
-
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
