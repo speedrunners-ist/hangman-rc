@@ -1,4 +1,4 @@
-#include "client-api.h"
+#include "client-game-state.h"
 
 int validateSingleArgCommand(std::string input) {
   size_t pos1 = input.find(' ');

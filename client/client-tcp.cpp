@@ -32,33 +32,42 @@ int generalTCPHandler(std::string message) {
   return parseTCPResponse(responseTCP);
 }
 
-// TODO: implement the 3 handlers below
-int handleRSB(struct serverResponse response) { return -1; }
-
-int handleRHL(struct serverResponse response) { return -1; }
-
-int handleRST(struct serverResponse response) { return -1; }
-
-int handleScoreboard(std::string message, std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
-    return -1;
-  }
-  message = buildPlayerMessage({"GSB"});
+// TODO: handlers below only implemented to compile
+int handleRSB(struct serverResponse response) {
+  std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleHint(std::string message, std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
-    return -1;
-  }
-  message = buildPlayerMessage({"GHL", playerID});
+int handleRHL(struct serverResponse response) {
+  std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleState(std::string message, std::string input) {
+int handleRST(struct serverResponse response) {
+  std::cout << "[INFO]: Received response: " << response.body;
+  return 0;
+}
+
+int handleGSB(std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = buildPlayerMessage({"GST", playerID});
+  const std::string message = buildPlayerMessage({"GSB"});
+  return 0;
+}
+
+int handleGHL(std::string input) {
+  if (validateSingleArgCommand(input) == -1) {
+    return -1;
+  }
+  const std::string message = buildPlayerMessage({"GHL", playerID});
+  return 0;
+}
+
+int handleSTA(std::string input) {
+  if (validateSingleArgCommand(input) == -1) {
+    return -1;
+  }
+  const std::string message = buildPlayerMessage({"GST", playerID});
   return 0;
 }

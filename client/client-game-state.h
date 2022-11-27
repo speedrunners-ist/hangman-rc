@@ -1,5 +1,5 @@
-#ifndef CLIENT_API_H
-#define CLIENT_API_H
+#ifndef CLIENT_GAME_STATE_H
+#define CLIENT_GAME_STATE_H
 
 #include "common/common.h"
 #include <algorithm>
@@ -117,4 +117,4 @@ std::string buildPlayerMessage(std::vector<std::string> args);
 static GameState play = GameState(1, 1);
 static std::string playerID;
 
-#endif /* CLIENT_API_H */
+#endif /* CLIENT_GAME_STATE_H */

@@ -1,7 +1,7 @@
 #ifndef CLIENT_PROTOCOL_H
 #define CLIENT_PROTOCOL_H
 
-#include "client-api.h"
+#include "client-game-state.h"
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3
@@ -80,18 +80,5 @@ int handleRRV(struct serverResponse response);
 int handleRSB(struct serverResponse response);
 int handleRHL(struct serverResponse response);
 int handleRST(struct serverResponse response);
-
-// clang-format off
-static messageHandler handlePlayerMessage = {
-  { "start", handleSNG },      { "sg", handleSNG },
-  { "play", handlePLG },       { "pl", handlePLG },
-  { "guess", handlePWG },      { "gw", handlePWG },
-  { "scoreboard", handleGSB }, { "sb", handleGSB },
-  { "hint", handleGHL },       { "h", handleGHL },
-  { "state", handleSTA },      { "st", handleSTA },
-  { "quit", handleQUT },       { "exit", handleQUT },
-  { "rev", handleREV }
-};
-// clang-format on
 
 #endif /* CLIENT_PROTOCOL_H */

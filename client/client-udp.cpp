@@ -238,7 +238,10 @@ int handleRQT(struct serverResponse response) {
 }
 
 // TODO: implement debug command below
-int handleRRV(struct serverResponse response) { return -1; }
+int handleRRV(struct serverResponse response) {
+  std::cout << "[INFO]: Received response: " << response.body;
+  return 0;
+}
 
 // handlers: player requests
 int handleSNG(std::string input) {

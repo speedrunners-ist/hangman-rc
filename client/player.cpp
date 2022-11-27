@@ -1,5 +1,18 @@
 #include "client-protocol.h"
 
+// clang-format off
+static messageHandler handlePlayerMessage = {
+  { "start", handleSNG },      { "sg", handleSNG },
+  { "play", handlePLG },       { "pl", handlePLG },
+  { "guess", handlePWG },      { "gw", handlePWG },
+  { "scoreboard", handleGSB }, { "sb", handleGSB },
+  { "hint", handleGHL },       { "h", handleGHL },
+  { "state", handleSTA },      { "st", handleSTA },
+  { "quit", handleQUT },       { "exit", handleQUT },
+  { "rev", handleREV }
+};
+// clang-format on
+
 // Clears the buffer and prints new terminal prompt
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
