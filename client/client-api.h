@@ -1,5 +1,5 @@
-#ifndef CLIENT_GAME_STATE_H
-#define CLIENT_GAME_STATE_H
+#ifndef CLIENT_API_H
+#define CLIENT_API_H
 
 #include "common/common.h"
 #include <algorithm>
@@ -122,4 +122,4 @@ void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
 std::string buildPlayerMessage(std::vector<std::string> args);
 
-#endif /* CLIENT_GAME_STATE_H */
+#endif /* CLIENT_API_H */
