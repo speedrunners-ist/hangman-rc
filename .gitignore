@@ -52,8 +52,8 @@ Mkfile.old
 dkms.conf
 
 # Compiled artifacts
+client/player
 server/GS
-client/client
 
 
 .vscode

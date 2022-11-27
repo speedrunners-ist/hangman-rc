@@ -8,7 +8,7 @@ INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
 SOURCES  := $(wildcard */*.cpp)
 HEADERS  := $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.cpp=.o)
-TARGET_EXECS := client/client server/GS
+TARGET_EXECS := client/player server/GS
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>
@@ -42,5 +42,5 @@ depend : $(SOURCES)
 	$(CC) $(INCLUDES) -MM $^ > autodep
 
 
-client/client: client/client-api.o client/client-tcp.o client/client-udp.o common/common.o
+client/player: client/client-game-state.o client/client-tcp.o client/client-udp.o common/common.o
 server/GS: server/server-api.o server/server-tcp.o server/server-udp.o common/common.o

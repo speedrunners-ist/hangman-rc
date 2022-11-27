@@ -1,12 +1,10 @@
-#ifndef CLIENT_API_H
-#define CLIENT_API_H
+#ifndef CLIENT_GAME_STATE_H
+#define CLIENT_GAME_STATE_H
 
 #include "common/common.h"
 #include <algorithm>
 #include <functional>
-
-typedef std::map<std::string, std::function<int(std::string *message, std::string input)>>
-    messageHandler;
+#include <numeric>
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
@@ -18,28 +16,8 @@ typedef std::map<std::string, std::function<int(std::string *message, std::strin
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR "[ERR]: Invalid input. Expected a word of length "
-// UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
-// something the player should know about, I think
-#define SENDTO_ERROR "[ERR]: Failed to send message to server."
-#define RECVFROM_ERROR "[ERR]: Failed to receive message from server."
-#define UDP_RESPONSE_ERROR "[ERR]: Response from server does not match the UDP protocol."
-#define UDP_HANGMAN_ERROR "[ERR]: Response from server does not match any expected protocols."
-#define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
-#define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
-#define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
-// Messages shown to the user
-#define RSG_OK(mistakes, word)                                                                     \
-  ("New game started (max " + std::to_string(mistakes) +                                           \
-   " mistakes allowed). Word to guess: " + word)
-#define RSG_NOK "Failed to start a new game. Try again later."
-#define RLG_WIN(word) ("WELL DONE! You guessed: " + word)
-#define RLG_DUP "You have already guessed this letter."
-#define RLG_NOK(mistakes) ("Wrong guess. " + std::to_string(mistakes) + " errors left.")
-#define RLG_OVR "GAME OVER! You do not have any more errors left."
-#define RLG_INV "An invalid trial parameter was sent. Try again."
-#define RLG_ERR "RLG ERR"
 
-class Play {
+class GameState {
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
@@ -48,7 +26,7 @@ class Play {
   std::map<int, char> word;
 
 public:
-  Play(int length, int mistakes) {
+  GameState(int length, int mistakes) {
     this->wordLength = length;
     this->mistakesLeft = mistakes;
     for (int i = 0; i < length; i++) {
@@ -128,45 +106,15 @@ public:
   }
 };
 
-int newSocket(int type, std::string addr, std::string port);
 int validateSingleArgCommand(std::string input);
 int validateTwoArgsCommand(std::string input);
 void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
-
-// Player message handlers
-// TODO: try to find a better way to handle functions with two arguments
-int handleStart(std::string *message, std::string input);
-int handlePlay(std::string *message, std::string input);
-int handleGuess(std::string *message, std::string input);
-int handleScoreboard(std::string *message, std::string input);
-int handleHint(std::string *message, std::string input);
-int handleState(std::string *message, std::string input);
-int handleQuit(std::string *message, std::string input);
-int handleExit(std::string *message, std::string input);
-int handleDebug(std::string *message, std::string input);
+std::string buildPlayerMessage(std::vector<std::string> args);
 
 // Global variables - the current game state and current player ID
 // perhaps we should consider a different way to store these?
-static Play play = Play(1, 1);
+static GameState play = GameState(1, 1);
 static std::string playerID;
-static int trials;
-static int fd;
-static struct addrinfo *serverInfo;
-static messageHandler handlePlayerMessage = {{"start", handleStart},
-                                             {"sg", handleStart},
-                                             {"play", handlePlay},
-                                             {"pl", handlePlay},
-                                             {"guess", handleGuess},
-                                             {"gw", handleGuess},
-                                             {"scoreboard", handleScoreboard},
-                                             {"sb", handleScoreboard},
-                                             {"hint", handleHint},
-                                             {"h", handleHint},
-                                             {"state", handleState},
-                                             {"st", handleState},
-                                             {"quit", handleQuit},
-                                             {"exit", handleExit},
-                                             {"rev", handleDebug}};
 
-#endif /* CLIENT_API_H */
+#endif /* CLIENT_GAME_STATE_H */
