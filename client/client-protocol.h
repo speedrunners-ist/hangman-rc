@@ -31,20 +31,16 @@ int handleQuit(std::string message, std::string input);
 int handleExit(std::string message, std::string input);
 int handleDebug(std::string message, std::string input);
 
-static messageHandler handlePlayerMessage = {{"start", handleStart},
-                                             {"sg", handleStart},
-                                             {"play", handlePlay},
-                                             {"pl", handlePlay},
-                                             {"guess", handleGuess},
-                                             {"gw", handleGuess},
-                                             {"scoreboard", handleScoreboard},
-                                             {"sb", handleScoreboard},
-                                             {"hint", handleHint},
-                                             {"h", handleHint},
-                                             {"state", handleState},
-                                             {"st", handleState},
-                                             {"quit", handleQuit},
-                                             {"exit", handleExit},
-                                             {"rev", handleDebug}};
+// clang-format off
+static messageHandler handlePlayerMessage = {
+  {"start", handleStart}, {"sg", handleStart},
+  {"play", handlePlay}, {"pl", handlePlay},
+  {"guess", handleGuess}, {"gw", handleGuess},
+  {"scoreboard", handleScoreboard}, {"sb", handleScoreboard},
+  {"hint", handleHint}, {"h", handleHint},
+  {"state", handleState}, {"st", handleState},
+  {"quit", handleQuit}, {"exit", handleExit}, {"rev", handleDebug}
+};
+// clang-format on
 
 #endif /* CLIENT_PROTOCOL_H */
