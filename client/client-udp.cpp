@@ -58,7 +58,7 @@ int exchangeUDPMessage(std::string message, char *response) {
     }
 
     socklen_t addrLen = sizeof(serverInfo->ai_addr);
-    ssize_t bytesReceived =
+    const ssize_t bytesReceived =
         recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
 
     if (bytesReceived == -1) {
@@ -82,23 +82,23 @@ int exchangeUDPMessage(std::string message, char *response) {
 }
 
 int parseUDPResponse(char *response) {
-  std::string responseStr(response);
-  size_t pos1 = responseStr.find(' ');
-  size_t pos2 = responseStr.find(' ', pos1 + 1);
+  const std::string responseStr(response);
+  const size_t pos1 = responseStr.find(' ');
+  const size_t pos2 = responseStr.find(' ', pos1 + 1);
   if (pos1 == std::string::npos || pos2 == std::string::npos) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
   const std::string code = responseStr.substr(0, pos1);
   const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
-  struct serverResponse serverResponse = {code, pos1, status, pos2, responseStr};
+  const struct serverResponse serverResponse = {code, pos1, status, pos2, responseStr};
   return handleUDPServerMessage[code](serverResponse);
 }
 
 // UDP handlers
 int generalUDPHandler(std::string message) {
   memset(responseUDP, 0, UDP_RECV_SIZE);
-  int ret = exchangeUDPMessage(message, responseUDP);
+  const int ret = exchangeUDPMessage(message, responseUDP);
   if (ret == -1) {
     return -1;
   }
@@ -135,12 +135,13 @@ int handleRLG(struct serverResponse response) {
     return -1;
   }
   const int trial = std::stoi(response.body.substr(response.statusPos + 1, pos_trial));
-  // TODO: check if trial checks out
-  // TODO: if there have been 2 trials, do we (client) send 2 or 3 in trial?
-  // also, does the server send back 2 or 3?
+  if (trial != trials + 1) {
+    // it's an error, but what do we do? since the game's state is probably stored
+    // server-side
+  }
   if (response.status == "OK") {
-    size_t pos_n = response.body.find(' ', pos_trial + 1);
-    size_t pos_correct_positions = response.body.find(' ', pos_n + 1);
+    const size_t pos_n = response.body.find(' ', pos_trial + 1);
+    const size_t pos_correct_positions = response.body.find(' ', pos_n + 1);
     if (pos_n == std::string::npos || pos_correct_positions == std::string::npos) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;

@@ -73,6 +73,8 @@ int main(int argc, char *argv[]) {
   // delete the directory and its contents - should we really do it like this?
   system("rm -rf hints");
 
+  // TODO: add "closing game" message
+
   // close(fd);
   // freeaddrinfo(serverInfo);
   // exit(EXIT_SUCCESS);
