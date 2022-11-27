@@ -3,6 +3,7 @@
 static struct addrinfo *serverInfo;
 static int socketFd;
 static char responseUDP[UDP_RECV_SIZE];
+static int trials = 0;
 
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 

@@ -2,7 +2,6 @@
 
 // main function that makes orders
 int main(int argc, char *argv[]) {
-  trials = 0;
   int opt;
   std::string GSIP = DEFAULT_GSIP;
   std::string GSport = DEFAULT_GSPORT;
@@ -34,7 +33,6 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  int ret;
   char buffer[MAX_USER_INPUT];
   std::string message;
 

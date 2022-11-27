@@ -2,7 +2,19 @@
 
 static char responseTCP[TCP_READ_SIZE];
 
-// TODO: create exchange and parse functions for TCP
+int exchangeTCPMessage(std::string message, char *response) {
+  // TODO, w/ placeholders in order to compile
+  std::cout << "[INFO]: Sending message: " << message;
+  strcpy(response, "TCP response");
+  std::cout << response << std::endl;
+  return 0;
+}
+
+int parseTCPResponse(char *response) {
+  // TODO, w/ placeholders in order to compile
+  std::cout << "[INFO]: Received response: " << response;
+  return 0;
+}
 
 int generalTCPHandler(std::string message) {
   memset(responseTCP, 0, TCP_READ_SIZE);

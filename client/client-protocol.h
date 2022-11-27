@@ -31,7 +31,6 @@ int handleQuit(std::string message, std::string input);
 int handleExit(std::string message, std::string input);
 int handleDebug(std::string message, std::string input);
 
-static int trials;
 static messageHandler handlePlayerMessage = {{"start", handleStart},
                                              {"sg", handleStart},
                                              {"play", handlePlay},
