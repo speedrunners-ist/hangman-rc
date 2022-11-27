@@ -151,3 +151,82 @@ int parseUDPResponse(char *response) {
   } // TODO: implement the rest
   return -1;
 }
+
+int handleStart(std::string *message, std::string input) {
+  if (validateTwoArgsCommand(input) == -1) {
+    return -1;
+  }
+  const size_t pos1 = input.find(' ');
+  std::string plid = input.substr(pos1 + 1);
+  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
+
+  if (plid.length() != 6) {
+    std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
+    return -1;
+  }
+
+  for (size_t i = 0; i < plid.length(); i++) {
+    if (!isdigit(plid[i])) {
+      std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
+      return -1;
+    }
+  }
+
+  playerID = plid;
+  *message = "SNG " + plid + "\n";
+  // DEBUG: checking if last character is a newline
+  if (message->back() != '\n') {
+    std::cerr << "[ERR]: Last character is not a newline. Not sending a message." << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int handlePlay(std::string *message, std::string input) {
+  if (validateTwoArgsCommand(input) == -1) {
+    return -1;
+  }
+  const size_t pos1 = input.find(' ');
+  std::string letter = input.substr(pos1 + 1);
+  letter.erase(std::remove(letter.begin(), letter.end(), '\n'), letter.end());
+  if (letter.length() != 1 || !std::isalpha(letter[0])) {
+    std::cerr << EXPECTED_LETTER_ERROR << std::endl;
+    return -1;
+  }
+  *message = "PLG " + playerID + " " + letter + " " + std::to_string(trials + 1) + "\n";
+  play.setLastGuess(letter[0]);
+  return 0;
+}
+
+int handleGuess(std::string *message, std::string input) {
+  if (validateTwoArgsCommand(input) == -1) {
+    return -1;
+  }
+  const size_t pos1 = input.find(' ');
+  std::string guess = input.substr(pos1 + 1);
+  guess.erase(std::remove(guess.begin(), guess.end(), '\n'), guess.end());
+  if (guess.length() != play.getWordLength()) {
+    std::cerr << EXPECTED_WORD_DIF_LEN_ERROR << play.getWordLength() << std::endl;
+    return -1;
+  }
+  *message = "PWG " + playerID + " " + guess + " " + std::to_string(trials + 1) + "\n";
+  return 0;
+}
+
+int handleQuit(std::string *message, std::string input) {
+  if (validateSingleArgCommand(input) == -1) {
+    return -1;
+  }
+  *message = "QUT " + playerID + "\n";
+  return 0;
+}
+
+int handleExit(std::string *message, std::string input) { return handleQuit(message, input); }
+
+int handleDebug(std::string *message, std::string input) {
+  if (validateSingleArgCommand(input) == -1) {
+    return -1;
+  }
+  *message = "REV " + playerID + "\n";
+  return 0;
+}

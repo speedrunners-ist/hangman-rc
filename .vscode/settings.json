@@ -63,5 +63,7 @@
     "typeinfo": "cpp",
     "bitset": "cpp",
     "regex": "cpp"
-  }
+  },
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true
 }

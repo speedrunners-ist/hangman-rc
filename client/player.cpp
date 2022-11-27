@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
   if (res == -1 && errno != EEXIST) {
     // if the directory can't be created and it doesn't already exist
     std::cerr << MKDIR_ERROR << std::endl;
+    // TODO: close socket
     exit(EXIT_FAILURE);
   }
 
