@@ -30,12 +30,11 @@ void exitGracefully(std::string errorMessage) {
 
 std::string buildPlayerMessage(std::vector<std::string> args) {
   // clang-format off
-  std::string message = std::accumulate(
+  return std::accumulate(
     ++args.begin(), args.end(), std::string(args[0]),
     [](std::string a, std::string b) { 
       return a + " " + b;
     }
-  );
+  ).append("\n");
   // clang-format on
-  return message + "\n";
 }
