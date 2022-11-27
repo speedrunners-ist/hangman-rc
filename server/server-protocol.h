@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void openUDP(std::string GSport);
-void openTCP(std::string GSport);
+#define UDP_HANGMAN_ERROR "[ERR]: Response from server does not match any expected protocols."
 
 struct clientRequest {
   std::string code;
@@ -16,6 +15,12 @@ struct clientRequest {
   size_t statusPos;
   std::string body;
 };
+
+typedef std::map<std::string, std::function<int(std::string input)>> SendHandler;
+typedef std::map<std::string, std::function<int(struct clientRequest request)>> getHandler;
+
+void openUDP(std::string GSport);
+void openTCP(std::string GSport);
 
 // UDP utils functions
 int generalUDPHandler(std::string message);

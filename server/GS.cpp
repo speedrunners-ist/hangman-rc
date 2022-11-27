@@ -6,7 +6,6 @@ int main(int argc, char *argv[]) {
   std::string GSIP = DEFAULT_GSIP;
   std::string GSport = DEFAULT_GSPORT;
   std::string filePath;
-  pid_t pid;
 
   bool verbose = false;
 
@@ -38,14 +37,5 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  // create udp and tcp sockets
-  if ((pid = fork()) == -1)
-    exit(1);
-  if (pid == 0) // child process
-  {
-    openUDP(GSport);
-  } else // parent process
-  {
-    openTCP(GSport);
-  }
+  openUDP(GSport);
 }

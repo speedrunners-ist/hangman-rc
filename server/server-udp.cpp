@@ -5,7 +5,36 @@ static int fd, errcode;
 static struct sockaddr_in addr;
 static socklen_t addrlen;
 static ssize_t n, nread;
-static char buffer[128];
+static char buffer[UDP_RECV_SIZE];
+static char responseUDP[UDP_RECV_SIZE];
+
+// clang-format off
+static getHandler handleUDPClientMessage = {
+  {"SNG", handleSNG},
+  {"PLG", handlePLG},
+  {"PWG", handlePWG},
+  {"QUT", handleQUT},
+  {"REV", handleREV}
+};
+// clang-format on
+
+int parseUDPResponse(char *response) {
+  const std::string responseStr(response);
+  const size_t pos1 = responseStr.find(' ');
+  const size_t pos2 = responseStr.find('\n', pos1 + 1);
+
+  if (pos1 == std::string::npos || pos2 == std::string::npos) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+    return -1;
+  }
+  const std::string code = responseStr.substr(0, pos1);
+  const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
+  const struct clientRequest clientRequest = {code, pos1, status, pos2, responseStr};
+
+  std::cout << "Code: " << code << std::endl;
+
+  return handleUDPClientMessage[code](clientRequest);
+}
 
 void openUDP(std::string GSport) {
   const char *GSPORT = GSport.c_str();
@@ -29,7 +58,7 @@ void openUDP(std::string GSport) {
     if (recvfrom(fd, buffer, UDP_RECV_SIZE, 0, (struct sockaddr *)&addr, &addrlen) == -1) /*error*/
       exit(1);
 
-    std::cout << buffer << std::endl;
+    parseUDPResponse(buffer);
 
     if (sendto(fd, buffer, nread, 0, (struct sockaddr *)&addr, addrlen) == -1) /*error*/
       exit(1);
@@ -48,8 +77,28 @@ int sendRQT(std::string input) { return 0; }
 int sendRRV(std::string input) { return 0; }
 
 // Server message handlers
-int handleSNG(struct clientRequest message) { return 0; }
-int handlePLG(struct clientRequest message) { return 0; }
-int handlePWG(struct clientRequest message) { return 0; }
-int handleQUT(struct clientRequest message) { return 0; }
-int handleREV(struct clientRequest message) { return 0; }
+int handleSNG(struct clientRequest message) {
+  sendRSG(message.code);
+  std::cout << message.code << std::endl;
+  return 0;
+}
+int handlePLG(struct clientRequest message) {
+  sendRLG(message.code);
+  std::cout << message.code << std::endl;
+  return 0;
+}
+int handlePWG(struct clientRequest message) {
+  sendRWG(message.code);
+  std::cout << message.code << std::endl;
+  return 0;
+}
+int handleQUT(struct clientRequest message) {
+  sendRQT(message.code);
+  std::cout << message.code << std::endl;
+  return 0;
+}
+int handleREV(struct clientRequest message) {
+  sendRRV(message.code);
+  std::cout << message.code << std::endl;
+  return 0;
+}
