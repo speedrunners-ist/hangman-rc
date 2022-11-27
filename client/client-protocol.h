@@ -5,8 +5,6 @@
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3
-#define UDP_RECV_SIZE 4096
-#define TCP_READ_SIZE 4096
 
 // UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
 // something the player should know about, I think
