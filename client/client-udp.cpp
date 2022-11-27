@@ -139,7 +139,6 @@ int handleRLG(struct serverResponse response) {
     std::cerr << RLG_ERROR << std::endl;
     return -1;
   }
-  const int trial = std::stoi(response.body.substr(response.statusPos + 1, pos_trial));
   if (response.status == "OK") {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);
@@ -188,7 +187,6 @@ int handleRWG(struct serverResponse response) {
     std::cerr << RWG_ERROR << std::endl;
     return -1;
   }
-  const int trial = std::stoi(response.body.substr(response.statusPos + 1, pos_trials));
   if (response.status == "WIN") {
     play.correctFinalGuess();
     std::cout << RWG_WIN(play.getWord()) << std::endl;

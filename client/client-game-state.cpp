@@ -1,7 +1,7 @@
 #include "client-game-state.h"
 
 int validateArgsAmount(std::string input, int n) {
-  const int argCount = std::count(input.begin(), input.end(), ' ');
+  const long int argCount = std::count(input.begin(), input.end(), ' ');
   // argCount will find every space in the string - ideally, one space less than the args amount
   if (argCount != n - 1 || input.back() != '\n') {
     std::cerr << DIFF_ARGS_ERROR << std::endl;

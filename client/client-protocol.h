@@ -14,6 +14,9 @@
 #define PWG_ARGS 4
 #define QUT_ARGS 2
 #define REV_ARGS 2
+#define GSB_ARGS 1
+#define GHL_ARGS 2
+#define STA_ARGS 2
 
 // UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
 // something the player should know about, I think
