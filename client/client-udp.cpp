@@ -139,6 +139,7 @@ int handleRLG(struct serverResponse response) {
     // it's an error, but what do we do? since the game's state is probably stored
     // server-side
   }
+
   if (response.status == "OK") {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find(' ', pos_n + 1);
@@ -158,7 +159,7 @@ int handleRLG(struct serverResponse response) {
   } else if (response.status == "WIN") {
     play.correctFinalGuess();
     std::cout << RLG_WIN(play.getWord()) << std::endl;
-    trials++;
+    trials = 0;
     return 0;
   } else if (response.status == "DUP") {
     std::cout << RLG_DUP << std::endl;
@@ -183,11 +184,46 @@ int handleRLG(struct serverResponse response) {
   return -1;
 }
 
-int handleRWG(struct serverResponse response) { return 0; }
+int handleRWG(struct serverResponse response) {
+  const size_t pos_trials = response.body.find(' ', response.statusPos + 1);
+  if (pos_trials == std::string::npos) {
+    std::cerr << RWG_ERROR << std::endl;
+    return -1;
+  }
+  const int trial = std::stoi(response.body.substr(response.statusPos + 1, pos_trials));
+  if (trial != trials + 1) {
+    // it's an error, but what do we do? since the game's state is probably stored
+    // server-side
+  }
 
-int handleRQT(struct serverResponse response) { return 0; }
+  if (response.status == "WIN") {
+    play.correctFinalGuess();
+    std::cout << RWG_WIN(play.getWord()) << std::endl;
+    trials = 0;
+    return 0;
+  } else if (response.status == "NOK") {
+    play.incorrectGuess();
+    std::cout << RWG_NOK(play.getAvailableMistakes()) << std::endl;
+    trials++;
+    return 0;
+  } else if (response.status == "OVR") {
+    // the server itself ends the game on its end, so we should add a mechanism on our end
+    // to end the game as well ig
+    play.incorrectGuess();
+    std::cout << RWG_OVR << std::endl;
+    trials = 0;
+    return 0;
+  } else if (response.status == "INV") {
+    std::cout << RWG_INV << std::endl;
+  } else if (response.status == "ERR") {
+    std::cout << RWG_ERR << std::endl;
+  }
+  return -1;
+}
 
-int handleRRV(struct serverResponse response) { return 0; }
+int handleRQT(struct serverResponse response) { return -1; }
+
+int handleRRV(struct serverResponse response) { return -1; }
 
 // handlers: player requests
 int handleStart(std::string message, std::string input) {
@@ -261,8 +297,7 @@ int handleQuit(std::string message, std::string input) {
 }
 
 int handleExit(std::string message, std::string input) {
-  handleQuit(message, input);
-  return EXIT_HANGMAN;
+  return handleQuit(message, input) == 0 ? EXIT_HANGMAN : -1;
 }
 
 int handleDebug(std::string message, std::string input) {

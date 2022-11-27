@@ -15,26 +15,6 @@
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR "[ERR]: Invalid input. Expected a word of length "
-// UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
-// something the player should know about, I think
-#define SENDTO_ERROR "[ERR]: Failed to send message to server."
-#define RECVFROM_ERROR "[ERR]: Failed to receive message from server."
-#define UDP_RESPONSE_ERROR "[ERR]: Response from server does not match the UDP protocol."
-#define UDP_HANGMAN_ERROR "[ERR]: Response from server does not match any expected protocols."
-#define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
-#define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
-#define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
-// Messages shown to the user
-#define RSG_OK(mistakes, word)                                                                     \
-  ("New game started (max " + std::to_string(mistakes) +                                           \
-   " mistakes allowed). Word to guess: " + word)
-#define RSG_NOK "Failed to start a new game. Try again later."
-#define RLG_WIN(word) ("WELL DONE! You guessed: " + word)
-#define RLG_DUP "You have already guessed this letter."
-#define RLG_NOK(mistakes) ("Wrong guess. " + std::to_string(mistakes) + " errors left.")
-#define RLG_OVR "GAME OVER! You do not have any more errors left."
-#define RLG_INV "An invalid trial parameter was sent. Try again."
-#define RLG_ERR "RLG ERR"
 
 class Play {
   int wordLength;
