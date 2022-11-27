@@ -32,6 +32,13 @@ int generalTCPHandler(std::string message) {
   return parseTCPResponse(responseTCP);
 }
 
+// TODO: implement the 3 handlers below
+int handleRSB(struct serverResponse response) { return -1; }
+
+int handleRHL(struct serverResponse response) { return -1; }
+
+int handleRST(struct serverResponse response) { return -1; }
+
 int handleScoreboard(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;

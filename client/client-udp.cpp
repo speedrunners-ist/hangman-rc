@@ -106,6 +106,7 @@ int generalUDPHandler(std::string message) {
 }
 
 // handlers: server responses
+// TODO: can't forget to check if the response is valid, ending with \n
 int handleRSG(struct serverResponse response) {
   if (response.status == "OK") {
     const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
@@ -178,8 +179,10 @@ int handleRLG(struct serverResponse response) {
     return 0;
   } else if (response.status == "INV") {
     std::cout << RLG_INV << std::endl;
+    return 0;
   } else if (response.status == "ERR") {
     std::cout << RLG_ERR << std::endl;
+    return 0;
   }
   return -1;
 }
@@ -215,14 +218,26 @@ int handleRWG(struct serverResponse response) {
     return 0;
   } else if (response.status == "INV") {
     std::cout << RWG_INV << std::endl;
+    return 0;
   } else if (response.status == "ERR") {
     std::cout << RWG_ERR << std::endl;
+    return 0;
   }
   return -1;
 }
 
-int handleRQT(struct serverResponse response) { return -1; }
+int handleRQT(struct serverResponse response) {
+  if (response.status == "OK") {
+    std::cout << RQT_OK << std::endl;
+    return 0;
+  } else if (response.status == "ERR") {
+    std::cout << RQT_ERR << std::endl;
+    return 0;
+  }
+  return -1;
+}
 
+// TODO: implement debug command below
 int handleRRV(struct serverResponse response) { return -1; }
 
 // handlers: player requests

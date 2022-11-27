@@ -35,6 +35,8 @@
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."
 #define RWG_ERR "RWG ERR"
+#define RQT_OK "Game was successfully quit."
+#define RQT_ERR "Failed to quit game. Try again later."
 
 struct serverResponse {
   std::string code;
@@ -59,7 +61,6 @@ int exchangeTCPMessage(std::string message, char *response);
 int parseTCPResponse(char *response);
 
 // Player message handlers
-// TODO: try to find a better way to handle functions with two arguments
 int handleStart(std::string message, std::string input);
 int handlePlay(std::string message, std::string input);
 int handleGuess(std::string message, std::string input);
