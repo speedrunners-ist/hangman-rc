@@ -48,7 +48,7 @@ int handleRST(struct serverResponse response) {
   return 0;
 }
 
-int handleGSB(std::string input) {
+int sendGSB(std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
@@ -56,7 +56,7 @@ int handleGSB(std::string input) {
   return 0;
 }
 
-int handleGHL(std::string input) {
+int sendGHL(std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
@@ -64,7 +64,7 @@ int handleGHL(std::string input) {
   return 0;
 }
 
-int handleSTA(std::string input) {
+int sendSTA(std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }

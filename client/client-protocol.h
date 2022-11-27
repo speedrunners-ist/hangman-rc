@@ -60,14 +60,14 @@ int exchangeTCPMessage(std::string message, char *response);
 int parseTCPResponse(char *response);
 
 // Player message handlers
-int handleSNG(std::string input);
-int handlePLG(std::string input);
-int handlePWG(std::string input);
-int handleGSB(std::string input);
-int handleGHL(std::string input);
-int handleSTA(std::string input);
-int handleQUT(std::string input);
-int handleREV(std::string input);
+int sendSNG(std::string input);
+int sendPLG(std::string input);
+int sendPWG(std::string input);
+int sendGSB(std::string input);
+int sendGHL(std::string input);
+int sendSTA(std::string input);
+int sendQUT(std::string input);
+int sendREV(std::string input);
 
 // UDP server message handlers
 int handleRSG(struct serverResponse response);
