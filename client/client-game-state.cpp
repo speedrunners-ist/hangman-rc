@@ -1,5 +1,18 @@
 #include "client-game-state.h"
 
+static GameState play = GameState(1, 1);
+
+// Game state functions
+void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
+int getAvailableMistakes() { return play.getAvailableMistakes(); }
+std::string getWord() { return play.getWord(); }
+int playCorrectGuess(std::string positions, int n) { return play.correctGuess(positions, n); }
+void playIncorrectGuess() { play.incorrectGuess(); }
+void playCorrectFinalGuess() { play.correctFinalGuess(); }
+void setLastGuess(char guess) { play.setLastGuess(guess); }
+int getWordLength() { return play.getWordLength(); }
+
+// Util functions
 int validateArgsAmount(std::string input, int n) {
   const long int argCount = std::count(input.begin(), input.end(), ' ');
   // argCount will find every space in the string - ideally, one space less than the args amount

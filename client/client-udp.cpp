@@ -122,8 +122,10 @@ int handleRSG(struct serverResponse response) {
     // TODO: check if n_letters and n_max_errors are valid
     const int n_letters = std::stoi(response.body.substr(response.statusPos + 1, pos_n_letters));
     const int n_max_errors = std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_errors));
-    play = GameState(n_letters, n_max_errors);
-    std::cout << RSG_OK(play.getAvailableMistakes(), play.getWord()) << std::endl;
+    createGame(n_letters, n_max_errors);
+    const int availableMistakes = getAvailableMistakes();
+    const std::string word = getWord();
+    std::cout << RSG_OK(availableMistakes, word) << std::endl;
     return 0;
   } else if (response.status == "NOK") {
     std::cout << RSG_NOK << std::endl;
@@ -151,24 +153,24 @@ int handleRLG(struct serverResponse response) {
       std::cerr << RLG_INVALID_WORD_LEN << std::endl;
       return -1;
     }
-    if (play.correctGuess(response.body.substr(pos_n + 1), n) == 0) {
+    if (playCorrectGuess(response.body.substr(pos_n + 1), n) == 0) {
       return 0;
     }
   } else if (response.status == "WIN") {
-    play.correctFinalGuess();
-    std::cout << RLG_WIN(play.getWord()) << std::endl;
+    playCorrectFinalGuess();
+    std::cout << RLG_WIN(getWord()) << std::endl;
     return 0;
   } else if (response.status == "DUP") {
     std::cout << RLG_DUP << std::endl;
     return 0;
   } else if (response.status == "NOK") {
-    play.incorrectGuess();
-    std::cout << RLG_NOK(play.getAvailableMistakes()) << std::endl;
+    playIncorrectGuess();
+    std::cout << RLG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   } else if (response.status == "OVR") {
     // the server itself ends the game on its end, so we should add a mechanism on our end
     // to end the game as well ig
-    play.incorrectGuess();
+    playIncorrectGuess();
     std::cout << RLG_OVR << std::endl;
     return 0;
   } else if (response.status == "INV") {
@@ -188,17 +190,17 @@ int handleRWG(struct serverResponse response) {
     return -1;
   }
   if (response.status == "WIN") {
-    play.correctFinalGuess();
-    std::cout << RWG_WIN(play.getWord()) << std::endl;
+    playCorrectFinalGuess();
+    std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
   } else if (response.status == "NOK") {
-    play.incorrectGuess();
-    std::cout << RWG_NOK(play.getAvailableMistakes()) << std::endl;
+    playIncorrectGuess();
+    std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   } else if (response.status == "OVR") {
     // the server itself ends the game on its end, so we should add a mechanism on our end
     // to end the game as well ig
-    play.incorrectGuess();
+    playIncorrectGuess();
     std::cout << RWG_OVR << std::endl;
     return 0;
   } else if (response.status == "INV") {
@@ -259,7 +261,7 @@ int handlePLG(std::string input) {
     return -1;
   } // FIXME: should we validate the trial?
   const std::string message = buildPlayerMessage({"PLG", plid, letter, trial});
-  play.setLastGuess(letter[0]);
+  setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
 
@@ -273,8 +275,8 @@ int handlePWG(std::string input) {
   const std::string plid = input.substr(pos1 + 1, pos2 - pos1 - 1);
   const std::string guess = input.substr(pos2 + 1, pos3 - pos2 - 1);
   const std::string trial = input.substr(pos3 + 1);
-  if (guess.length() != play.getWordLength()) {
-    std::cerr << EXPECTED_WORD_DIF_LEN_ERROR << play.getWordLength() << std::endl;
+  if (guess.length() != getWordLength()) {
+    std::cerr << EXPECTED_WORD_DIF_LEN_ERROR(getWordLength()) << std::endl;
     return -1;
   } else if (validatePlayerID(plid) == -1) {
     return -1;
