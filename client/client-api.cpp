@@ -28,18 +28,12 @@ void exitGracefully(std::string errorMessage) {
   // exit(EXIT_SUCCESS);
 }
 
-// Clears the buffer and prints new terminal prompt
-void continueReading(char *buffer) {
-  memset(buffer, 0, MAX_USER_INPUT);
-  std::cout << "> ";
-}
-
 std::string buildPlayerMessage(std::vector<std::string> args) {
   // clang-format off
   std::string message = std::accumulate(
-    args.begin(), args.end(), std::string(),
+    ++args.begin(), args.end(), std::string(args[0]),
     [](std::string a, std::string b) { 
-      return a + b + " ";
+      return a + " " + b;
     }
   );
   // clang-format on

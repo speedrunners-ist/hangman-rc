@@ -241,7 +241,7 @@ int handleRQT(struct serverResponse response) {
 int handleRRV(struct serverResponse response) { return -1; }
 
 // handlers: player requests
-int handleStart(std::string message, std::string input) {
+int handleSNG(std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
   }
@@ -262,16 +262,11 @@ int handleStart(std::string message, std::string input) {
   }
 
   playerID = plid;
-  message = buildPlayerMessage({"SNG", playerID});
-  // DEBUG: checking if last character is a newline
-  if (message.back() != '\n') {
-    std::cerr << "[ERR]: Last character is not a newline. Not sending a message." << std::endl;
-    return -1;
-  }
+  const std::string message = buildPlayerMessage({"SNG", playerID});
   return generalUDPHandler(message);
 }
 
-int handlePlay(std::string message, std::string input) {
+int handlePLG(std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
   }
@@ -282,12 +277,13 @@ int handlePlay(std::string message, std::string input) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
     return -1;
   }
-  message = buildPlayerMessage({"PLG", playerID, letter, std::to_string(trials + 1)});
+  const std::string message =
+      buildPlayerMessage({"PLG", playerID, letter, std::to_string(trials + 1)});
   play.setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
 
-int handleGuess(std::string message, std::string input) {
+int handlePWG(std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
   }
@@ -298,27 +294,28 @@ int handleGuess(std::string message, std::string input) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR << play.getWordLength() << std::endl;
     return -1;
   }
-  message = buildPlayerMessage({"PWG", playerID, guess, std::to_string(trials + 1)});
+  const std::string message =
+      buildPlayerMessage({"PWG", playerID, guess, std::to_string(trials + 1)});
   return generalUDPHandler(message);
 }
 
-int handleQuit(std::string message, std::string input) {
+int handleQUT(std::string input) {
   // TODO: can't forget to close all open TCP connections
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = buildPlayerMessage({"QUT", playerID});
-  return generalUDPHandler(message);
+  const std::string message = buildPlayerMessage({"QUT", playerID});
+  const std::string command = input.substr(0, input.find(' '));
+  if (command == "quit") {
+    return generalUDPHandler(message);
+  }
+  return generalUDPHandler(message) == 0 ? EXIT_HANGMAN : -1;
 }
 
-int handleExit(std::string message, std::string input) {
-  return handleQuit(message, input) == 0 ? EXIT_HANGMAN : -1;
-}
-
-int handleDebug(std::string message, std::string input) {
+int handleREV(std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = buildPlayerMessage({"REV", playerID});
+  const std::string message = buildPlayerMessage({"REV", playerID});
   return generalUDPHandler(message);
 }

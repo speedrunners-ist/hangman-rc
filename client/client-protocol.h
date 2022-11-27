@@ -45,8 +45,7 @@ struct serverResponse {
   size_t statusPos;
   std::string body;
 };
-typedef std::map<std::string, std::function<int(std::string message, std::string input)>>
-    messageHandler;
+typedef std::map<std::string, std::function<int(std::string input)>> messageHandler;
 typedef std::map<std::string, std::function<int(struct serverResponse response)>> responseHandler;
 int newSocket(int type, std::string addr, std::string port);
 
@@ -61,15 +60,14 @@ int exchangeTCPMessage(std::string message, char *response);
 int parseTCPResponse(char *response);
 
 // Player message handlers
-int handleStart(std::string message, std::string input);
-int handlePlay(std::string message, std::string input);
-int handleGuess(std::string message, std::string input);
-int handleScoreboard(std::string message, std::string input);
-int handleHint(std::string message, std::string input);
-int handleState(std::string message, std::string input);
-int handleQuit(std::string message, std::string input);
-int handleExit(std::string message, std::string input);
-int handleDebug(std::string message, std::string input);
+int handleSNG(std::string input);
+int handlePLG(std::string input);
+int handlePWG(std::string input);
+int handleGSB(std::string input);
+int handleGHL(std::string input);
+int handleSTA(std::string input);
+int handleQUT(std::string input);
+int handleREV(std::string input);
 
 // UDP server message handlers
 int handleRSG(struct serverResponse response);
@@ -85,13 +83,14 @@ int handleRST(struct serverResponse response);
 
 // clang-format off
 static messageHandler handlePlayerMessage = {
-  {"start", handleStart}, {"sg", handleStart},
-  {"play", handlePlay}, {"pl", handlePlay},
-  {"guess", handleGuess}, {"gw", handleGuess},
-  {"scoreboard", handleScoreboard}, {"sb", handleScoreboard},
-  {"hint", handleHint}, {"h", handleHint},
-  {"state", handleState}, {"st", handleState},
-  {"quit", handleQuit}, {"exit", handleExit}, {"rev", handleDebug}
+  { "start", handleSNG },      { "sg", handleSNG },
+  { "play", handlePLG },       { "pl", handlePLG },
+  { "guess", handlePWG },      { "gw", handlePWG },
+  { "scoreboard", handleGSB }, { "sb", handleGSB },
+  { "hint", handleGHL },       { "h", handleGHL },
+  { "state", handleSTA },      { "st", handleSTA },
+  { "quit", handleQUT },       { "exit", handleQUT },
+  { "rev", handleREV }
 };
 // clang-format on
 

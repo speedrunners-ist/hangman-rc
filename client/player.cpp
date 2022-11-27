@@ -1,5 +1,11 @@
 #include "client-protocol.h"
 
+// Clears the buffer and prints new terminal prompt
+void continueReading(char *buffer) {
+  memset(buffer, 0, MAX_USER_INPUT);
+  std::cout << "> ";
+}
+
 // main function that makes orders
 int main(int argc, char *argv[]) {
   int opt;
@@ -34,7 +40,6 @@ int main(int argc, char *argv[]) {
   }
 
   char buffer[MAX_USER_INPUT];
-  std::string message;
 
   // TODO: should we include a help menu as the first thing the player sees?
   std::cout << "> ";
@@ -50,7 +55,6 @@ int main(int argc, char *argv[]) {
 
     std::string input(buffer);
     std::string command = input.substr(0, input.find(' '));
-    message.clear();
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
@@ -64,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     // if the command is valid, call the appropriate function
-    if (handlePlayerMessage[command](message, input) == EXIT_HANGMAN) {
+    if (handlePlayerMessage[command](input) == EXIT_HANGMAN) {
       break;
     }
     continueReading(buffer);
