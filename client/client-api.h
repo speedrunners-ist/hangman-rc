@@ -128,7 +128,6 @@ public:
   }
 };
 
-int newSocket(int type, std::string addr, std::string port);
 int validateSingleArgCommand(std::string input);
 int validateTwoArgsCommand(std::string input);
 void exitGracefully(std::string errorMessage);
