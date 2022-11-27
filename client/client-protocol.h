@@ -1,7 +1,7 @@
 #ifndef CLIENT_PROTOCOL_H
 #define CLIENT_PROTOCOL_H
 
-#include "client-game-state.h"
+#include "client-api.h"
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3

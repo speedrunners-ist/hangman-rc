@@ -1,4 +1,4 @@
-#include "client-game-state.h"
+#include "client-api.h"
 
 static GameState play = GameState(1, 1);
 
