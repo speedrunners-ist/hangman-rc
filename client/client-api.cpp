@@ -33,3 +33,15 @@ void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
   std::cout << "> ";
 }
+
+std::string buildPlayerMessage(std::vector<std::string> args) {
+  // clang-format off
+  std::string message = std::accumulate(
+    args.begin(), args.end(), std::string(),
+    [](std::string a, std::string b) { 
+      return a + b + " ";
+    }
+  );
+  // clang-format on
+  return message + "\n";
+}

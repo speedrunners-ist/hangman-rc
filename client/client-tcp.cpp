@@ -43,7 +43,7 @@ int handleScoreboard(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = "GSB\n";
+  message = buildPlayerMessage({"GSB"});
   return 0;
 }
 
@@ -51,7 +51,7 @@ int handleHint(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = "GHL " + playerID + "\n";
+  message = buildPlayerMessage({"GHL", playerID});
   return 0;
 }
 
@@ -59,6 +59,6 @@ int handleState(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = "STA " + playerID + "\n";
+  message = buildPlayerMessage({"GST", playerID});
   return 0;
 }

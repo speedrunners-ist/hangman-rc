@@ -118,7 +118,7 @@ int handleRSG(struct serverResponse response) {
     // TODO: check if n_letters and n_max_errors are valid
     const int n_letters = std::stoi(response.body.substr(response.statusPos + 1, pos_n_letters));
     const int n_max_errors = std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_erros));
-    play = Play(n_letters, n_max_errors);
+    play = GameState(n_letters, n_max_errors);
     std::cout << RSG_OK(play.getAvailableMistakes(), play.getWord()) << std::endl;
     return 0;
   } else if (response.status == "NOK") {
@@ -262,7 +262,7 @@ int handleStart(std::string message, std::string input) {
   }
 
   playerID = plid;
-  message = "SNG " + plid + "\n";
+  message = buildPlayerMessage({"SNG", playerID});
   // DEBUG: checking if last character is a newline
   if (message.back() != '\n') {
     std::cerr << "[ERR]: Last character is not a newline. Not sending a message." << std::endl;
@@ -282,7 +282,7 @@ int handlePlay(std::string message, std::string input) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
     return -1;
   }
-  message = "PLG " + playerID + " " + letter + " " + std::to_string(trials + 1) + "\n";
+  message = buildPlayerMessage({"PLG", playerID, letter, std::to_string(trials + 1)});
   play.setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
@@ -298,7 +298,7 @@ int handleGuess(std::string message, std::string input) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR << play.getWordLength() << std::endl;
     return -1;
   }
-  message = "PWG " + playerID + " " + guess + " " + std::to_string(trials + 1) + "\n";
+  message = buildPlayerMessage({"PWG", playerID, guess, std::to_string(trials + 1)});
   return generalUDPHandler(message);
 }
 
@@ -307,7 +307,7 @@ int handleQuit(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = "QUT " + playerID + "\n";
+  message = buildPlayerMessage({"QUT", playerID});
   return generalUDPHandler(message);
 }
 
@@ -319,6 +319,6 @@ int handleDebug(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  message = "REV " + playerID + "\n";
+  message = buildPlayerMessage({"REV", playerID});
   return generalUDPHandler(message);
 }

@@ -4,6 +4,7 @@
 #include "common/common.h"
 #include <algorithm>
 #include <functional>
+#include <numeric>
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
@@ -16,7 +17,7 @@
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR "[ERR]: Invalid input. Expected a word of length "
 
-class Play {
+class GameState {
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
@@ -25,7 +26,7 @@ class Play {
   std::map<int, char> word;
 
 public:
-  Play(int length, int mistakes) {
+  GameState(int length, int mistakes) {
     this->wordLength = length;
     this->mistakesLeft = mistakes;
     for (int i = 0; i < length; i++) {
@@ -109,10 +110,11 @@ int validateSingleArgCommand(std::string input);
 int validateTwoArgsCommand(std::string input);
 void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
+std::string buildPlayerMessage(std::vector<std::string> args);
 
 // Global variables - the current game state and current player ID
 // perhaps we should consider a different way to store these?
-static Play play = Play(1, 1);
+static GameState play = GameState(1, 1);
 static std::string playerID;
 
 #endif /* CLIENT_API_H */
