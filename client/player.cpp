@@ -36,9 +36,7 @@ int main(int argc, char *argv[]) {
 
   int ret;
   char buffer[MAX_USER_INPUT];
-  char response[UDP_RECV_SIZE];
   std::string message;
-  memset(buffer, 0, MAX_USER_INPUT);
 
   // TODO: should we include a help menu as the first thing the player sees?
   std::cout << "> ";
@@ -68,25 +66,7 @@ int main(int argc, char *argv[]) {
     }
 
     // if the command is valid, call the appropriate function
-    ret = handlePlayerMessage[command](&message, input);
-    if (ret == -1) {
-      // error has already been handled, just continue
-      continueReading(buffer);
-      continue;
-    }
-
-    // clear response buffer
-    memset(response, 0, UDP_RECV_SIZE);
-    ret = exchangeUDPMessage(message, response);
-    if (ret == -1) {
-      // error has already been handled, just continue
-      continueReading(buffer);
-      continue;
-    }
-
-    // get the response from the server
-    ret = parseUDPResponse(response);
-
+    handlePlayerMessage[command](message, input);
     continueReading(buffer);
   }
 

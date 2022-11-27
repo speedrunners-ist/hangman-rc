@@ -2,8 +2,8 @@
 
 static struct addrinfo *serverInfo;
 static int socketFd;
+static char responseUDP[UDP_RECV_SIZE];
 
-// TODO: standardize error messages with macros
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
 // Creates a new socket and connects to the server
@@ -72,6 +72,7 @@ int exchangeUDPMessage(std::string message, char *response) {
 
 // make sure we test formatting for every parameter in every response
 int parseUDPResponse(char *response) {
+  // TODO: abstract this into separate functions
   std::string responseStr(response);
   size_t pos1 = responseStr.find(' ');
   size_t pos2 = responseStr.find(' ', pos1 + 1);
@@ -152,7 +153,18 @@ int parseUDPResponse(char *response) {
   return -1;
 }
 
-int handleStart(std::string *message, std::string input) {
+// UDP handlers
+
+int generalUDPHandler(std::string message) {
+  memset(responseUDP, 0, UDP_RECV_SIZE);
+  int ret = exchangeUDPMessage(message, responseUDP);
+  if (ret == -1) {
+    return -1;
+  }
+  return parseUDPResponse(responseUDP);
+}
+
+int handleStart(std::string message, std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
   }
@@ -173,16 +185,16 @@ int handleStart(std::string *message, std::string input) {
   }
 
   playerID = plid;
-  *message = "SNG " + plid + "\n";
+  message = "SNG " + plid + "\n";
   // DEBUG: checking if last character is a newline
-  if (message->back() != '\n') {
+  if (message.back() != '\n') {
     std::cerr << "[ERR]: Last character is not a newline. Not sending a message." << std::endl;
     return -1;
   }
-  return 0;
+  return generalUDPHandler(message);
 }
 
-int handlePlay(std::string *message, std::string input) {
+int handlePlay(std::string message, std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
   }
@@ -193,12 +205,12 @@ int handlePlay(std::string *message, std::string input) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
     return -1;
   }
-  *message = "PLG " + playerID + " " + letter + " " + std::to_string(trials + 1) + "\n";
+  message = "PLG " + playerID + " " + letter + " " + std::to_string(trials + 1) + "\n";
   play.setLastGuess(letter[0]);
-  return 0;
+  return generalUDPHandler(message);
 }
 
-int handleGuess(std::string *message, std::string input) {
+int handleGuess(std::string message, std::string input) {
   if (validateTwoArgsCommand(input) == -1) {
     return -1;
   }
@@ -209,24 +221,24 @@ int handleGuess(std::string *message, std::string input) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR << play.getWordLength() << std::endl;
     return -1;
   }
-  *message = "PWG " + playerID + " " + guess + " " + std::to_string(trials + 1) + "\n";
-  return 0;
+  message = "PWG " + playerID + " " + guess + " " + std::to_string(trials + 1) + "\n";
+  return generalUDPHandler(message);
 }
 
-int handleQuit(std::string *message, std::string input) {
+int handleQuit(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  *message = "QUT " + playerID + "\n";
-  return 0;
+  message = "QUT " + playerID + "\n";
+  return generalUDPHandler(message);
 }
 
-int handleExit(std::string *message, std::string input) { return handleQuit(message, input); }
+int handleExit(std::string message, std::string input) { return handleQuit(message, input); }
 
-int handleDebug(std::string *message, std::string input) {
+int handleDebug(std::string message, std::string input) {
   if (validateSingleArgCommand(input) == -1) {
     return -1;
   }
-  *message = "REV " + playerID + "\n";
-  return 0;
+  message = "REV " + playerID + "\n";
+  return generalUDPHandler(message);
 }

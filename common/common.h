@@ -19,9 +19,6 @@
 
 #define MAX_USER_INPUT 1024
 
-#define UDP_TRIES 3
-#define UDP_RECV_SIZE 4096
-
 // Below, function prototypes
 
 /*

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <functional>
 
-typedef std::map<std::string, std::function<int(std::string *message, std::string input)>>
+typedef std::map<std::string, std::function<int(std::string message, std::string input)>>
     messageHandler;
 
 // Error Messages
