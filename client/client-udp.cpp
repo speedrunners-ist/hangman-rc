@@ -91,7 +91,7 @@ int parseUDPResponse(char *response) {
   }
   const std::string code = responseStr.substr(0, pos1);
   const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
-  const struct serverResponse serverResponse = {code, pos1, status, pos2, responseStr};
+  const struct protocolMessage serverResponse = {code, pos1, status, pos2, responseStr};
   return handleUDPServerMessage[code](serverResponse);
 }
 
@@ -107,7 +107,7 @@ int generalUDPHandler(std::string message) {
 
 // handlers: server responses
 // TODO: can't forget to check if the response is valid, ending with \n
-int handleRSG(struct serverResponse response) {
+int handleRSG(struct protocolMessage response) {
   if (response.status == "OK") {
     const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
     const size_t pos_n_max_erros = response.body.find(' ', pos_n_letters + 1);
@@ -129,7 +129,7 @@ int handleRSG(struct serverResponse response) {
   return -1;
 }
 
-int handleRLG(struct serverResponse response) {
+int handleRLG(struct protocolMessage response) {
   const size_t pos_trial = response.body.find(' ', response.statusPos + 1);
   if (pos_trial == std::string::npos) {
     std::cerr << RLG_ERROR << std::endl;
@@ -187,7 +187,7 @@ int handleRLG(struct serverResponse response) {
   return -1;
 }
 
-int handleRWG(struct serverResponse response) {
+int handleRWG(struct protocolMessage response) {
   const size_t pos_trials = response.body.find(' ', response.statusPos + 1);
   if (pos_trials == std::string::npos) {
     std::cerr << RWG_ERROR << std::endl;
@@ -226,7 +226,7 @@ int handleRWG(struct serverResponse response) {
   return -1;
 }
 
-int handleRQT(struct serverResponse response) {
+int handleRQT(struct protocolMessage response) {
   if (response.status == "OK") {
     std::cout << RQT_OK << std::endl;
     return 0;
@@ -238,7 +238,7 @@ int handleRQT(struct serverResponse response) {
 }
 
 // TODO: implement debug command below
-int handleRRV(struct serverResponse response) {
+int handleRRV(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }

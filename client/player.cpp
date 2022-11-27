@@ -1,7 +1,7 @@
 #include "client-protocol.h"
 
 // clang-format off
-static messageHandler handlePlayerMessage = {
+static commandHandler handlePlayerMessage = {
   { "start", handleSNG },      { "sg", handleSNG },
   { "play", handlePLG },       { "pl", handlePLG },
   { "guess", handlePWG },      { "gw", handlePWG },

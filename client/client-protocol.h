@@ -38,47 +38,35 @@
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game. Try again later."
 
-struct serverResponse {
-  std::string code;
-  size_t codePos;
-  std::string status;
-  size_t statusPos;
-  std::string body;
-};
-typedef std::map<std::string, std::function<int(std::string input)>> messageHandler;
-typedef std::map<std::string, std::function<int(struct serverResponse response)>> responseHandler;
+// TODO: If equal to server move to common.h
+typedef std::map<std::string, std::function<int(std::string input)>> commandHandler;
+typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
+
+// TODO: I think this can be generalized
 int newSocket(int type, std::string addr, std::string port);
 
-// UDP utils functions
-int generalUDPHandler(std::string message);
-int exchangeUDPMessage(std::string message, char *response);
-int parseUDPResponse(char *response);
-
-// TCP utils functions
-int generalTCPHandler(std::string message);
-int exchangeTCPMessage(std::string message, char *response);
-int parseTCPResponse(char *response);
-
-// Player message handlers
+// UDP player message handlers
 int handleSNG(std::string input);
 int handlePLG(std::string input);
 int handlePWG(std::string input);
-int handleGSB(std::string input);
-int handleGHL(std::string input);
-int handleSTA(std::string input);
 int handleQUT(std::string input);
 int handleREV(std::string input);
 
+// TCP player message handlers
+int handleGSB(std::string input);
+int handleGHL(std::string input);
+int handleSTA(std::string input);
+
 // UDP server message handlers
-int handleRSG(struct serverResponse response);
-int handleRLG(struct serverResponse response);
-int handleRWG(struct serverResponse response);
-int handleRQT(struct serverResponse response);
-int handleRRV(struct serverResponse response);
+int handleRSG(struct protocolMessage response);
+int handleRLG(struct protocolMessage response);
+int handleRWG(struct protocolMessage response);
+int handleRQT(struct protocolMessage response);
+int handleRRV(struct protocolMessage response);
 
 // TCP server message handlers
-int handleRSB(struct serverResponse response);
-int handleRHL(struct serverResponse response);
-int handleRST(struct serverResponse response);
+int handleRSB(struct protocolMessage response);
+int handleRHL(struct protocolMessage response);
+int handleRST(struct protocolMessage response);
 
 #endif /* CLIENT_PROTOCOL_H */

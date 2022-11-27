@@ -33,17 +33,17 @@ int generalTCPHandler(std::string message) {
 }
 
 // TODO: handlers below only implemented to compile
-int handleRSB(struct serverResponse response) {
+int handleRSB(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleRHL(struct serverResponse response) {
+int handleRHL(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleRST(struct serverResponse response) {
+int handleRST(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }

@@ -19,6 +19,24 @@
 
 #define MAX_USER_INPUT 1024
 
+struct protocolMessage {
+  std::string code;
+  size_t codePos;
+  std::string status;
+  size_t statusPos;
+  std::string body;
+};
+
+// UDP utils functions
+int generalUDPHandler(std::string message);
+int exchangeUDPMessage(std::string message, char *response);
+int parseUDPResponse(char *response);
+
+// TCP utils functions
+int generalTCPHandler(std::string message);
+int exchangeTCPMessage(std::string message, char *response);
+int parseTCPResponse(char *response);
+
 // Below, function prototypes
 
 /*
