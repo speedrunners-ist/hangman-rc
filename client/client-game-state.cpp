@@ -1,20 +1,26 @@
 #include "client-game-state.h"
 
-int validateSingleArgCommand(std::string input) {
-  size_t pos1 = input.find(' ');
-  if (pos1 != std::string::npos) {
-    std::cerr << TOO_MANY_ARGS_ERROR << std::endl;
+int validateArgsAmount(std::string input, int n) {
+  const int argCount = std::count(input.begin(), input.end(), ' ');
+  // argCount will find every space in the string - ideally, one space less than the args amount
+  if (argCount != n - 1 || input.back() != '\n') {
+    std::cerr << DIFF_ARGS_ERROR << std::endl;
     return -1;
   }
   return 0;
 }
 
-int validateTwoArgsCommand(std::string input) {
-  const size_t pos1 = input.find(' ');
-  const size_t pos2 = input.find(' ', pos1 + 1);
-  if (pos1 == std::string::npos || pos2 != std::string::npos) {
-    std::cerr << TOO_MANY_ARGS_ERROR << std::endl;
+int validatePlayerID(std::string playerID) {
+  if (playerID.length() != 6) {
+    std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
     return -1;
+  }
+
+  for (size_t i = 0; i < playerID.length(); i++) {
+    if (!isdigit(playerID[i])) {
+      std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
+      return -1;
+    }
   }
   return 0;
 }

@@ -232,68 +232,71 @@ int handleRRV(struct serverResponse response) {
 
 // handlers: player requests
 int handleSNG(std::string input) {
-  if (validateTwoArgsCommand(input) == -1) {
-    return -1;
-  }
-  const size_t pos1 = input.find('\n');
-  std::string plid = input.substr(pos1 + 1);
-  if (plid.length() != 6) {
-    std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
-    return -1;
-  }
-
-  for (size_t i = 0; i < plid.length(); i++) {
-    if (!isdigit(plid[i])) {
-      std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
-      return -1;
-    }
-  }
-
-  playerID = plid;
-  const std::string message = buildPlayerMessage({"SNG", playerID});
-  return generalUDPHandler(message);
-}
-
-int handlePLG(std::string input) {
-  if (validateTwoArgsCommand(input) == -1) {
+  if (validateArgsAmount(input, SNG_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
-  const size_t pos2 = input.find('\n');
-  std::string letter = input.substr(pos1 + 1);
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == 0) {
+    const std::string message = buildPlayerMessage({"SNG", plid});
+    return generalUDPHandler(message);
+  }
+  return -1;
+}
+
+int handlePLG(std::string input) {
+  if (validateArgsAmount(input, PLG_ARGS) == -1) {
+    return -1;
+  }
+  const size_t pos1 = input.find(' ');
+  const size_t pos2 = input.find(' ');
+  const size_t pos3 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1, pos2 - pos1 - 1);
+  const std::string letter = input.substr(pos2 + 1, pos3 - pos2 - 1);
+  const std::string trial = input.substr(pos3 + 1);
   if (letter.length() != 1 || !std::isalpha(letter[0])) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
     return -1;
-  }
-  const std::string trial = input.substr(pos2 + 1);
-  const std::string message = buildPlayerMessage({"PLG", playerID, letter, trial});
+  } else if (validatePlayerID(plid) == -1) {
+    return -1;
+  } // FIXME: should we validate the trial?
+  const std::string message = buildPlayerMessage({"PLG", plid, letter, trial});
   play.setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
 
 int handlePWG(std::string input) {
-  if (validateTwoArgsCommand(input) == -1) {
+  if (validateArgsAmount(input, PWG_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
-  const size_t pos2 = input.find('\n');
-  std::string guess = input.substr(pos1 + 1);
+  const size_t pos2 = input.find(' ');
+  const size_t pos3 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1, pos2 - pos1 - 1);
+  const std::string guess = input.substr(pos2 + 1, pos3 - pos2 - 1);
+  const std::string trial = input.substr(pos3 + 1);
   if (guess.length() != play.getWordLength()) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR << play.getWordLength() << std::endl;
     return -1;
-  }
-  const std::string trial = input.substr(pos2 + 1);
-  const std::string message = buildPlayerMessage({"PWG", playerID, guess, trial});
+  } else if (validatePlayerID(plid) == -1) {
+    return -1;
+  } // FIXME: should we validate the trial?
+  const std::string message = buildPlayerMessage({"PWG", plid, guess, trial});
   return generalUDPHandler(message);
 }
 
 int handleQUT(std::string input) {
   // TODO: can't forget to close all open TCP connections
-  if (validateSingleArgCommand(input) == -1) {
+  if (validateArgsAmount(input, QUT_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"QUT", playerID});
-  const std::string command = input.substr(0, input.find(' '));
+  const size_t pos1 = input.find(' ');
+  const std::string command = input.substr(0, pos1);
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == -1) {
+    return -1;
+  }
+  const std::string message = buildPlayerMessage({"QUT", plid});
   if (command == "quit") {
     return generalUDPHandler(message);
   }
@@ -301,9 +304,14 @@ int handleQUT(std::string input) {
 }
 
 int handleREV(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+  if (validateArgsAmount(input, REV_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"REV", playerID});
+  const size_t pos1 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == -1) {
+    return -1;
+  }
+  const std::string message = buildPlayerMessage({"REV", plid});
   return generalUDPHandler(message);
 }
