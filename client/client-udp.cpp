@@ -264,7 +264,7 @@ int handlePWG(std::string input) {
   return generalUDPHandler(message);
 }
 
-int sendQUT(std::string input) {
+int handleQUT(std::string input) {
   // TODO: can't forget to close all open TCP connections
   if (validateArgsAmount(input, QUIT_ARGS) == -1) {
     return -1;
