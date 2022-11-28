@@ -27,7 +27,6 @@ int exchangeUDPMessage(std::string message, char *response) {
   }
 
   std::cout << "[INFO]: Sending message: " << message;
-  std::cout << message.length() << " bytes" << std::endl;
 
   int triesLeft = UDP_TRIES;
   do {
@@ -200,7 +199,9 @@ int handleRQT(struct protocolMessage response) {
     std::cout << RQT_OK << std::endl;
     return 0;
   } else if (response.status == "ERR") {
-    std::cout << RQT_ERR << std::endl;
+    if (response.code == "quit") {
+      std::cout << RQT_ERR << std::endl;
+    }
     return 0;
   }
   return -1;
@@ -270,7 +271,6 @@ int sendQUT(std::string input) {
   }
   const std::string command = input.substr(0, input.find('\n'));
   const std::string message = buildMessage({"QUT", getPlayerID()});
-  std::cout << message << std::endl;
   if (command == "quit") {
     return generalUDPHandler(message);
   }

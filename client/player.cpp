@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   // delete the directory and its contents - should we really do it like this?
   system("rm -rf hints");
 
-  // TODO: add "closing game" message
+  std::cout << "Exiting the program. Thanks for playing!" << std::endl;
 
   // close(fd);
   // freeaddrinfo(serverInfo);
