@@ -5,11 +5,10 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <vector>
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
-#define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
-#define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
 #define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
@@ -80,7 +79,7 @@ public:
       }
       // TODO: check if the position is already filled
       word[wordPosition] = guess;
-      positions = positions.substr(pos + 1);
+      positions = positions.substr(pos + 2);
       readPositions++;
     }
     if (n != readPositions) {
@@ -115,9 +114,13 @@ void playIncorrectGuess();
 void playCorrectFinalGuess();
 void setLastGuess(char guess);
 int getWordLength();
+void setPlayerID(std::string id);
+std::string getPlayerID();
+void incrementTrials();
+int getTrials();
 
 int validateArgsAmount(std::string input, int n);
-int validatePlayerID(std::string playerID);
+int validatePlayerID(std::string id);
 void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
 std::string buildPlayerMessage(std::vector<std::string> args);

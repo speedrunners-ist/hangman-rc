@@ -33,23 +33,23 @@ int generalTCPHandler(std::string message) {
 }
 
 // TODO: handlers below only implemented to compile
-int handleRSB(struct serverResponse response) {
+int handleRSB(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleRHL(struct serverResponse response) {
+int handleRHL(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleRST(struct serverResponse response) {
+int handleRST(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
 int handleGSB(std::string input) {
-  if (validateArgsAmount(input, GSB_ARGS) == -1) {
+  if (validateArgsAmount(input, SCOREBOARD_ARGS) == -1) {
     return -1;
   }
   const std::string message = buildPlayerMessage({"GSB"});
@@ -57,7 +57,7 @@ int handleGSB(std::string input) {
 }
 
 int handleGHL(std::string input) {
-  if (validateArgsAmount(input, GHL_ARGS) == -1) {
+  if (validateArgsAmount(input, HINT_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
@@ -70,7 +70,7 @@ int handleGHL(std::string input) {
 }
 
 int handleSTA(std::string input) {
-  if (validateArgsAmount(input, STA_ARGS) == -1) {
+  if (validateArgsAmount(input, STATE_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
