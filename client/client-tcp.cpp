@@ -33,41 +33,51 @@ int generalTCPHandler(std::string message) {
 }
 
 // TODO: handlers below only implemented to compile
-int handleRSB(struct serverResponse response) {
+int handleRSB(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleRHL(struct serverResponse response) {
+int handleRHL(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int handleRST(struct serverResponse response) {
+int handleRST(struct protocolMessage response) {
   std::cout << "[INFO]: Received response: " << response.body;
   return 0;
 }
 
-int sendGSB(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+int handleGSB(std::string input) {
+  if (validateArgsAmount(input, SCOREBOARD_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GSB"});
-  return 0;
+  const std::string message = buildMessage({"GSB"});
+  return generalTCPHandler(message);
 }
 
-int sendGHL(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+int handleGHL(std::string input) {
+  if (validateArgsAmount(input, HINT_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GHL", playerID});
-  return 0;
+  const size_t pos1 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == -1) {
+    return -1;
+  }
+  const std::string message = buildMessage({"GHL", plid});
+  return generalTCPHandler(message);
 }
 
-int sendSTA(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+int handleSTA(std::string input) {
+  if (validateArgsAmount(input, STATE_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GST", playerID});
-  return 0;
+  const size_t pos1 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == -1) {
+    return -1;
+  }
+  const std::string message = buildMessage({"GST", plid});
+  return generalTCPHandler(message);
 }
