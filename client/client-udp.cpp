@@ -172,7 +172,7 @@ int handleRWG(struct protocolMessage response) {
     return -1;
   }
   if (response.status == "WIN") {
-    playCorrectFinalGuess();
+    playCorrectFinalWordGuess();
     std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
   } else if (response.status == "NOK") {
@@ -206,9 +206,10 @@ int handleRQT(struct protocolMessage response) {
   return -1;
 }
 
-// TODO: implement debug command below
 int handleRRV(struct protocolMessage response) {
-  std::cout << "[INFO]: Received response: " << response.body;
+  // TODO: change this for the final version of the project
+  // to-be-guessed word is the second argument - here, the status
+  std::cout << "[DEBUG/RRV]: Word is " << response.status << std::endl;
   return 0;
 }
 
@@ -258,6 +259,7 @@ int sendPWG(std::string input) {
   }
   const std::string message =
       buildMessage({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
+  setLastWordGuess(guess);
   return generalUDPHandler(message);
 }
 

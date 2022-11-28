@@ -8,27 +8,30 @@
 #include <vector>
 
 typedef std::map<char, bool> Alphabet;
-typedef std::map<int, char> Word;
 
 class GameState {
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
   char lastGuess;
+  std::string lastWordGuess;
   Alphabet guessedLetters;
-  Word word;
+  std::string word;
 
 public:
   GameState(int length, int mistakes);
   int getAvailableMistakes();
   char getLastGuess();
+  std::string getLastWordGuess();
   int getWordLength();
   std::string getWord();
   void setLastGuess(char guess);
-  void setWord(Word newWord);
+  void setLastWordGuess(std::string guess);
+  void setWord(std::string newWord);
   void incorrectGuess();
   int correctGuess(std::string positions, int n);
   void correctFinalGuess();
+  void correctFinalWordGuess();
 };
 
 // Error Messages
@@ -47,7 +50,9 @@ std::string getWord();
 int playCorrectGuess(std::string positions, int n);
 void playIncorrectGuess();
 void playCorrectFinalGuess();
+void playCorrectFinalWordGuess();
 void setLastGuess(char guess);
+void setLastWordGuess(std::string guess);
 int getWordLength();
 void setPlayerID(std::string id);
 std::string getPlayerID();

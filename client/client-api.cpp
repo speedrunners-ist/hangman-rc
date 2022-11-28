@@ -4,9 +4,8 @@
 GameState::GameState(int length, int mistakes) {
   this->wordLength = length;
   this->mistakesLeft = mistakes;
-  for (int i = 1; i <= length; i++) {
-    word[i] = '_';
-  }
+  // word is a string with length equal to wordLength, filled with underscores
+  this->word = std::string((size_t)length, '_');
   for (char c = 'a'; c <= 'z'; c++) {
     guessedLetters[c] = false;
   }
@@ -16,19 +15,17 @@ int GameState::getAvailableMistakes() { return mistakesLeft; }
 
 char GameState::getLastGuess() { return lastGuess; }
 
+std::string GameState::getLastWordGuess() { return lastWordGuess; }
+
 int GameState::getWordLength() { return wordLength; }
 
-std::string GameState::getWord() {
-  std::string wordStr;
-  for (int i = 1; i <= wordLength; i++) {
-    wordStr += word[i];
-  }
-  return wordStr;
-}
+std::string GameState::getWord() { return word; }
 
 void GameState::setLastGuess(char guess) { lastGuess = guess; }
 
-void GameState::setWord(Word newWord) { this->word = newWord; }
+void GameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
+
+void GameState::setWord(std::string newWord) { this->word = newWord; }
 
 void GameState::incorrectGuess() {
   char guess = getLastGuess();
@@ -39,27 +36,26 @@ void GameState::incorrectGuess() {
 }
 
 int GameState::correctGuess(std::string positions, int n) {
-
   char guess = getLastGuess();
-  // for every int in positions, set the corresponding (-1) char in word to guess
-  // done with std::string.find
-  Word initialWord = Word(word);
+  std::string initialWord = word; // TODO: check if this is a copy or a reference
   int readPositions = 0;
   size_t pos;
   do {
     pos = positions.find_first_of(" \n");
     std::string posStr = positions.substr(0, pos);
-    int posInt = std::stoi(posStr);
-    if (posInt < 1 || posInt > wordLength) {
+    const size_t posNum = (size_t)std::stoi(posStr);
+    if (posNum < 1 || posNum > wordLength) {
       std::cerr << "[ERR]: Server response includes invalid positions." << std::endl;
       setWord(initialWord);
       return -1;
-    } else if (word[posInt] != '_') {
+    } else if (word[posNum - 1] != '_') {
+      std::cout << "Current word: " << word << std::endl;
+      std::cout << "Position " << posNum << " is already filled." << std::endl;
       std::cerr << "[ERR]: Server response includes an already filled position." << std::endl;
       setWord(initialWord);
       return -1;
     }
-    word[posInt] = guess;
+    word[posNum - 1] = guess;
     positions = positions.substr(pos + 1);
     readPositions++;
   } while (pos != std::string::npos);
@@ -73,7 +69,7 @@ int GameState::correctGuess(std::string positions, int n) {
     setWord(initialWord);
     return -1;
   }
-  std::cout << "Correct guess! Word is now: " << getWord() << std::endl;
+  std::cout << "You guessed correctly! Word is now: " << getWord() << std::endl;
   guessesMade++;
   guessedLetters[guess] = true;
   return 0;
@@ -82,13 +78,11 @@ int GameState::correctGuess(std::string positions, int n) {
 void GameState::correctFinalGuess() {
   char guess = getLastGuess();
   guessedLetters[guess] = true;
-  for (int i = 0; i < wordLength; i++) {
-    if (word[i] == '_') {
-      word[i] = guess;
-    }
-  }
-  guessesMade++;
+  // replace all underscores with the guess
+  std::replace(word.begin(), word.end(), '_', guess);
 }
+
+void GameState::correctFinalWordGuess() { word = lastWordGuess; }
 
 static GameState play = GameState(1, 1);
 static std::string playerID;
@@ -113,7 +107,14 @@ void playCorrectFinalGuess() {
   incrementTrials();
   play.correctFinalGuess();
 }
+
+void playCorrectFinalWordGuess() {
+  incrementTrials();
+  play.correctFinalWordGuess();
+}
+
 void setLastGuess(char guess) { play.setLastGuess(guess); }
+void setLastWordGuess(std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength() { return play.getWordLength(); }
 void setPlayerID(std::string id) { playerID = id; }
 std::string getPlayerID() { return playerID; }
