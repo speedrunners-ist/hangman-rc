@@ -2,7 +2,6 @@
 #define CLIENT_API_H
 
 #include "common/common.h"
-#include <algorithm>
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"

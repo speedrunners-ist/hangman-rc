@@ -12,7 +12,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdlib.h>
-#include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>

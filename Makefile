@@ -21,10 +21,6 @@ CXXFLAGS += $(INCLUDES)
 CXXFLAGS += -fdiagnostics-color=always -Wall -Werror -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 CXXFLAGS += -Wno-sign-compare
 
-ifneq ($(strip $(DEBUG)), no)
-  CXXFLAGS += -g
-endif
-
 .PHONY: all clean fmt depend
 
 all: $(TARGET_EXECS)
