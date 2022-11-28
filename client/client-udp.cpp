@@ -27,12 +27,10 @@ int exchangeUDPMessage(std::string message, char *response) {
   }
 
   std::cout << "[INFO]: Sending message: " << message;
-
   std::cout << message.length() << " bytes" << std::endl;
 
   int triesLeft = UDP_TRIES;
   do {
-    // note: we don't send the null terminator, hence the -1
     if (sendto(socketFd, message.c_str(), message.length(), 0, serverInfo->ai_addr,
                serverInfo->ai_addrlen) == -1) {
       std::cerr << SENDTO_ERROR << std::endl;
@@ -40,6 +38,7 @@ int exchangeUDPMessage(std::string message, char *response) {
     }
 
     socklen_t addrLen = sizeof(serverInfo->ai_addr);
+    // TODO: we should probably expect a given amount of bytes, not necessarily UDP_RECV_SIZE
     const ssize_t bytesReceived =
         recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
 
@@ -71,9 +70,13 @@ int parseUDPResponse(char *response) {
     return -1;
   }
   const std::string code = responseStr.substr(0, pos1);
-  const char lookupStatusChar = (code == "RQT" || code == "RRV") ? '\n' : ' ';
+  const bool lookingForEndLine = (code == "RQT" || code == "RRV");
+  const char lookupStatusChar = lookingForEndLine ? '\n' : ' ';
   const size_t pos2 = responseStr.find(lookupStatusChar, pos1 + 1);
-  if (pos2 == std::string::npos) {
+  if (lookingForEndLine && pos2 != std::string::npos) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+    return -1;
+  } else if (!lookingForEndLine && pos2 == std::string::npos) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
