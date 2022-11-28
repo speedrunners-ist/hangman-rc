@@ -52,7 +52,7 @@ int handleGSB(std::string input) {
   if (validateArgsAmount(input, GSB_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GSB"});
+  const std::string message = buildMessage({"GSB"});
   return generalTCPHandler(message);
 }
 
@@ -65,7 +65,7 @@ int handleGHL(std::string input) {
   if (validatePlayerID(plid) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GHL", plid});
+  const std::string message = buildMessage({"GHL", plid});
   return generalTCPHandler(message);
 }
 
@@ -78,6 +78,6 @@ int handleSTA(std::string input) {
   if (validatePlayerID(plid) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GST", plid});
+  const std::string message = buildMessage({"GST", plid});
   return generalTCPHandler(message);
 }

@@ -3,8 +3,6 @@
 
 #include "common/common.h"
 #include <algorithm>
-#include <functional>
-#include <numeric>
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
@@ -120,6 +118,5 @@ int validateArgsAmount(std::string input, int n);
 int validatePlayerID(std::string playerID);
 void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
-std::string buildPlayerMessage(std::vector<std::string> args);
 
 #endif /* CLIENT_API_H */

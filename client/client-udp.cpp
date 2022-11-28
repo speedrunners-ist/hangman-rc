@@ -238,7 +238,7 @@ int handleSNG(std::string input) {
   const size_t pos1 = input.find(' ');
   const std::string plid = input.substr(pos1 + 1);
   if (validatePlayerID(plid) == 0) {
-    const std::string message = buildPlayerMessage({"SNG", plid});
+    const std::string message = buildMessage({"SNG", plid});
     return generalUDPHandler(message);
   }
   return -1;
@@ -260,7 +260,7 @@ int handlePLG(std::string input) {
   } else if (validatePlayerID(plid) == -1) {
     return -1;
   } // FIXME: should we validate the trial?
-  const std::string message = buildPlayerMessage({"PLG", plid, letter, trial});
+  const std::string message = buildMessage({"PLG", plid, letter, trial});
   setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
@@ -281,7 +281,7 @@ int handlePWG(std::string input) {
   } else if (validatePlayerID(plid) == -1) {
     return -1;
   } // FIXME: should we validate the trial?
-  const std::string message = buildPlayerMessage({"PWG", plid, guess, trial});
+  const std::string message = buildMessage({"PWG", plid, guess, trial});
   return generalUDPHandler(message);
 }
 
@@ -296,7 +296,7 @@ int handleQUT(std::string input) {
   if (validatePlayerID(plid) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"QUT", plid});
+  const std::string message = buildMessage({"QUT", plid});
   if (command == "quit") {
     return generalUDPHandler(message);
   }
@@ -312,6 +312,6 @@ int handleREV(std::string input) {
   if (validatePlayerID(plid) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"REV", plid});
+  const std::string message = buildMessage({"REV", plid});
   return generalUDPHandler(message);
 }
