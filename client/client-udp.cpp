@@ -125,11 +125,7 @@ int handleRSG(struct protocolMessage response) {
 }
 
 int handleRLG(struct protocolMessage response) {
-  const size_t pos_trial = response.body.find(' ', response.statusPos + 1);
-  if (pos_trial == std::string::npos) {
-    std::cerr << RLG_ERROR << std::endl;
-    return -1;
-  }
+  const size_t pos_trial = response.body.find_first_of(' ', response.statusPos + 1);
   if (response.status == "OK") {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);

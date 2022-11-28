@@ -74,7 +74,7 @@ int GameState::correctGuess(std::string positions, int n) {
     setWord(initialWord);
     return -1;
   }
-  std::cout << "Correct guess!" << std::endl;
+  std::cout << "Correct guess! Word is now: " << getWord() << std::endl;
   guessesMade++;
   guessedLetters[guess] = true;
   return 0;
