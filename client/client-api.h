@@ -10,6 +10,27 @@
 typedef std::map<char, bool> Alphabet;
 typedef std::map<int, char> Word;
 
+class GameState {
+  int wordLength;
+  int mistakesLeft;
+  int guessesMade = 0;
+  char lastGuess;
+  Alphabet guessedLetters;
+  Word word;
+
+public:
+  GameState(int length, int mistakes);
+  int getAvailableMistakes();
+  char getLastGuess();
+  int getWordLength();
+  std::string getWord();
+  void setLastGuess(char guess);
+  void setWord(Word newWord);
+  void incorrectGuess();
+  int correctGuess(std::string positions, int n);
+  void correctFinalGuess();
+};
+
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
 #define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
