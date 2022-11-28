@@ -1,5 +1,105 @@
 #include "client-api.h"
 
+class GameState {
+  int wordLength;
+  int mistakesLeft;
+  int guessesMade = 0;
+  char lastGuess;
+  Alphabet guessedLetters;
+  Word word;
+
+public:
+  GameState(int length, int mistakes) {
+    this->wordLength = length;
+    this->mistakesLeft = mistakes;
+    for (int i = 1; i <= length; i++) {
+      word[i] = '_';
+    }
+    for (char c = 'a'; c <= 'z'; c++) {
+      guessedLetters[c] = false;
+    }
+  }
+
+  int getAvailableMistakes() { return mistakesLeft; }
+
+  char getLastGuess() { return lastGuess; }
+
+  int getWordLength() { return wordLength; }
+
+  std::string getWord() {
+    std::string wordStr;
+    for (int i = 1; i <= wordLength; i++) {
+      wordStr += word[i];
+    }
+    return wordStr;
+  }
+
+  void setLastGuess(char guess) { lastGuess = guess; }
+
+  void setWord(Word newWord) { this->word = newWord; }
+
+  void incorrectGuess() {
+    char guess = getLastGuess();
+    // TODO: do we have to check if we're setting to true something that's already true?
+    guessedLetters[guess] = true;
+    guessesMade++;
+    mistakesLeft--;
+  }
+
+  int correctGuess(std::string positions, int n) {
+
+    char guess = getLastGuess();
+    // for every int in positions, set the corresponding (-1) char in word to guess
+    // done with std::string.find
+    Word initialWord = Word(word);
+    int readPositions = 0;
+    std::cout << "positions: " << positions << std::endl;
+    size_t pos;
+    do {
+      pos = positions.find_first_of(" \n");
+      std::string posStr = positions.substr(0, pos);
+      int posInt = std::stoi(posStr);
+      if (posInt < 1 || posInt > wordLength) {
+        std::cerr << "[ERR]: Server response includes invalid positions." << std::endl;
+        setWord(initialWord);
+        return -1;
+      } else if (word[posInt] != '_') {
+        std::cerr << "[ERR]: Server response includes an already filled position." << std::endl;
+        setWord(initialWord);
+        return -1;
+      }
+      word[posInt] = guess;
+      positions = positions.substr(pos + 1);
+      readPositions++;
+    } while (pos != std::string::npos);
+
+    if (n != readPositions) {
+      // the answer didn't include as many positions as expected
+      std::cerr << "[ERR]: Expected a different amount of positions than the ones given."
+                << std::endl;
+      std::cerr << "[ERR]: Expected " << n << " positions, but got " << readPositions << "."
+                << std::endl;
+      setWord(initialWord);
+      return -1;
+    }
+    std::cout << "Correct guess!" << std::endl;
+    guessesMade++;
+    guessedLetters[guess] = true;
+    return 0;
+  }
+
+  void correctFinalGuess() {
+    char guess = getLastGuess();
+    guessedLetters[guess] = true;
+    for (int i = 0; i < wordLength; i++) {
+      if (word[i] == '_') {
+        word[i] = guess;
+      }
+    }
+    guessesMade++;
+  }
+};
+
 static GameState play = GameState(1, 1);
 static std::string playerID;
 static int trials = 0;
