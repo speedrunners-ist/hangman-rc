@@ -14,10 +14,15 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *ser
   hints.ai_socktype = type;
 
   // TODO: see it this works
-  if (!addr.empty())
-    addr = addr.c_str();
+  int status;
+  if (!addr.empty()) {
+    status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
+    std::cout << "here" << std::endl;
 
-  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
+  } else {
+    status = getaddrinfo(NULL, port.c_str(), &hints, &serverInfo);
+  }
+  std::cout << status << std::endl;
   if (status != 0) {
     std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
     exit(EXIT_FAILURE);
