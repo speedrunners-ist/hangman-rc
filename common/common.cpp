@@ -1,7 +1,7 @@
 #include "common.h"
 
 // Creates a new socket and connects to the server
-int newSocket(int type, std::string addr, std::string port, struct addrinfo *serverInfo) {
+int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo) {
   int socketFd = socket(AF_INET, type, 0);
   if (socketFd == -1) {
     // FIXME: should we really exit here?
@@ -16,13 +16,13 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *ser
   // TODO: see it this works
   int status;
   if (!addr.empty()) {
-    status = getaddrinfo(addr.c_str(), port.c_str(), &hints, &serverInfo);
+    status = getaddrinfo(addr.c_str(), port.c_str(), &hints, serverInfo);
     std::cout << "here" << std::endl;
 
   } else {
-    status = getaddrinfo(NULL, port.c_str(), &hints, &serverInfo);
+    status = getaddrinfo(NULL, port.c_str(), &hints, serverInfo);
   }
-  std::cout << status << std::endl;
+
   if (status != 0) {
     std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
     exit(EXIT_FAILURE);
