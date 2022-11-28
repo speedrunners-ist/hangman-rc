@@ -5,10 +5,13 @@
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <string>
+#include <vector>
+#include <functional>
+#include <numeric>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdlib.h>
-#include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -56,5 +59,6 @@ int parseTCPResponse(char *response);
  * @return: number of guesses
  */
 unsigned int initialAvailableMistakes(unsigned int wordLength);
+std::string buildMessage(std::vector<std::string> args);
 
 #endif /* COMMON_H */

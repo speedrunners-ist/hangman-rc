@@ -123,6 +123,5 @@ int validateArgsAmount(std::string input, int n);
 int validatePlayerID(std::string id);
 void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
-std::string buildPlayerMessage(std::vector<std::string> args);
 
 #endif /* CLIENT_API_H */

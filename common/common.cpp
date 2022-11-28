@@ -43,3 +43,14 @@ unsigned int initialAvailableMistakes(unsigned int wordLength) {
   }
   return 9;
 }
+
+std::string buildMessage(std::vector<std::string> args) {
+  // clang-format off
+  return std::accumulate(
+    ++args.begin(), args.end(), std::string(args[0]),
+    [](std::string a, std::string b) { 
+      return a + " " + b;
+    }
+  ).append("\n");
+  // clang-format on
+}

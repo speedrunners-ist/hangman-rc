@@ -222,8 +222,7 @@ int handleSNG(std::string input) {
   std::string plid = input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (validatePlayerID(plid) == 0) {
-    setPlayerID(plid);
-    const std::string message = buildPlayerMessage({"SNG", plid});
+    const std::string message = buildMessage({"SNG", plid});
     return generalUDPHandler(message);
   }
   return -1;
@@ -241,7 +240,7 @@ int handlePLG(std::string input) {
     return -1;
   }
   const std::string message =
-      buildPlayerMessage({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
+      buildMessage({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
@@ -258,7 +257,7 @@ int handlePWG(std::string input) {
     return -1;
   }
   const std::string message =
-      buildPlayerMessage({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
+      buildMessage({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   return generalUDPHandler(message);
 }
 
@@ -268,7 +267,7 @@ int handleQUT(std::string input) {
     return -1;
   }
   const std::string command = input.substr(0, input.find('\n'));
-  const std::string message = buildPlayerMessage({"QUT", getPlayerID()});
+  const std::string message = buildMessage({"QUT", getPlayerID()});
   std::cout << message << std::endl;
   if (command == "quit") {
     return generalUDPHandler(message);
@@ -280,6 +279,6 @@ int handleREV(std::string input) {
   if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"REV", getPlayerID()});
+  const std::string message = buildMessage({"REV", getPlayerID()});
   return generalUDPHandler(message);
 }
