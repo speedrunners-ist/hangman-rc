@@ -3,11 +3,6 @@
 
 #include "client-api.h"
 
-#define EXIT_HANGMAN 1
-#define UDP_TRIES 3
-#define UDP_RECV_SIZE 4096
-#define TCP_READ_SIZE 4096
-
 // Expected amount of arguments for each protocol (client-side)
 #define SNG_ARGS 2
 #define PLG_ARGS 4
@@ -52,8 +47,7 @@
 typedef std::map<std::string, std::function<int(std::string input)>> commandHandler;
 typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
-// TODO: I think this can be generalized
-int newSocket(int type, std::string addr, std::string port);
+void createSocketUDP(std::string addr, std::string port);
 
 // UDP player message handlers
 int handleSNG(std::string input);

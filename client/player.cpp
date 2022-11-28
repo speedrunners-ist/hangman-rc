@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
 
   // TODO: check error
-  newSocket(SOCK_DGRAM, GSIP, GSport);
+  createSocketUDP(GSIP, GSport);
   int res = mkdir("hints", 0700);
   if (res == -1 && errno != EEXIST) {
     // if the directory can't be created and it doesn't already exist

@@ -5,11 +5,10 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <vector>
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
-#define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
-#define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
 #define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."

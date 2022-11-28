@@ -19,6 +19,14 @@
 
 #define MAX_USER_INPUT 1024
 
+#define EXIT_HANGMAN 1
+#define UDP_TRIES 3
+#define UDP_RECV_SIZE 4096
+#define TCP_READ_SIZE 4096
+
+#define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
+#define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
+
 struct protocolMessage {
   std::string code;
   size_t codePos;
@@ -26,6 +34,8 @@ struct protocolMessage {
   size_t statusPos;
   std::string body;
 };
+
+int newSocket(int type, std::string addr, std::string port, struct addrinfo *serverInfo);
 
 // UDP utils functions
 int generalUDPHandler(std::string message);
