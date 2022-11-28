@@ -48,9 +48,9 @@ void openTCP(std::string GSport) {
 }
 
 // Server message handlers
-int handleGSB(struct clientRequest message) { return 0; }
-int handleGHL(struct clientRequest message) { return 0; }
-int handleSTA(struct clientRequest message) { return 0; }
+int handleGSB(struct protocolMessage message) { return 0; }
+int handleGHL(struct protocolMessage message) { return 0; }
+int handleSTA(struct protocolMessage message) { return 0; }
 
 // TCP server message Send
 int sendRSB(std::string input) { return 0; }

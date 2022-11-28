@@ -37,5 +37,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  openUDP(GSport);
+  std::cout << "Starting server..." << std::endl;
+
+  createSocketUDP("", GSport);
 }

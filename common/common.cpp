@@ -16,6 +16,7 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo **se
   // TODO: see it this works
   int status;
   if (!addr.empty()) {
+
     status = getaddrinfo(addr.c_str(), port.c_str(), &hints, serverInfo);
 
   } else {
@@ -25,6 +26,17 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo **se
   if (status != 0) {
     std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
     exit(EXIT_FAILURE);
+  }
+
+  if (!addr.empty())
+    return socketFd;
+
+  const sockaddr *addrPtr = (*serverInfo)->ai_addr;
+  const socklen_t addrLen = (*serverInfo)->ai_addrlen;
+
+  if (bind(socketFd, addrPtr, addrLen) != 0) {
+    std::cout << "[ERR]: Failed to bind socket. Exiting." << std::endl;
+    exit(1);
   }
   return socketFd;
 }
