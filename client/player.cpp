@@ -2,14 +2,14 @@
 
 // clang-format off
 static commandHandler handlePlayerMessage = {
-  { "start", handleSNG },      { "sg", handleSNG },
-  { "play", handlePLG },       { "pl", handlePLG },
-  { "guess", handlePWG },      { "gw", handlePWG },
-  { "scoreboard", handleGSB }, { "sb", handleGSB },
-  { "hint", handleGHL },       { "h", handleGHL },
-  { "state", handleSTA },      { "st", handleSTA },
-  { "quit", handleQUT },       { "exit", handleQUT },
-  { "rev", handleREV }
+  { "start", sendSNG },      { "sg", sendSNG },
+  { "play", sendPLG },       { "pl", sendPLG },
+  { "guess", sendPWG },      { "gw", sendPWG },
+  { "scoreboard", sendGSB }, { "sb", sendGSB },
+  { "hint", sendGHL },       { "h", sendGHL },
+  { "state", sendSTA },      { "st", sendSTA },
+  { "quit", sendQUT },       { "exit", sendQUT },
+  { "rev", sendREV }
 };
 // clang-format on
 

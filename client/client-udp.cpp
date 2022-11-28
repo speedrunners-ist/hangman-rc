@@ -217,7 +217,7 @@ int handleRRV(struct protocolMessage response) {
 }
 
 // handlers: player requests
-int handleSNG(std::string input) {
+int sendSNG(std::string input) {
   if (validateArgsAmount(input, START_ARGS) == -1) {
     return -1;
   }
@@ -232,7 +232,7 @@ int handleSNG(std::string input) {
   return -1;
 }
 
-int handlePLG(std::string input) {
+int sendPLG(std::string input) {
   if (validateArgsAmount(input, PLAY_ARGS) == -1) {
     return -1;
   }
@@ -249,7 +249,7 @@ int handlePLG(std::string input) {
   return generalUDPHandler(message);
 }
 
-int handlePWG(std::string input) {
+int sendPWG(std::string input) {
   if (validateArgsAmount(input, GUESS_ARGS) == -1) {
     return -1;
   }
@@ -265,7 +265,7 @@ int handlePWG(std::string input) {
   return generalUDPHandler(message);
 }
 
-int handleQUT(std::string input) {
+int sendQUT(std::string input) {
   // TODO: can't forget to close all open TCP connections
   if (validateArgsAmount(input, QUIT_ARGS) == -1) {
     return -1;
@@ -279,7 +279,7 @@ int handleQUT(std::string input) {
   return generalUDPHandler(message) == 0 ? EXIT_HANGMAN : -1;
 }
 
-int handleREV(std::string input) {
+int sendREV(std::string input) {
   if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
     return -1;
   }

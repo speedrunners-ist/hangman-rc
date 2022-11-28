@@ -48,7 +48,7 @@ int handleRST(struct protocolMessage response) {
   return 0;
 }
 
-int handleGSB(std::string input) {
+int sendGSB(std::string input) {
   if (validateArgsAmount(input, SCOREBOARD_ARGS) == -1) {
     return -1;
   }
@@ -56,7 +56,7 @@ int handleGSB(std::string input) {
   return generalTCPHandler(message);
 }
 
-int handleGHL(std::string input) {
+int sendGHL(std::string input) {
   if (validateArgsAmount(input, HINT_ARGS) == -1) {
     return -1;
   }
@@ -69,7 +69,7 @@ int handleGHL(std::string input) {
   return generalTCPHandler(message);
 }
 
-int handleSTA(std::string input) {
+int sendSTA(std::string input) {
   if (validateArgsAmount(input, STATE_ARGS) == -1) {
     return -1;
   }

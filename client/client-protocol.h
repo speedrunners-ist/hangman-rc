@@ -49,28 +49,28 @@ typedef std::map<std::string, std::function<int(struct protocolMessage response)
 
 void createSocketUDP(std::string addr, std::string port);
 
-// UDP player message handlers
-int handleSNG(std::string input);
-int handlePLG(std::string input);
-int handlePWG(std::string input);
-int handleQUT(std::string input);
-int handleREV(std::string input);
-
-// TCP player message handlers
-int handleGSB(std::string input);
-int handleGHL(std::string input);
-int handleSTA(std::string input);
-
-// UDP server message handlers
+// UDP Server message servers
 int handleRSG(struct protocolMessage response);
 int handleRLG(struct protocolMessage response);
 int handleRWG(struct protocolMessage response);
 int handleRQT(struct protocolMessage response);
 int handleRRV(struct protocolMessage response);
 
-// TCP server message handlers
+// TCP Server message servers
 int handleRSB(struct protocolMessage response);
 int handleRHL(struct protocolMessage response);
 int handleRST(struct protocolMessage response);
+
+// UDP Client message handlers
+int sendSNG(std::string input);
+int sendPLG(std::string input);
+int sendPWG(std::string input);
+int sendQUT(std::string input);
+int sendREV(std::string input);
+
+// TCP Client message handlers
+int sendGSB(std::string input);
+int sendGHL(std::string input);
+int sendSTA(std::string input);
 
 #endif /* CLIENT_PROTOCOL_H */
