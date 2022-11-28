@@ -4,14 +4,14 @@
 #include "client-api.h"
 
 // Expected amount of arguments for each protocol (client-side)
-#define SNG_ARGS 2
-#define PLG_ARGS 4
-#define PWG_ARGS 4
-#define QUT_ARGS 2
-#define REV_ARGS 2
-#define GSB_ARGS 1
-#define GHL_ARGS 2
-#define STA_ARGS 2
+#define START_ARGS 2
+#define PLAY_ARGS 2
+#define GUESS_ARGS 2
+#define QUIT_ARGS 1
+#define REVEAL_ARGS 2
+#define SCOREBOARD_ARGS 1
+#define HINT_ARGS 1
+#define STATE_ARGS 1
 
 // UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
 // something the player should know about, I think

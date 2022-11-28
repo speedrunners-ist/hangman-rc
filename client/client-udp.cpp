@@ -98,13 +98,16 @@ int handleRSG(struct protocolMessage response) {
   if (response.status == "OK") {
     const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
     const size_t pos_n_max_errors = response.body.find('\n', pos_n_letters + 1);
-    if (pos_n_letters == std::string::npos || pos_n_max_errors == std::string::npos) {
+    if (pos_n_letters == std::string::npos || pos_n_max_errors != std::string::npos) {
+      std::cout << response.body << std::endl;
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
     // TODO: check if n_letters and n_max_errors are valid
-    const int n_letters = std::stoi(response.body.substr(response.statusPos + 1, pos_n_letters));
-    const int n_max_errors = std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_errors));
+    const int n_letters = std::stoi(
+        response.body.substr(response.statusPos + 1, pos_n_letters - response.statusPos - 1));
+    const int n_max_errors =
+        std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_errors - pos_n_letters - 1));
     createGame(n_letters, n_max_errors);
     const int availableMistakes = getAvailableMistakes();
     const std::string word = getWord();
@@ -127,15 +130,12 @@ int handleRLG(struct protocolMessage response) {
   if (response.status == "OK") {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);
-    if (pos_n == std::string::npos || pos_correct_positions == std::string::npos) {
+    if (pos_n == std::string::npos || pos_correct_positions != std::string::npos) {
+      std::cerr << response.body << std::endl;
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
-    const int n = std::stoi(response.body.substr(pos_trial + 1, pos_n));
-    if (n < 3 || n > 30) {
-      std::cerr << RLG_INVALID_WORD_LEN << std::endl;
-      return -1;
-    }
+    const int n = std::stoi(response.body.substr(pos_trial + 1, pos_n - pos_trial - 1));
     if (playCorrectGuess(response.body.substr(pos_n + 1), n) == 0) {
       return 0;
     }
@@ -168,7 +168,7 @@ int handleRLG(struct protocolMessage response) {
 
 int handleRWG(struct protocolMessage response) {
   const size_t pos_trials = response.body.find('\n', response.statusPos + 1);
-  if (pos_trials == std::string::npos) {
+  if (pos_trials != std::string::npos) {
     std::cerr << RWG_ERROR << std::endl;
     return -1;
   }
@@ -215,13 +215,14 @@ int handleRRV(struct protocolMessage response) {
 
 // handlers: player requests
 int handleSNG(std::string input) {
-  if (validateArgsAmount(input, SNG_ARGS) == -1) {
+  if (validateArgsAmount(input, START_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
   std::string plid = input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (validatePlayerID(plid) == 0) {
+    setPlayerID(plid);
     const std::string message = buildPlayerMessage({"SNG", plid});
     return generalUDPHandler(message);
   }
@@ -229,58 +230,46 @@ int handleSNG(std::string input) {
 }
 
 int handlePLG(std::string input) {
-  if (validateArgsAmount(input, PLG_ARGS) == -1) {
+  if (validateArgsAmount(input, PLAY_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
-  const size_t pos2 = input.find(' ');
-  const size_t pos3 = input.find(' ');
-  const std::string plid = input.substr(pos1 + 1, pos2 - pos1 - 1);
-  const std::string letter = input.substr(pos2 + 1, pos3 - pos2 - 1);
-  const std::string trial = input.substr(pos3 + 1);
+  std::string letter = input.substr(pos1 + 1);
+  letter.erase(std::remove(letter.begin(), letter.end(), '\n'), letter.end());
   if (letter.length() != 1 || !std::isalpha(letter[0])) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
     return -1;
-  } else if (validatePlayerID(plid) == -1) {
-    return -1;
-  } // FIXME: should we validate the trial?
-  const std::string message = buildPlayerMessage({"PLG", plid, letter, trial});
+  }
+  const std::string message =
+      buildPlayerMessage({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
 
 int handlePWG(std::string input) {
-  if (validateArgsAmount(input, PWG_ARGS) == -1) {
+  if (validateArgsAmount(input, GUESS_ARGS) == -1) {
     return -1;
   }
   const size_t pos1 = input.find(' ');
-  const size_t pos2 = input.find(' ');
-  const size_t pos3 = input.find(' ');
-  const std::string plid = input.substr(pos1 + 1, pos2 - pos1 - 1);
-  const std::string guess = input.substr(pos2 + 1, pos3 - pos2 - 1);
-  const std::string trial = input.substr(pos3 + 1);
+  std::string guess = input.substr(pos1 + 1);
+  guess.erase(std::remove(guess.begin(), guess.end(), '\n'), guess.end());
   if (guess.length() != getWordLength()) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR(getWordLength()) << std::endl;
     return -1;
-  } else if (validatePlayerID(plid) == -1) {
-    return -1;
-  } // FIXME: should we validate the trial?
-  const std::string message = buildPlayerMessage({"PWG", plid, guess, trial});
+  }
+  const std::string message =
+      buildPlayerMessage({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   return generalUDPHandler(message);
 }
 
 int handleQUT(std::string input) {
   // TODO: can't forget to close all open TCP connections
-  if (validateArgsAmount(input, QUT_ARGS) == -1) {
+  if (validateArgsAmount(input, QUIT_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  const std::string command = input.substr(0, pos1);
-  const std::string plid = input.substr(pos1 + 1);
-  if (validatePlayerID(plid) == -1) {
-    return -1;
-  }
-  const std::string message = buildPlayerMessage({"QUT", plid});
+  const std::string command = input.substr(0, input.find('\n'));
+  const std::string message = buildPlayerMessage({"QUT", getPlayerID()});
+  std::cout << message << std::endl;
   if (command == "quit") {
     return generalUDPHandler(message);
   }
@@ -288,14 +277,9 @@ int handleQUT(std::string input) {
 }
 
 int handleREV(std::string input) {
-  if (validateArgsAmount(input, REV_ARGS) == -1) {
+  if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  const std::string plid = input.substr(pos1 + 1);
-  if (validatePlayerID(plid) == -1) {
-    return -1;
-  }
-  const std::string message = buildPlayerMessage({"REV", plid});
+  const std::string message = buildPlayerMessage({"REV", getPlayerID()});
   return generalUDPHandler(message);
 }

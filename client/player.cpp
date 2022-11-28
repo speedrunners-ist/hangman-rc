@@ -67,7 +67,9 @@ int main(int argc, char *argv[]) {
     }
 
     std::string input(buffer);
-    std::string command = input.substr(0, input.find(' '));
+    // command is the first word - be it with the input ending in a space or \n,
+    // with priority to the space
+    std::string command = input.substr(0, input.find_first_of(" \n"));
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {

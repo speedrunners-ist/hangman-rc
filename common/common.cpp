@@ -17,7 +17,6 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo **se
   int status;
   if (!addr.empty()) {
     status = getaddrinfo(addr.c_str(), port.c_str(), &hints, serverInfo);
-    std::cout << "here" << std::endl;
 
   } else {
     status = getaddrinfo(NULL, port.c_str(), &hints, serverInfo);
