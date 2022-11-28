@@ -1,5 +1,5 @@
-#ifndef CLIENT_GAME_STATE_H
-#define CLIENT_GAME_STATE_H
+#ifndef CLIENT_API_H
+#define CLIENT_API_H
 
 #include "common/common.h"
 #include <algorithm>
@@ -11,11 +11,12 @@
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
 #define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
-#define TOO_MANY_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
+#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
-#define EXPECTED_WORD_DIF_LEN_ERROR "[ERR]: Invalid input. Expected a word of length "
+#define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                        \
+  "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
 
 class GameState {
   int wordLength;
@@ -106,15 +107,19 @@ public:
   }
 };
 
-int validateSingleArgCommand(std::string input);
-int validateTwoArgsCommand(std::string input);
+void createGame(int length, int mistakes);
+int getAvailableMistakes();
+std::string getWord();
+int playCorrectGuess(std::string positions, int n);
+void playIncorrectGuess();
+void playCorrectFinalGuess();
+void setLastGuess(char guess);
+int getWordLength();
+
+int validateArgsAmount(std::string input, int n);
+int validatePlayerID(std::string playerID);
 void exitGracefully(std::string errorMessage);
 void continueReading(char *buffer);
 std::string buildPlayerMessage(std::vector<std::string> args);
 
-// Global variables - the current game state and current player ID
-// perhaps we should consider a different way to store these?
-static GameState play = GameState(1, 1);
-static std::string playerID;
-
-#endif /* CLIENT_GAME_STATE_H */
+#endif /* CLIENT_API_H */

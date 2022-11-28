@@ -49,25 +49,35 @@ int handleRST(struct serverResponse response) {
 }
 
 int handleGSB(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+  if (validateArgsAmount(input, GSB_ARGS) == -1) {
     return -1;
   }
   const std::string message = buildPlayerMessage({"GSB"});
-  return 0;
+  return generalTCPHandler(message);
 }
 
 int handleGHL(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+  if (validateArgsAmount(input, GHL_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GHL", playerID});
-  return 0;
+  const size_t pos1 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == -1) {
+    return -1;
+  }
+  const std::string message = buildPlayerMessage({"GHL", plid});
+  return generalTCPHandler(message);
 }
 
 int handleSTA(std::string input) {
-  if (validateSingleArgCommand(input) == -1) {
+  if (validateArgsAmount(input, STA_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildPlayerMessage({"GST", playerID});
-  return 0;
+  const size_t pos1 = input.find(' ');
+  const std::string plid = input.substr(pos1 + 1);
+  if (validatePlayerID(plid) == -1) {
+    return -1;
+  }
+  const std::string message = buildPlayerMessage({"GST", plid});
+  return generalTCPHandler(message);
 }
