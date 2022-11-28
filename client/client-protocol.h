@@ -49,14 +49,14 @@ typedef std::map<std::string, std::function<int(struct protocolMessage response)
 
 void createSocketUDP(std::string addr, std::string port);
 
-// UDP Server message handlers
+// UDP Server message servers
 int handleRSG(struct protocolMessage response);
 int handleRLG(struct protocolMessage response);
 int handleRWG(struct protocolMessage response);
 int handleRQT(struct protocolMessage response);
 int handleRRV(struct protocolMessage response);
 
-// TCP Server message handlers
+// TCP Server message servers
 int handleRSB(struct protocolMessage response);
 int handleRHL(struct protocolMessage response);
 int handleRST(struct protocolMessage response);
