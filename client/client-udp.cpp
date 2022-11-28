@@ -225,6 +225,7 @@ int handleSNG(std::string input) {
   std::string plid = input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (validatePlayerID(plid) == 0) {
+    setPlayerID(plid);
     const std::string message = buildMessage({"SNG", plid});
     return generalUDPHandler(message);
   }
