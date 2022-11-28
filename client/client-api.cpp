@@ -1,16 +1,34 @@
 #include "client-api.h"
 
 static GameState play = GameState(1, 1);
+static std::string playerID;
+static int trials = 0;
 
 // Game state functions
 void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
 int getAvailableMistakes() { return play.getAvailableMistakes(); }
 std::string getWord() { return play.getWord(); }
-int playCorrectGuess(std::string positions, int n) { return play.correctGuess(positions, n); }
-void playIncorrectGuess() { play.incorrectGuess(); }
-void playCorrectFinalGuess() { play.correctFinalGuess(); }
+int playCorrectGuess(std::string positions, int n) {
+  int ret = play.correctGuess(positions, n);
+  if (ret == 0) {
+    incrementTrials();
+  }
+  return ret;
+}
+void playIncorrectGuess() {
+  incrementTrials();
+  play.incorrectGuess();
+}
+void playCorrectFinalGuess() {
+  incrementTrials();
+  play.correctFinalGuess();
+}
 void setLastGuess(char guess) { play.setLastGuess(guess); }
 int getWordLength() { return play.getWordLength(); }
+void setPlayerID(std::string id) { playerID = id; }
+std::string getPlayerID() { return playerID; }
+void incrementTrials() { trials++; }
+int getTrials() { return trials; }
 
 // Util functions
 int validateArgsAmount(std::string input, int n) {
@@ -23,14 +41,14 @@ int validateArgsAmount(std::string input, int n) {
   return 0;
 }
 
-int validatePlayerID(std::string playerID) {
-  if (playerID.length() != 6) {
+int validatePlayerID(std::string id) {
+  if (id.length() != 6) {
     std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
     return -1;
   }
 
-  for (size_t i = 0; i < playerID.length(); i++) {
-    if (!isdigit(playerID[i])) {
+  for (size_t i = 0; i < id.length(); i++) {
+    if (!isdigit(id[i])) {
       std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
       return -1;
     }

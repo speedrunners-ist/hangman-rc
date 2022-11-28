@@ -1,7 +1,7 @@
 #include "client-protocol.h"
 
 // clang-format off
-static messageHandler handlePlayerMessage = {
+static commandHandler handlePlayerMessage = {
   { "start", handleSNG },      { "sg", handleSNG },
   { "play", handlePLG },       { "pl", handlePLG },
   { "guess", handlePWG },      { "gw", handlePWG },
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
 
   // TODO: check error
-  newSocket(SOCK_DGRAM, GSIP, GSport);
+  createSocketUDP(GSIP, GSport);
   int res = mkdir("hints", 0700);
   if (res == -1 && errno != EEXIST) {
     // if the directory can't be created and it doesn't already exist
@@ -67,7 +67,9 @@ int main(int argc, char *argv[]) {
     }
 
     std::string input(buffer);
-    std::string command = input.substr(0, input.find(' '));
+    // command is the first word - be it with the input ending in a space or \n,
+    // with priority to the space
+    std::string command = input.substr(0, input.find_first_of(" \n"));
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
