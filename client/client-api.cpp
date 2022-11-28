@@ -45,7 +45,6 @@ int GameState::correctGuess(std::string positions, int n) {
   // done with std::string.find
   Word initialWord = Word(word);
   int readPositions = 0;
-  std::cout << "positions: " << positions << std::endl;
   size_t pos;
   do {
     pos = positions.find_first_of(" \n");
