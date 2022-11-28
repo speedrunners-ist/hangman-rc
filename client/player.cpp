@@ -13,10 +13,13 @@ static commandHandler handlePlayerMessage = {
 };
 // clang-format on
 
-// Clears the buffer and prints new terminal prompt
-void continueReading(char *buffer) {
-  memset(buffer, 0, MAX_USER_INPUT);
-  std::cout << "> ";
+// C++ unfortunately doesn't have a built-in function to retrieve a map's keys
+std::vector<std::string> getKeys(commandHandler map) {
+  std::vector<std::string> keys;
+  for (auto const &pair : map) {
+    keys.push_back(pair.first);
+  }
+  return keys;
 }
 
 // main function that makes orders
@@ -24,8 +27,6 @@ int main(int argc, char *argv[]) {
   int opt;
   std::string GSIP = DEFAULT_GSIP;
   std::string GSport = DEFAULT_GSPORT;
-
-  // TODO: what kind of error checking do we need to do regarding the arguments?
 
   // Read the command line arguments
   while ((opt = getopt(argc, argv, "n:p:")) != -1) {
@@ -42,7 +43,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // TODO: check error
   createSocketUDP(GSIP, GSport);
   int res = mkdir("hints", 0700);
   if (res == -1 && errno != EEXIST) {
@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
   }
 
   char buffer[MAX_USER_INPUT];
-
   // TODO: should we include a help menu as the first thing the player sees?
   std::cout << "> ";
 
@@ -73,17 +72,14 @@ int main(int argc, char *argv[]) {
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
-      std::cerr << "[ERR]: Invalid command. Expected one of: ";
-      for (auto it = handlePlayerMessage.begin(); it != handlePlayerMessage.end(); ++it) {
-        std::cout << it->first << " ";
-      }
-      std::cout << std::endl;
+      const std::string allCommands = buildSplitString(getKeys(handlePlayerMessage));
+      std::cerr << UNEXPECTED_COMMAND_ERROR(allCommands);
       continueReading(buffer);
       continue;
     }
 
     // if the command is valid, call the appropriate function
-    if (handlePlayerMessage[command](input) == EXIT_HANGMAN) {
+    if (forceExit(command) || handlePlayerMessage[command](input) == EXIT_HANGMAN) {
       break;
     }
     continueReading(buffer);

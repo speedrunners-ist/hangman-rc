@@ -1,15 +1,19 @@
 #include "client-api.h"
 
 // GameState methods implementation
+GameState::GameState() { this->active = false; }
 GameState::GameState(int length, int mistakes) {
   this->wordLength = length;
   this->mistakesLeft = mistakes;
+  this->active = true;
   // word is a string with length equal to wordLength, filled with underscores
   this->word = std::string((size_t)length, '_');
   for (char c = 'a'; c <= 'z'; c++) {
     guessedLetters[c] = false;
   }
 }
+
+bool GameState::isActive() { return active; }
 
 int GameState::getAvailableMistakes() { return mistakesLeft; }
 
@@ -80,11 +84,15 @@ void GameState::correctFinalGuess() {
   guessedLetters[guess] = true;
   // replace all underscores with the guess
   std::replace(word.begin(), word.end(), '_', guess);
+  active = false;
 }
 
-void GameState::correctFinalWordGuess() { word = lastWordGuess; }
+void GameState::correctFinalWordGuess() {
+  word = lastWordGuess;
+  active = false;
+}
 
-static GameState play = GameState(1, 1);
+static GameState play;
 static std::string playerID;
 static int trials = 0;
 
@@ -154,4 +162,11 @@ void exitGracefully(std::string errorMessage) {
   // close(fd);
   // freeaddrinfo(serverInfo);
   // exit(EXIT_SUCCESS);
+}
+
+bool forceExit(std::string command) { return command == "exit" && !play.isActive(); }
+
+void continueReading(char *buffer) {
+  memset(buffer, 0, MAX_USER_INPUT);
+  std::cout << "> ";
 }

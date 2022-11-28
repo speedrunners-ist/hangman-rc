@@ -224,7 +224,7 @@ int sendSNG(std::string input) {
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (validatePlayerID(plid) == 0) {
     setPlayerID(plid);
-    const std::string message = buildMessage({"SNG", plid});
+    const std::string message = buildSplitString({"SNG", plid});
     return generalUDPHandler(message);
   }
   return -1;
@@ -242,7 +242,7 @@ int sendPLG(std::string input) {
     return -1;
   }
   const std::string message =
-      buildMessage({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
+      buildSplitString({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
   return generalUDPHandler(message);
 }
@@ -259,7 +259,7 @@ int sendPWG(std::string input) {
     return -1;
   }
   const std::string message =
-      buildMessage({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
+      buildSplitString({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   setLastWordGuess(guess);
   return generalUDPHandler(message);
 }
@@ -270,7 +270,7 @@ int sendQUT(std::string input) {
     return -1;
   }
   const std::string command = input.substr(0, input.find('\n'));
-  const std::string message = buildMessage({"QUT", getPlayerID()});
+  const std::string message = buildSplitString({"QUT", getPlayerID()});
   if (command == "quit") {
     return generalUDPHandler(message);
   }
@@ -281,6 +281,6 @@ int sendREV(std::string input) {
   if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildMessage({"REV", getPlayerID()});
+  const std::string message = buildSplitString({"REV", getPlayerID()});
   return generalUDPHandler(message);
 }
