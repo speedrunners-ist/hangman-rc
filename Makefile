@@ -42,5 +42,5 @@ depend : $(SOURCES)
 	$(CC) $(INCLUDES) -MM $^ > autodep
 
 
-client/player: client/client-game-state.o client/client-tcp.o client/client-udp.o common/common.o
+client/player: client/client-api.o client/client-tcp.o client/client-udp.o common/common.o
 server/server: server/server-api.o server/server-tcp.o server/server-udp.o common/common.o

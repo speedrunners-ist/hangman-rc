@@ -1,12 +1,22 @@
 #ifndef CLIENT_PROTOCOL_H
 #define CLIENT_PROTOCOL_H
 
-#include "client-game-state.h"
+#include "client-api.h"
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3
 #define UDP_RECV_SIZE 4096
 #define TCP_READ_SIZE 4096
+
+// Expected amount of arguments for each protocol (client-side)
+#define SNG_ARGS 2
+#define PLG_ARGS 4
+#define PWG_ARGS 4
+#define QUT_ARGS 2
+#define REV_ARGS 2
+#define GSB_ARGS 1
+#define GHL_ARGS 2
+#define STA_ARGS 2
 
 // UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
 // something the player should know about, I think
