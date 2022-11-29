@@ -38,8 +38,8 @@ struct protocolMessage {
   std::string body;
 };
 
-int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
-
+int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
+              struct addrinfo **serverInfo);
 // UDP utils functions
 int generalUDPHandler(std::string message);
 int exchangeUDPMessage(std::string message, char *response);

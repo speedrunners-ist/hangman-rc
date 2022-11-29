@@ -7,6 +7,7 @@ static socklen_t addrlen;
 static struct sockaddr_in addrClient;
 static char buffer[UDP_RECV_SIZE];
 static ssize_t nread;
+struct addrinfo hints;
 
 // clang-format off
 static commandHandler handleUDPClientMessage = {
@@ -19,7 +20,7 @@ static commandHandler handleUDPClientMessage = {
 // clang-format on
 
 void createSocketUDP(std::string addr, std::string port) {
-  socketFd = newSocket(SOCK_DGRAM, addr, port, &serverInfo);
+  socketFd = newSocket(SOCK_DGRAM, addr, port, &hints, &serverInfo);
 
   // Listen for incoming connections
   while (1) {
