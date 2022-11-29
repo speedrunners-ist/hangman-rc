@@ -8,7 +8,7 @@
 #define PLAY_ARGS 2
 #define GUESS_ARGS 2
 #define QUIT_ARGS 1
-#define REVEAL_ARGS 2
+#define REVEAL_ARGS 1
 #define SCOREBOARD_ARGS 1
 #define HINT_ARGS 1
 #define STATE_ARGS 1
