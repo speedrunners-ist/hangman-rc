@@ -24,6 +24,7 @@ public:
   GameState(int length, int mistakes);
   bool isActive();
   int getAvailableMistakes();
+  void setInactive();
   char getLastGuess();
   std::string getLastWordGuess();
   int getWordLength();
@@ -62,6 +63,7 @@ int getWordLength();
 void setPlayerID(std::string id);
 std::string getPlayerID();
 void incrementTrials();
+void resetGame();
 int getTrials();
 
 int validateArgsAmount(std::string input, int n);
