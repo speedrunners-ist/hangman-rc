@@ -1,7 +1,7 @@
 #include "client-protocol.h"
 
-struct addrinfo *serverInfo;
-int socketFd;
+struct addrinfo *serverInfoUDP;
+int socketFdUDP;
 char responseUDP[UDP_RECV_SIZE];
 
 // clang-format off
@@ -15,13 +15,13 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 void createSocketUDP(std::string addr, std::string port) {
-  socketFd = newSocket(SOCK_DGRAM, addr, port, &serverInfo);
+  socketFdUDP = newSocket(SOCK_DGRAM, addr, port, &serverInfoUDP);
 }
 
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
 
 int exchangeUDPMessage(std::string message, char *response) {
-  if (serverInfo == NULL) {
+  if (serverInfoUDP == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
@@ -30,17 +30,18 @@ int exchangeUDPMessage(std::string message, char *response) {
 
   int triesLeft = UDP_TRIES;
   do {
-    if (sendto(socketFd, message.c_str(), message.length(), 0, serverInfo->ai_addr,
-               serverInfo->ai_addrlen) == -1) {
+    if (sendto(socketFdUDP, message.c_str(), message.length(), 0, serverInfoUDP->ai_addr,
+               serverInfoUDP->ai_addrlen) == -1) {
       std::cerr << SENDTO_ERROR << std::endl;
       return -1;
     }
 
-    socklen_t addrLen = sizeof(serverInfo->ai_addr);
+    socklen_t addrLen = sizeof(serverInfoUDP->ai_addr);
+    turnOnSocketTimer(socketFdUDP);
     // TODO: we should probably expect a given amount of bytes, not necessarily UDP_RECV_SIZE
     const ssize_t bytesReceived =
-        recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
-
+        recvfrom(socketFdUDP, response, UDP_RECV_SIZE, 0, serverInfoUDP->ai_addr, &addrLen);
+    turnOffSocketTimer(socketFdUDP);
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;

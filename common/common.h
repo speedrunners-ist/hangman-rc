@@ -26,6 +26,7 @@
 #define UDP_TRIES 3
 #define UDP_RECV_SIZE 4096
 #define TCP_READ_SIZE 4096
+#define SOCKET_TIMEOUT 5
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
@@ -39,6 +40,9 @@ struct protocolMessage {
 };
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
+
+int turnOnSocketTimer(int socketFd);
+int turnOffSocketTimer(int socketFd);
 
 // UDP utils functions
 int generalUDPHandler(std::string message);

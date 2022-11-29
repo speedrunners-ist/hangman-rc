@@ -29,9 +29,28 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo **se
   return socketFd;
 }
 
-// Below, TCP-related functions
+int turnOnSocketTimer(int socketFd) {
+  struct timeval tv;
+  memset(&tv, 0, sizeof(tv));
+  tv.tv_sec = SOCKET_TIMEOUT;
+  if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+    std::cout << "[ERR]: Failed to set socket timeout. Exiting." << std::endl;
+    // FIXME: is this exit graceful?
+    exit(EXIT_FAILURE);
+  }
+  return 0;
+}
 
-// Below, UDP-related functions
+int turnOffSocketTimer(int socketFd) {
+  struct timeval tv;
+  memset(&tv, 0, sizeof(tv));
+  if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+    std::cout << "[ERR]: Failed to reset socket timeout. Exiting." << std::endl;
+    // FIXME: is this exit graceful?
+    exit(EXIT_FAILURE);
+  }
+  return 0;
+}
 
 // Below, miscellaneous functions
 
