@@ -24,8 +24,8 @@
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3
-#define UDP_RECV_SIZE 4096
-#define TCP_READ_SIZE 4096
+// sizes below are arbitrary, in bytes
+#define UDP_RECV_SIZE 1024
 #define SOCKET_TIMEOUT 5
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."

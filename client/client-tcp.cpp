@@ -2,7 +2,6 @@
 
 struct addrinfo *serverInfoTCP;
 int socketFdTCP;
-char responseTCP[TCP_READ_SIZE];
 
 // clang-format off
 responseHandler handleTCPServerMessage = {
@@ -14,44 +13,114 @@ responseHandler handleTCPServerMessage = {
 
 void createSocketTCP(std::string addr, std::string port) {
   socketFdTCP = newSocket(SOCK_STREAM, addr, port, &serverInfoTCP);
+  if (connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen) == -1) {
+    std::cerr << "[ERR]: Failed to connect to TCP server. Exiting." << std::endl;
+    exit(EXIT_FAILURE);
+  }
 }
 
-int exchangeTCPMessage(std::string message, char *response) {
-  // TODO, w/ placeholders in order to compile
+int sendTCPMessage(std::string message) {
+  size_t bytesSent = 0;
+  size_t bytesLeft = message.length();
+  while (bytesSent < message.length()) {
+    ssize_t bytes = send(socketFdTCP, message.c_str() + bytesSent, bytesLeft, 0);
+    if (bytes == -1) {
+      std::cerr << "[ERR]: Failed to send message to TCP server. Exiting." << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    bytesSent += bytes;
+    bytesLeft -= bytes;
+  }
+  return 0;
+}
+
+int receiveTCPMessage(std::string *message, int args) {
+  size_t bytesReceived = 0;
+  size_t bytesRead = 0;
+  int readArgs = 0;
+  char c;
+  do {
+    // FIXME: will there be a problem if the response is "ERR\n"?
+    bytesReceived = read(socketFdTCP, &c, 1);
+    if (bytesReceived == -1) {
+      std::cerr << "[ERR]: Failed to receive message from TCP server." << std::endl;
+      return -1;
+    } else if (c == ' ' || c == '\n') {
+      readArgs++;
+    }
+    message->push_back(c);
+    bytesRead += bytesReceived;
+  } while (bytesReceived != 0 && readArgs < args);
+  return (int)bytesRead;
+}
+
+int exchangeTCPMessage(std::string message, struct protocolMessage *serverMessage, int args) {
+  if (serverInfoTCP == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
   std::cout << "[INFO]: Sending message: " << message;
-  strcpy(response, "TCP response");
-  std::cout << response << std::endl;
+  std::string *responseMessage = new std::string();
+
+  sendTCPMessage(message);
+  turnOnSocketTimer(socketFdTCP);
+  receiveTCPMessage(responseMessage, args);
+  turnOffSocketTimer(socketFdTCP);
+  serverMessage->body = *responseMessage;
   return 0;
 }
 
-int parseTCPResponse(char *response) {
-  // TODO, w/ placeholders in order to compile
-  std::cout << "[INFO]: Received response: " << response;
-  return 0;
+int parseTCPResponse(struct protocolMessage *serverMessage) {
+  std::string responseBegin = serverMessage->body;
+  const std::string command = responseBegin.substr(0, 3);
+  responseBegin.erase(0, 4);
+  const std::string status = responseBegin.substr(0, responseBegin.find_first_of(' \n'));
+  serverMessage->code = command;
+  serverMessage->status = status;
+  return handleTCPServerMessage[command](*serverMessage);
 }
 
 int generalTCPHandler(std::string message) {
-  memset(responseTCP, 0, TCP_READ_SIZE);
-  if (exchangeTCPMessage(message, responseTCP) == -1) {
+  struct protocolMessage *serverMessage;
+  if (exchangeTCPMessage(message, serverMessage, TCP_DEFAULT_ARGS) == -1) {
     return -1;
   }
-  return parseTCPResponse(responseTCP);
+  return parseTCPResponse(serverMessage);
 }
 
-// TODO: handlers below only implemented to compile
+// TODO: can't forget to close socket
 int handleRSB(struct protocolMessage response) {
-  std::cout << "[INFO]: Received response: " << response.body;
-  return 0;
+  // TODO: check if the last character in body is the expected one
+  if (response.status == "OK") {
+  } else if (response.status == "EMPTY") {
+    std::cout << "[INFO]: The server hasn't held any games yet." << std::endl;
+    // TODO: close TCP socket
+    return 0;
+  }
+  return -1;
 }
 
 int handleRHL(struct protocolMessage response) {
-  std::cout << "[INFO]: Received response: " << response.body;
-  return 0;
+  if (response.status == "OK") {
+    std::cout << "[INFO]: The server has held the following games:" << std::endl;
+    std::cout << response.body << std::endl;
+  } else if (response.status == "NOK") {
+    std::cout << "[INFO]: The server could not send any hints at the moment." << std::endl;
+    // TODO: close TCP socket
+  }
+  return -1;
 }
 
 int handleRST(struct protocolMessage response) {
-  std::cout << "[INFO]: Received response: " << response.body;
-  return 0;
+  if (response.status == "ACT") {
+    std::cout << "[INFO]: The server has the following active game:" << std::endl;
+  } else if (response.status == "FIN") {
+    std::cout << "[INFO]: The server has the following finished games:" << std::endl;
+  } else if (response.status == "NOK") {
+    std::cout << "[INFO]: The server could not find any games for the given player." << std::endl;
+    // TODO: close TCP socket
+  }
 }
 
 int sendGSB(std::string input) {

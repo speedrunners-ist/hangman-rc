@@ -13,6 +13,8 @@
 #define HINT_ARGS 1
 #define STATE_ARGS 1
 
+#define TCP_DEFAULT_ARGS 2
+
 // UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
 // something the player should know about, I think
 #define SENDTO_ERROR "[ERR]: Failed to send message to server."

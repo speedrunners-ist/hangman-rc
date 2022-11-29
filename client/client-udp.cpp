@@ -4,6 +4,8 @@ struct addrinfo *serverInfoUDP;
 int socketFdUDP;
 char responseUDP[UDP_RECV_SIZE];
 
+// TODO: change this to read a specific amount of bytes from the socket for each specific command
+
 // clang-format off
 responseHandler handleUDPServerMessage = {
   {"RSG", handleRSG},
