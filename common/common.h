@@ -59,6 +59,6 @@ int parseTCPResponse(char *response);
  * @return: number of guesses
  */
 unsigned int initialAvailableMistakes(unsigned int wordLength);
-std::string buildMessage(std::vector<std::string> args);
+std::string buildSplitString(std::vector<std::string> args);
 
 #endif /* COMMON_H */
