@@ -17,6 +17,8 @@ bool GameState::isActive() { return active; }
 
 int GameState::getAvailableMistakes() { return mistakesLeft; }
 
+void GameState::setInactive() { this->active = false; }
+
 char GameState::getLastGuess() { return lastGuess; }
 
 std::string GameState::getLastWordGuess() { return lastWordGuess; }
@@ -92,9 +94,9 @@ void GameState::correctFinalWordGuess() {
   active = false;
 }
 
-static GameState play;
-static std::string playerID;
-static int trials = 0;
+GameState play;
+std::string playerID;
+int trials = 0;
 
 // Game state functions, useful for the client's protocol implementations
 void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
@@ -111,15 +113,9 @@ void playIncorrectGuess() {
   incrementTrials();
   play.incorrectGuess();
 }
-void playCorrectFinalGuess() {
-  incrementTrials();
-  play.correctFinalGuess();
-}
+void playCorrectFinalGuess() { play.correctFinalGuess(); }
 
-void playCorrectFinalWordGuess() {
-  incrementTrials();
-  play.correctFinalWordGuess();
-}
+void playCorrectFinalWordGuess() { play.correctFinalWordGuess(); }
 
 void setLastGuess(char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(std::string guess) { play.setLastWordGuess(guess); }
@@ -127,7 +123,10 @@ int getWordLength() { return play.getWordLength(); }
 void setPlayerID(std::string id) { playerID = id; }
 std::string getPlayerID() { return playerID; }
 void incrementTrials() { trials++; }
-void resetTrials() { trials = 0; }
+void resetGame() {
+  play.setInactive();
+  trials = 0;
+}
 int getTrials() { return trials; }
 
 // Util functions
