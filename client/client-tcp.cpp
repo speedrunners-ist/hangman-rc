@@ -89,10 +89,32 @@ int generalTCPHandler(std::string message) {
   return parseTCPResponse(serverMessage);
 }
 
+int parseFileArgs(struct fileInfo *info) {
+  std::string fileArgs;
+  const int ret = receiveTCPMessage(&fileArgs, TCP_FILE_ARGS);
+  if (ret == -1) {
+    return -1;
+  }
+  info->fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
+  fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
+  info->fileSize = std::stoi(fileArgs.substr(0, fileArgs.find_first_of(' ')));
+  fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
+  info->delimiter = fileArgs[0];
+  return (info->delimiter == ' ') ? 0 : -1;
+}
+
 // TODO: can't forget to close socket
 int handleRSB(struct protocolMessage response) {
   // TODO: check if the last character in body is the expected one
   if (response.status == "OK") {
+    struct fileInfo *info;
+    const int ret = parseFileArgs(info);
+    if (ret == -1) {
+      std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
+      return -1;
+    }
+    receiveTCPFile(info); // TODO: implement and do something with the return value
+    // TODO: close TCP socket
   } else if (response.status == "EMPTY") {
     std::cout << "[INFO]: The server hasn't held any games yet." << std::endl;
     // TODO: close TCP socket

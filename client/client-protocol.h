@@ -3,6 +3,12 @@
 
 #include "client-api.h"
 
+struct fileInfo {
+  std::string fileName;
+  int fileSize;
+  char delimiter;
+};
+
 // Expected amount of arguments for each protocol (client-side)
 #define START_ARGS 2
 #define PLAY_ARGS 2
@@ -14,6 +20,7 @@
 #define STATE_ARGS 1
 
 #define TCP_DEFAULT_ARGS 2
+#define TCP_FILE_ARGS 2
 
 // UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
 // something the player should know about, I think
