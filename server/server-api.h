@@ -5,36 +5,67 @@
 #include <algorithm>
 #include <functional>
 
-typedef std::map<std::string, std::function<int(std::string *message, std::string input)>>
-    messageHandler;
+typedef std::map<char, bool> Alphabet;
 
-/*
-// Player message handlers
-// TODO: try to find a better way to handle functions with two arguments
-// int handleStart(std::string *message, std::string input);
-// int handlePlay(std::string *message, std::string input);
-// int handleGuess(std::string *message, std::string input);
-// int handleScoreboard(std::string *message, std::string input);
-// int handleHint(std::string *message, std::string input);
-// int handleState(std::string *message, std::string input);
-// int handleQuit(std::string *message, std::string input);
-// int handleExit(std::string *message, std::string input);
-// int handleDebug(std::string *message, std::string input);
+class GameState {
+  int wordLength;
+  int mistakesLeft;
+  int guessesMade = 0;
+  char lastGuess;
+  bool active = false;
+  std::string lastWordGuess;
+  Alphabet guessedLetters;
+  std::string word;
 
-static messageHandler handlePlayerMessageServer = {{"start", handleStart},
-                                                   {"sg", handleStart},
-                                                   {"play", handlePlay},
-                                                   {"pl", handlePlay},
-                                                   {"guess", handleGuess},
-                                                   {"gw", handleGuess},
-                                                   {"scoreboard", handleScoreboard},
-                                                   {"sb", handleScoreboard},
-                                                   {"hint", handleHint},
-                                                   {"h", handleHint},
-                                                   {"state", handleState},
-                                                   {"st", handleState},
-                                                   {"quit", handleQuit},
-                                                   {"exit", handleExit},
-                                                   {"rev", handleDebug}};
-*/
+public:
+  GameState();
+  GameState(int length, int mistakes);
+  bool isActive();
+  int getAvailableMistakes();
+  char getLastGuess();
+  std::string getLastWordGuess();
+  int getWordLength();
+  std::string getWord();
+  void setLastGuess(char guess);
+  void setLastWordGuess(std::string guess);
+  void setWord(std::string newWord);
+  void incorrectGuess();
+  int correctGuess(std::string positions, int n);
+  void correctFinalGuess();
+  void correctFinalWordGuess();
+};
+
+// Error Messages
+#define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
+#define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
+#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
+#define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
+#define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
+#define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
+#define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                        \
+  "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
+#define UNEXPECTED_COMMAND_ERROR(commands)                                                         \
+  "[ERR]: Invalid input. Expected one of the following commands: " + commands
+
+void createGame(int length, int mistakes);
+int getAvailableMistakes();
+std::string getWord();
+int playCorrectGuess(std::string positions, int n);
+void playIncorrectGuess();
+void playCorrectFinalGuess();
+void playCorrectFinalWordGuess();
+void setLastGuess(char guess);
+void setLastWordGuess(std::string guess);
+int getWordLength();
+void setPlayerID(std::string id);
+std::string getPlayerID();
+void incrementTrials();
+int getTrials();
+
+int validateArgsAmount(std::string input, int n);
+int validatePlayerID(std::string id);
+void exitGracefully(std::string errorMessage);
+bool forceExit(std::string command);
+void continueReading(char *buffer);
+
 #endif /* SERVER_API_H */
