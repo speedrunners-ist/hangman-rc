@@ -62,6 +62,7 @@ int getWordLength();
 void setPlayerID(std::string id);
 std::string getPlayerID();
 void incrementTrials();
+void resetTrials();
 int getTrials();
 
 int validateArgsAmount(std::string input, int n);

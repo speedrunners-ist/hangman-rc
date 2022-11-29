@@ -1,5 +1,7 @@
 #include "client-protocol.h"
 
+static struct addrinfo *serverInfo;
+static int socketFd;
 static char responseTCP[TCP_READ_SIZE];
 
 // clang-format off
@@ -9,6 +11,10 @@ static responseHandler handleTCPServerMessage = {
   {"RST", handleRST}
 };
 // clang-format on
+
+void createSocketTCP(std::string addr, std::string port) {
+  socketFd = newSocket(SOCK_STREAM, addr, port, &serverInfo);
+}
 
 int exchangeTCPMessage(std::string message, char *response) {
   // TODO, w/ placeholders in order to compile

@@ -139,6 +139,7 @@ int handleRLG(struct protocolMessage response) {
     }
   } else if (response.status == "WIN") {
     playCorrectFinalGuess();
+    resetTrials();
     std::cout << RLG_WIN(getWord()) << std::endl;
     return 0;
   } else if (response.status == "DUP") {
@@ -152,6 +153,7 @@ int handleRLG(struct protocolMessage response) {
     // the server itself ends the game on its end, so we should add a mechanism on our end
     // to end the game as well ig
     playIncorrectGuess();
+    resetTrials();
     std::cout << RLG_OVR << std::endl;
     return 0;
   } else if (response.status == "INV") {
@@ -172,6 +174,7 @@ int handleRWG(struct protocolMessage response) {
   }
   if (response.status == "WIN") {
     playCorrectFinalWordGuess();
+    resetTrials();
     std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
   } else if (response.status == "NOK") {
@@ -182,6 +185,7 @@ int handleRWG(struct protocolMessage response) {
     // the server itself ends the game on its end, so we should add a mechanism on our end
     // to end the game as well ig
     playIncorrectGuess();
+    resetTrials();
     std::cout << RWG_OVR << std::endl;
     return 0;
   } else if (response.status == "INV") {

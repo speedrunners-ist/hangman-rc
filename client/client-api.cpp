@@ -127,6 +127,7 @@ int getWordLength() { return play.getWordLength(); }
 void setPlayerID(std::string id) { playerID = id; }
 std::string getPlayerID() { return playerID; }
 void incrementTrials() { trials++; }
+void resetTrials() { trials = 0; }
 int getTrials() { return trials; }
 
 // Util functions
