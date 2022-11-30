@@ -61,10 +61,10 @@ int parseUDPResponse(char *response);
 int generalTCPHandler(std::string message);
 int exchangeTCPMessage(std::string message, char *response);
 int sendTCPMessage(std::string message);
-int receiveTCPMessage(std::string *message, int args);
-int receiveTCPFile(std::string *message, std::string dir);
+int receiveTCPMessage(std::string &message, int args);
+int receiveTCPFile(std::string &message, std::string dir);
 int parseTCPResponse(char *response);
-int parseFileArgs(struct fileInfo *info);
+int parseFileArgs(struct fileInfo &info);
 
 // Below, function prototypes
 
