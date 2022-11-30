@@ -162,7 +162,7 @@ int handleRSB(struct protocolMessage response) {
     }
     std::cout << "[INFO]: File received successfully." << std::endl;
     std::cout << "SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES" << std::endl;
-    return displayFile(info->fileName);
+    return displayFileRank(info->fileName);
     // TODO: close TCP socket
   } else if (response.status == "EMPTY") {
     std::cout << "[INFO]: The server hasn't held any games yet." << std::endl;
@@ -181,11 +181,13 @@ int handleRHL(struct protocolMessage response) {
       // TODO: close TCP socket
       return -1;
     }
-    if (receiveTCPFile(info, "hints") == -1) {
+    const int bytesRead = receiveTCPFile(info, "hints");
+    if (bytesRead == -1) {
       // TODO: close TCP socket
       return -1;
     }
-    std::cout << "[INFO]: File received successfully, stored in the hints directory." << std::endl;
+    std::cout << "[INFO]: File received successfully." << std::endl;
+    std::cout << "[HINT]: " << info->fileName << ", " << bytesRead << " bytes." << std::endl;
   } else if (response.status == "NOK") {
     std::cout << "[INFO]: The server could not send any hints at the moment." << std::endl;
     // TODO: close TCP socket
@@ -194,14 +196,40 @@ int handleRHL(struct protocolMessage response) {
 }
 
 int handleRST(struct protocolMessage response) {
-  if (response.status == "ACT") {
-    std::cout << "[INFO]: The server has the following active game:" << std::endl;
-  } else if (response.status == "FIN") {
-    std::cout << "[INFO]: The server has the following finished games:" << std::endl;
-  } else if (response.status == "NOK") {
-    std::cout << "[INFO]: The server could not find any games for the given player." << std::endl;
-    // TODO: close TCP socket
+  if (response.status == "NOK") {
+    std::cout << "[INFO]: The server could not find any games (neither active nor finished)."
+              << std::endl;
+    return 0;
+  } else if (response.status == "ERR") {
+    return -1;
   }
+
+  struct fileInfo *info;
+  const int ret = parseFileArgs(info);
+  if (ret == -1) {
+    std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
+    // TODO: close TCP socket
+    return -1;
+  }
+
+  const int bytesRead = receiveTCPFile(info, "state");
+  if (bytesRead == -1) {
+    // TODO: close TCP socket
+    return -1;
+  }
+
+  std::cout << "[INFO]: File received successfully." << std::endl;
+  std::cout << "[INFO]: " << info->fileName << ", " << bytesRead << " bytes." << std::endl;
+
+  if (response.status == "ACT") {
+    std::cout << "[INFO]: Displaying information about the current game." << std::endl;
+  } else if (response.status == "FIN") {
+    std::cout << "[INFO]: Displaying information about the most recent finished game." << std::endl;
+  }
+
+  displayFile(info->fileName);
+  // TODO: close TCP socket
+  return 0;
 }
 
 int sendGSB(std::string input) {
