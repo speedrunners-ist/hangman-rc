@@ -36,12 +36,19 @@ void GameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
 
 void GameState::setWord(std::string newWord) { this->word = newWord; }
 
+bool GameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
+
+void GameState::setSpotsLeft(int spots) { this->spotsLeft = spots; }
+
+int GameState::getSpotsLeft() { return spotsLeft; }
+
 void GameState::incorrectGuess() {
   char guess = getLastGuess();
   // TODO: do we have to check if we're setting to true something that's already true?
   guessedLetters[guess] = true;
   guessesMade++;
   mistakesLeft--;
+  incrementTrials();
 }
 
 int GameState::correctGuess(std::string positions, int n) {
@@ -81,6 +88,9 @@ int GameState::correctGuess(std::string positions, int n) {
   std::cout << "You guessed correctly! Word is now: " << getWord() << std::endl;
   guessesMade++;
   guessedLetters[guess] = true;
+  spotsLeft -= n;
+  incrementTrials();
+
   return 0;
 }
 
@@ -205,6 +215,8 @@ int createGameSession(std::string plid, std::string &arguments) {
   GameState newGame = createGame(wordLength, mistakes);
   newGame.setWord(word);
 
+  newGame.setSpotsLeft(wordLength);
+
   GameSessisons.insert(std::pair<std::string, GameState>(plid, newGame));
 
   arguments = buildSplitString({std::to_string(wordLength), std::to_string(mistakes)});
@@ -252,4 +264,51 @@ int isOngoingGame(std::string plid) {
   return 0;
 }
 
-std::string playLetter(std::string plid, std::string letter, std::string trial) {}
+int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
+  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+    return SYNTAX_ERROR;
+  }
+
+  GameState play = GameSessisons[plid];
+
+  std::cout << "trial " << trial << std::endl;
+  std::cout << "play trials " << play.getTrials() << std::endl;
+
+  if (std::stoi(trial) != play.getTrials()) {
+    return TRIAL_MISMATCH;
+  }
+
+  if (play.isLetterGuessed(letter[0])) {
+    return DUPLICATE_GUESS;
+  }
+
+  int numberCorrect = getOccurances(play.getWord(), letter[0], arguments);
+
+  if (numberCorrect == 0) {
+    play.incorrectGuess();
+    if (play.getAvailableMistakes() == -1) {
+      return WRONG_FINAL_GUESS;
+    }
+    return WRONG_GUESS;
+  }
+
+  play.correctGuess(arguments, numberCorrect);
+
+  if (play.getSpotsLeft() == 0) {
+    return SUCCESS_FINAL_GUESS;
+  }
+
+  return SUCCESS_GUESS;
+}
+
+int getOccurances(std::string word, char letter, std::string &positions) {
+  int numberCorrect = 0;
+
+  for (size_t i = 0; i < word.length(); i++) {
+    if (word[i] == letter) {
+      positions += std::to_string(i) + " ";
+      numberCorrect++;
+    }
+  }
+  return numberCorrect;
+}

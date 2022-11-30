@@ -131,18 +131,48 @@ int sendRSG(std::string input) {
   return generalUDPHandler(response);
 }
 int sendRLG(std::string input) {
-  // TODO: fix this
+  // TODO: fix this AND SEE CASE OF SYNTAX OF MESSAGE BEING WRONG
   size_t pos1 = input.find(' ');
   std::string plid = input.substr(0, pos1);
-  input.substr(pos1 + 1);
+  input = input.substr(pos1 + 1);
   pos1 = input.find(' ');
   std::string letter = input.substr(0, pos1);
-  input.substr(pos1 + 1);
+  input = input.substr(pos1 + 1);
   std::string trial = input;
 
+  std::string arguments = "";
+  int ret = playLetter(plid, letter, trial, arguments);
   std::string response;
 
-  return 0;
+  switch (ret) {
+    case SUCCESS_GUESS:
+      response = buildSplitString({"RLG", "OK", arguments});
+      break;
+    case SUCCESS_FINAL_GUESS:
+      response = buildSplitString({"RLG", "WIN"});
+      break;
+    case DUPLICATE_GUESS:
+      response = buildSplitString({"RLG", "DUP"});
+      break;
+    case WRONG_GUESS:
+      response = buildSplitString({"RLG", "NOK"});
+      break;
+    case WRONG_FINAL_GUESS:
+      response = buildSplitString({"RLG", "OVR"});
+      break;
+    case TRIAL_MISMATCH:
+      response = buildSplitString({"RLG", "INV"});
+      break;
+    case SYNTAX_ERROR:
+      response = buildSplitString({"RLG", "ERR"});
+      break;
+
+    default:
+      std::cout << "Error in sendRLG" << std::endl;
+      break;
+  }
+
+  return generalUDPHandler(response);
 }
 int sendRWG(std::string input) { return 0; }
 int sendRQT(std::string input) { return 0; }

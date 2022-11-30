@@ -12,7 +12,8 @@ class GameState {
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
-  int trials = 0;
+  int trials = 1;
+  int spotsLeft;
   char lastGuess;
   bool active = false;
   std::string lastWordGuess;
@@ -37,6 +38,9 @@ public:
   void correctFinalWordGuess();
   void incrementTrials();
   int getTrials();
+  bool isLetterGuessed(char letter);
+  void setSpotsLeft(int spots);
+  int getSpotsLeft();
 };
 
 // Error Messages
@@ -51,8 +55,18 @@ public:
 #define UNEXPECTED_COMMAND_ERROR(commands)                                                         \
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 
+// RSG return codes
 #define CREATE_GAME_ERROR 1
 #define CREATE_GAME_SUCCESS 2
+
+// RLG return codes
+#define SUCCESS_GUESS 1
+#define SUCCESS_FINAL_GUESS 2
+#define DUPLICATE_GUESS 3
+#define WRONG_GUESS 4
+#define WRONG_FINAL_GUESS 5
+#define TRIAL_MISMATCH 6
+#define SYNTAX_ERROR 7
 
 GameState createGame(int length, int mistakes);
 int getAvailableMistakes(GameState play);
@@ -78,5 +92,8 @@ void continueReading(char *buffer);
 void setPath(std::string filepath);
 int createGameSession(std::string plid, std::string &arguments);
 int isOngoingGame(std::string plid);
+
+int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
+int getOccurances(std::string word, char letter, std::string &positions);
 
 #endif /* SERVER_API_H */
