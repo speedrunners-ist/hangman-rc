@@ -97,42 +97,38 @@ void GameState::correctFinalWordGuess() {
   active = false;
 }
 
-static GameState play;
-static std::string playerID;
-static int trials = 0;
+void GameState::incrementTrials() { trials++; }
+int GameState::getTrials() { return trials; }
 
 // Game state functions, useful for the client's protocol implementations
 GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
-int getAvailableMistakes() { return play.getAvailableMistakes(); }
-std::string getWord() { return play.getWord(); }
-int playCorrectGuess(std::string positions, int n) {
+int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
+std::string getWord(GameState play) { return play.getWord(); }
+
+int playCorrectGuess(GameState play, std::string positions, int n) {
   int ret = play.correctGuess(positions, n);
   if (ret == 0) {
-    incrementTrials();
+    play.incrementTrials();
   }
   return ret;
 }
-void playIncorrectGuess() {
-  incrementTrials();
+void playIncorrectGuess(GameState play) {
+  play.incrementTrials();
   play.incorrectGuess();
 }
-void playCorrectFinalGuess() {
-  incrementTrials();
+void playCorrectFinalGuess(GameState play) {
+  play.incrementTrials();
   play.correctFinalGuess();
 }
 
-void playCorrectFinalWordGuess() {
-  incrementTrials();
+void playCorrectFinalWordGuess(GameState play) {
+  play.incrementTrials();
   play.correctFinalWordGuess();
 }
 
-void setLastGuess(char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength() { return play.getWordLength(); }
-void setPlayerID(std::string id) { playerID = id; }
-std::string getPlayerID() { return playerID; }
-void incrementTrials() { trials++; }
-int getTrials() { return trials; }
+void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
+void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
+int getWordLength(GameState play) { return play.getWordLength(); }
 
 // Util functions
 int validateArgsAmount(std::string input, int n) {
@@ -169,7 +165,9 @@ void exitGracefully(std::string errorMessage) {
   // exit(EXIT_SUCCESS);
 }
 
-bool forceExit(std::string command) { return command == "exit" && !play.isActive(); }
+bool forceExit(GameState play, std::string command) {
+  return command == "exit" && !play.isActive();
+}
 
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);

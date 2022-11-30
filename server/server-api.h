@@ -35,6 +35,8 @@ public:
   int correctGuess(std::string positions, int n);
   void correctFinalGuess();
   void correctFinalWordGuess();
+  void incrementTrials();
+  int getTrials();
 };
 
 // Error Messages
@@ -50,15 +52,15 @@ public:
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 
 GameState createGame(int length, int mistakes);
-int getAvailableMistakes();
-std::string getWord();
-int playCorrectGuess(std::string positions, int n);
-void playIncorrectGuess();
-void playCorrectFinalGuess();
-void playCorrectFinalWordGuess();
-void setLastGuess(char guess);
-void setLastWordGuess(std::string guess);
-int getWordLength();
+int getAvailableMistakes(GameState play);
+std::string getWord(GameState play);
+int playCorrectGuess(GameState play, std::string positions, int n);
+void playIncorrectGuess(GameState play);
+void playCorrectFinalGuess(GameState play);
+void playCorrectFinalWordGuess(GameState play);
+void setLastGuess(GameState play, char guess);
+void setLastWordGuess(GameState play, std::string guess);
+int getWordLength(GameState play);
 void setPlayerID(std::string id);
 std::string getPlayerID();
 void incrementTrials();
