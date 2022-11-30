@@ -1,8 +1,9 @@
 #include "client-protocol.h"
 
-struct addrinfo *serverInfoTCP;
-int socketFdTCP;
-char responseTCP[TCP_READ_SIZE];
+static struct addrinfo *serverInfoTCP;
+static int socketFdTCP;
+static struct addrinfo hints;
+static char responseTCP[TCP_READ_SIZE];
 
 // clang-format off
 responseHandler handleTCPServerMessage = {
@@ -13,7 +14,7 @@ responseHandler handleTCPServerMessage = {
 // clang-format on
 
 void createSocketTCP(std::string addr, std::string port) {
-  socketFdTCP = newSocket(SOCK_STREAM, addr, port, &serverInfoTCP);
+  socketFdTCP = newSocket(SOCK_STREAM, addr, port, &hints, &serverInfoTCP);
 }
 
 int exchangeTCPMessage(std::string message, char *response) {
