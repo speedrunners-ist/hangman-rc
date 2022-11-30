@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
+#include <fstream>
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
 #define DEFAULT_GSPORT "58011"
@@ -26,6 +27,7 @@
 #define UDP_TRIES 3
 // sizes below are arbitrary, in bytes
 #define UDP_RECV_SIZE 1024
+#define TCP_CHUNK_SIZE 1024
 #define SOCKET_TIMEOUT 5
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
@@ -64,5 +66,6 @@ int parseTCPResponse(char *response);
  */
 unsigned int initialAvailableMistakes(unsigned int wordLength);
 std::string buildSplitString(std::vector<std::string> args);
+int displayFile(std::string fileName);
 
 #endif /* COMMON_H */

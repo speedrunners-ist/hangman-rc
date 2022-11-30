@@ -54,6 +54,42 @@ int receiveTCPMessage(std::string *message, int args) {
   return (int)bytesRead;
 }
 
+int receiveTCPFile(struct fileInfo *info) {
+  size_t bytesReceived = 0;
+  size_t bytesRead = 0;
+  size_t bytesLeft = (size_t)info->fileSize;
+  std::fstream file;
+  file.open(info->fileName, std::ios::out | std::ios::binary);
+  file.clear();
+  if (!file.is_open()) {
+    std::cerr << "[ERR]: Failed to open file for writing." << std::endl;
+    return -1;
+  }
+  // read from socket and write to file until file size is reached, in chunks
+  char buffer[TCP_CHUNK_SIZE];
+  do {
+    memset(buffer, 0, TCP_CHUNK_SIZE);
+    bytesReceived = read(socketFdTCP, buffer, TCP_CHUNK_SIZE);
+    if (bytesReceived == -1) {
+      std::cerr << "[ERR]: Failed to receive message from TCP server." << std::endl;
+      return -1;
+    }
+    file.write(buffer, bytesReceived);
+    bytesRead += bytesReceived;
+    bytesLeft -= bytesReceived;
+  } while (bytesReceived != 0 && bytesLeft > 0);
+  // if the last character is a newline, everything is fine, remove it
+  file.seekp(-1, std::ios::end);
+  if (file.peek() == '\n') {
+    file.trunc;
+  } else {
+    std::cerr << "[ERR]: Message does not match expected format." << std::endl;
+    return -1;
+  }
+  file.close();
+  return (int)bytesRead;
+}
+
 int exchangeTCPMessage(std::string message, struct protocolMessage *serverMessage, int args) {
   if (serverInfoTCP == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
@@ -113,7 +149,10 @@ int handleRSB(struct protocolMessage response) {
       std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
       return -1;
     }
-    receiveTCPFile(info); // TODO: implement and do something with the return value
+    if (receiveTCPFile(info) == -1) {
+      return -1;
+    }
+    return displayFile(info->fileName);
     // TODO: close TCP socket
   } else if (response.status == "EMPTY") {
     std::cout << "[INFO]: The server hasn't held any games yet." << std::endl;

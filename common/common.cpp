@@ -73,3 +73,17 @@ std::string buildSplitString(std::vector<std::string> args) {
   ).append("\n");
   // clang-format on
 }
+
+int displayFile(std::string fileName) {
+  std::ifstream file(fileName);
+  if (!file.is_open()) {
+    std::cout << "[ERR]: Failed to open file " << fileName << std::endl;
+    return -1;
+  }
+  std::string line;
+  while (std::getline(file, line)) {
+    std::cout << line << std::endl;
+  }
+  file.close();
+  return 0;
+}
