@@ -82,7 +82,8 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Exiting the program. Thanks for playing!" << std::endl;
 
-  // close(fd);
-  // freeaddrinfo(serverInfo);
-  // exit(EXIT_SUCCESS);
+  if (disconnectUDP() == -1) {
+    exit(EXIT_FAILURE);
+  }
+  exit(EXIT_SUCCESS);
 }

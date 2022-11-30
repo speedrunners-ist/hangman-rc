@@ -48,6 +48,8 @@ struct fileInfo {
 };
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
+int disconnectUDP();
+int disconnectTCP();
 
 int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);

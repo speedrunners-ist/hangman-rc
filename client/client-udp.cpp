@@ -20,7 +20,14 @@ void createSocketUDP(std::string addr, std::string port) {
   socketFdUDP = newSocket(SOCK_DGRAM, addr, port, &serverInfoUDP);
 }
 
-// TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
+int disconnectUDP() {
+  freeaddrinfo(serverInfoUDP);
+  if (close(socketFdUDP) == -1) {
+    std::cerr << "[ERR]: Failed to close UDP socket. Exiting." << std::endl;
+    return -1;
+  }
+  return 0;
+}
 
 int exchangeUDPMessage(std::string message, char *response) {
   if (serverInfoUDP == NULL) {
@@ -272,7 +279,7 @@ int sendPWG(std::string input) {
 }
 
 int sendQUT(std::string input) {
-  // TODO: can't forget to close all open TCP connections
+  // TODO: can't forget to close all open TCP connections - what do we have to do here, exactly?
   if (validateArgsAmount(input, QUIT_ARGS) == -1) {
     return -1;
   }

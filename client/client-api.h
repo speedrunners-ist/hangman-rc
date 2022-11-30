@@ -68,7 +68,6 @@ int getTrials();
 
 int validateArgsAmount(std::string input, int n);
 int validatePlayerID(std::string id);
-void exitGracefully(std::string errorMessage);
 bool forceExit(std::string command);
 void continueReading(char *buffer);
 
