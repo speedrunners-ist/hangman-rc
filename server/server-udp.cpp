@@ -109,17 +109,41 @@ int generalUDPHandler(std::string message) {
 }
 
 // UDP server message Send
-int sendRSG(std::string plid) {
+int sendRSG(std::string input) {
+  std::string plid = input;
+
+  std::string arguments;
+  int ret = createGameSession(plid, arguments);
   std::string response;
 
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) != 0) {
-    response = buildSplitString({"RSG", "NOK"});
-  } else {
-    response = buildSplitString({"RSG", "OK", createGameSession(plid)});
+  switch (ret) {
+    case CREATE_GAME_ERROR:
+      response = buildSplitString({"RSG", "NOK"});
+      break;
+    case CREATE_GAME_SUCCESS:
+      response = buildSplitString({"RSG", "OK", arguments});
+      break;
+
+    default:
+      std::cout << "Error in sendRSG" << std::endl;
+      break;
   }
   return generalUDPHandler(response);
 }
-int sendRLG(std::string input) { return 0; }
+int sendRLG(std::string input) {
+  // TODO: fix this
+  size_t pos1 = input.find(' ');
+  std::string plid = input.substr(0, pos1);
+  input.substr(pos1 + 1);
+  pos1 = input.find(' ');
+  std::string letter = input.substr(0, pos1);
+  input.substr(pos1 + 1);
+  std::string trial = input;
+
+  std::string response;
+
+  return 0;
+}
 int sendRWG(std::string input) { return 0; }
 int sendRQT(std::string input) { return 0; }
 int sendRRV(std::string input) { return 0; }
@@ -137,8 +161,15 @@ int handleSNG(struct protocolMessage message) {
   return sendRSG(plid);
 }
 int handlePLG(struct protocolMessage message) {
-  sendRLG(message.code);
-  std::cout << message.code << std::endl;
+
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string arguments = body.substr(pos1 + 1);
+  arguments.erase(std::remove(arguments.begin(), arguments.end(), '\n'), arguments.end());
+
+  sendRLG(arguments);
   return 0;
 }
 int handlePWG(struct protocolMessage message) {

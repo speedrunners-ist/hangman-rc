@@ -51,6 +51,9 @@ public:
 #define UNEXPECTED_COMMAND_ERROR(commands)                                                         \
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 
+#define CREATE_GAME_ERROR 1
+#define CREATE_GAME_SUCCESS 2
+
 GameState createGame(int length, int mistakes);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
@@ -73,7 +76,7 @@ bool forceExit(std::string command);
 void continueReading(char *buffer);
 
 void setPath(std::string filepath);
-std::string createGameSession(std::string plid);
+int createGameSession(std::string plid, std::string &arguments);
 int isOngoingGame(std::string plid);
 
 #endif /* SERVER_API_H */

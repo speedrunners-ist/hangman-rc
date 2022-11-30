@@ -184,23 +184,32 @@ int getNumberMistakes(int wordLength) {
   return 9;
 }
 
-std::string createGameSession(std::string plid) {
+int createGameSession(std::string plid, std::string &arguments) {
+
+  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) != 0) {
+    return CREATE_GAME_ERROR;
+  }
+
   int randomLineNumber = rand() % totalLines;
   std::string randomLine = lines.at(randomLineNumber);
 
   const size_t wordPos = randomLine.find(' ');
   std::string word = randomLine.substr(0, wordPos);
   std::string file = randomLine.substr(wordPos + 1);
+  // TODO: save file name in game state
   file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
 
   int wordLength = word.length();
   int mistakes = getNumberMistakes(wordLength);
 
   GameState newGame = createGame(wordLength, mistakes);
+  newGame.setWord(word);
 
   GameSessisons.insert(std::pair<std::string, GameState>(plid, newGame));
 
-  return buildSplitString({std::to_string(wordLength), std::to_string(mistakes)});
+  arguments = buildSplitString({std::to_string(wordLength), std::to_string(mistakes)});
+
+  return CREATE_GAME_SUCCESS;
 }
 
 // TODO: could be better
@@ -242,3 +251,5 @@ int isOngoingGame(std::string plid) {
   // There is an inactive game with this plid
   return 0;
 }
+
+std::string playLetter(std::string plid, std::string letter, std::string trial) {}
