@@ -178,11 +178,11 @@ void continueReading(char *buffer) {
 int getNumberMistakes(int wordLength) {
   if (wordLength <= 6) {
     return 7;
-  } else if (wordLength <= 10) {
-    return 8;
-  } else {
-    return 9;
   }
+  if (wordLength <= 10) {
+    return 8;
+  }
+  return 9;
 }
 
 std::string readWordFromFile() {

@@ -9,6 +9,7 @@ static char buffer[UDP_RECV_SIZE];
 static ssize_t nread;
 struct addrinfo hints;
 static bool verbose;
+static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
 
 // clang-format off
 static commandHandler handleUDPClientMessage = {
@@ -20,12 +21,14 @@ static commandHandler handleUDPClientMessage = {
 };
 // clang-format on
 
-void setServerParamaters(std::string filepath, bool verbose) {
-  verbose = verbose;
+void setServerParamaters(std::string filepath, bool verboseValue) {
+  verbose = verboseValue;
   setPath(filepath);
 }
 
 void createSocketUDP(std::string addr, std::string port) {
+  int errcode;
+
   socketFd = newSocket(SOCK_DGRAM, addr, port, &hints, &serverInfo);
 
   // Listen for incoming connections
@@ -36,6 +39,15 @@ void createSocketUDP(std::string addr, std::string port) {
         -1) /*error*/
       exit(1);
     std::cout << "[INFO]: Received message: " << buffer << std::endl;
+
+    // TODO put type of request
+    if (verbose) {
+      if ((errcode = getnameinfo((struct sockaddr *)&addrClient, addrlen, host, sizeof host,
+                                 service, sizeof service, 0)) != 0)
+        fprintf(stderr, "error: getnameinfo: %s\n", gai_strerror(errcode));
+      else
+        printf("Message sent by [%s:%s]\n", host, service);
+    }
 
     parseUDPResponse(buffer);
   }
