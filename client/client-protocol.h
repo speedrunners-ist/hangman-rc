@@ -3,12 +3,6 @@
 
 #include "client-api.h"
 
-struct fileInfo {
-  std::string fileName;
-  int fileSize;
-  char delimiter;
-};
-
 // Expected amount of arguments for each protocol (client-side)
 #define START_ARGS 2
 #define PLAY_ARGS 2
@@ -57,6 +51,7 @@ typedef std::map<std::string, std::function<int(std::string input)>> commandHand
 typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
 void createSocketUDP(std::string addr, std::string port);
+void createSocketTCP(std::string addr, std::string port);
 
 // UDP Server message servers
 int handleRSG(struct protocolMessage response);

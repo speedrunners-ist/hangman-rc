@@ -19,6 +19,23 @@ void createSocketTCP(std::string addr, std::string port) {
   }
 }
 
+int exchangeTCPMessage(std::string message, struct protocolMessage *serverMessage, int args) {
+  if (serverInfoTCP == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
+  std::cout << "[INFO]: Sending message: " << message;
+  std::string *responseMessage = new std::string();
+
+  sendTCPMessage(message);
+  turnOnSocketTimer(socketFdTCP);
+  receiveTCPMessage(responseMessage, args);
+  turnOffSocketTimer(socketFdTCP);
+  serverMessage->body = *responseMessage;
+  return 0;
+}
+
 int sendTCPMessage(std::string message) {
   size_t bytesSent = 0;
   size_t bytesLeft = message.length();
@@ -96,23 +113,6 @@ int receiveTCPFile(struct fileInfo *info, std::string dir) {
   return (int)bytesRead;
 }
 
-int exchangeTCPMessage(std::string message, struct protocolMessage *serverMessage, int args) {
-  if (serverInfoTCP == NULL) {
-    std::cerr << GETADDRINFO_ERROR << std::endl;
-    return -1;
-  }
-
-  std::cout << "[INFO]: Sending message: " << message;
-  std::string *responseMessage = new std::string();
-
-  sendTCPMessage(message);
-  turnOnSocketTimer(socketFdTCP);
-  receiveTCPMessage(responseMessage, args);
-  turnOffSocketTimer(socketFdTCP);
-  serverMessage->body = *responseMessage;
-  return 0;
-}
-
 int parseTCPResponse(struct protocolMessage *serverMessage) {
   std::string responseBegin = serverMessage->body;
   const std::string command = responseBegin.substr(0, 3);
@@ -121,14 +121,6 @@ int parseTCPResponse(struct protocolMessage *serverMessage) {
   serverMessage->code = command;
   serverMessage->status = status;
   return handleTCPServerMessage[command](*serverMessage);
-}
-
-int generalTCPHandler(std::string message) {
-  struct protocolMessage *serverMessage;
-  if (exchangeTCPMessage(message, serverMessage, TCP_DEFAULT_ARGS) == -1) {
-    return -1;
-  }
-  return parseTCPResponse(serverMessage);
 }
 
 int parseFileArgs(struct fileInfo *info) {
@@ -143,6 +135,14 @@ int parseFileArgs(struct fileInfo *info) {
   fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
   info->delimiter = fileArgs[0];
   return (info->delimiter == ' ') ? 0 : -1;
+}
+
+int generalTCPHandler(std::string message) {
+  struct protocolMessage *serverMessage;
+  if (exchangeTCPMessage(message, serverMessage, TCP_DEFAULT_ARGS) == -1) {
+    return -1;
+  }
+  return parseTCPResponse(serverMessage);
 }
 
 // TODO: can't forget to close socket

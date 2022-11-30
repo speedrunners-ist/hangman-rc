@@ -21,13 +21,13 @@
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
 #define DEFAULT_GSPORT "58011"
 
+// sizes below are arbitrary, in bytes
+#define UDP_RECV_SIZE 1024
+#define TCP_CHUNK_SIZE 1024
 #define MAX_USER_INPUT 1024
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3
-// sizes below are arbitrary, in bytes
-#define UDP_RECV_SIZE 1024
-#define TCP_CHUNK_SIZE 1024
 #define SOCKET_TIMEOUT 5
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
@@ -39,6 +39,12 @@ struct protocolMessage {
   std::string status;
   size_t statusPos;
   std::string body;
+};
+
+struct fileInfo {
+  std::string fileName;
+  int fileSize;
+  char delimiter;
 };
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
@@ -54,7 +60,11 @@ int parseUDPResponse(char *response);
 // TCP utils functions
 int generalTCPHandler(std::string message);
 int exchangeTCPMessage(std::string message, char *response);
+int sendTCPMessage(std::string message);
+int receiveTCPMessage(std::string *message, int args);
+int receiveTCPFile(std::string *message, std::string dir);
 int parseTCPResponse(char *response);
+int parseFileArgs(struct fileInfo *info);
 
 // Below, function prototypes
 
