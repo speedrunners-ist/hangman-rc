@@ -3,6 +3,7 @@
 static std::string filepath;
 static std::vector<std::string> lines;
 static int totalLines;
+static std::map<std::string, GameState> GameSessisons;
 
 // GameState methods implementation
 GameState::GameState() { this->active = false; }
@@ -101,7 +102,7 @@ static std::string playerID;
 static int trials = 0;
 
 // Game state functions, useful for the client's protocol implementations
-void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
+GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
 int getAvailableMistakes() { return play.getAvailableMistakes(); }
 std::string getWord() { return play.getWord(); }
 int playCorrectGuess(std::string positions, int n) {
@@ -185,9 +186,8 @@ int getNumberMistakes(int wordLength) {
   return 9;
 }
 
-std::string readWordFromFile() {
+std::string createGameSession(std::string plid) {
   int randomLineNumber = rand() % totalLines;
-
   std::string randomLine = lines.at(randomLineNumber);
 
   const size_t wordPos = randomLine.find(' ');
@@ -196,10 +196,11 @@ std::string readWordFromFile() {
   file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
 
   int wordLength = word.length();
-
   int mistakes = getNumberMistakes(wordLength);
 
-  createGame(wordLength, mistakes);
+  GameState newGame = createGame(wordLength, mistakes);
+
+  GameSessisons.insert(std::pair<std::string, GameState>(plid, newGame));
 
   return buildSplitString({std::to_string(wordLength), std::to_string(mistakes)});
 }
@@ -229,4 +230,17 @@ void setPath(std::string path) {
   if (totalLines == 0) {
     std::cout << "File is empty." << std::endl;
   }
+}
+
+int isOngoingGame(std::string plid) {
+  if (GameSessisons.find(plid) == GameSessisons.end()) {
+    // There is no game with this plid
+    return 0;
+  }
+  if (GameSessisons[plid].isActive()) {
+    // There is an active game with this plid
+    return -1;
+  }
+  // There is an inactive game with this plid
+  return 0;
 }

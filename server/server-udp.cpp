@@ -119,25 +119,29 @@ int sendRRV(std::string input) { return 0; }
 int handleSNG(struct protocolMessage message) {
 
   std::string body = message.body;
-
+  // TODO: check if body is empty
   const size_t pos1 = body.find(' ');
 
   std::string plid = body.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
 
-  // TODO: Check if player is already in the game
-  if (validatePlayerID(plid) == 0) {
-    setPlayerID(plid);
-
-    std::string wordDescription = readWordFromFile();
-
-    std::cout << "[INFO]: Sending message: " << wordDescription << std::endl;
-
-    const std::string response = "RSG OK " + wordDescription;
-
-    return generalUDPHandler(response);
+  if (validatePlayerID(plid) != 0) {
+    return -1;
   }
-  return -1;
+
+  std::string response;
+
+  if (isOngoingGame(plid) != 0) {
+    response = buildSplitString({"RSG", "NOK"});
+  }
+
+  else {
+    std::string wordDescription = createGameSession(plid);
+
+    response = buildSplitString({"RSG", "OK", wordDescription});
+  }
+
+  return generalUDPHandler(response);
 }
 int handlePLG(struct protocolMessage message) {
   sendRLG(message.code);

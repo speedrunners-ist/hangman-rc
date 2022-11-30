@@ -12,6 +12,7 @@ class GameState {
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
+  int trials = 0;
   char lastGuess;
   bool active = false;
   std::string lastWordGuess;
@@ -48,7 +49,7 @@ public:
 #define UNEXPECTED_COMMAND_ERROR(commands)                                                         \
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 
-void createGame(int length, int mistakes);
+GameState createGame(int length, int mistakes);
 int getAvailableMistakes();
 std::string getWord();
 int playCorrectGuess(std::string positions, int n);
@@ -70,6 +71,7 @@ bool forceExit(std::string command);
 void continueReading(char *buffer);
 
 void setPath(std::string filepath);
-std::string readWordFromFile();
+std::string createGameSession(std::string plid);
+int isOngoingGame(std::string plid);
 
 #endif /* SERVER_API_H */
