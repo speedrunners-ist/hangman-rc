@@ -62,7 +62,12 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "bitset": "cpp",
-    "regex": "cpp"
+    "regex": "cpp",
+    "cfenv": "cpp",
+    "complex": "cpp",
+    "optional": "cpp",
+    "iomanip": "cpp",
+    "valarray": "cpp"
   },
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true

@@ -40,7 +40,7 @@ public:
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
-#define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
+#define MKDIR_ERROR(dir) "[ERR]: Failed to create directory " + dir + ". Exiting."
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."

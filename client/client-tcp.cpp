@@ -54,12 +54,17 @@ int receiveTCPMessage(std::string *message, int args) {
   return (int)bytesRead;
 }
 
-int receiveTCPFile(struct fileInfo *info) {
+int receiveTCPFile(struct fileInfo *info, std::string dir) {
   size_t bytesReceived = 0;
   size_t bytesRead = 0;
   size_t bytesLeft = (size_t)info->fileSize;
+  // create directory if it doesn't exist
+  if (mkdir(dir.c_str(), 0700) == -1 && errno != EEXIST) {
+    std::cerr << MKDIR_ERROR(dir) << std::endl;
+    exit(EXIT_FAILURE);
+  }
   std::fstream file;
-  file.open(info->fileName, std::ios::out | std::ios::binary);
+  file.open(dir + "/" + info->fileName, std::fstream::out | std::fstream::binary);
   file.clear();
   if (!file.is_open()) {
     std::cerr << "[ERR]: Failed to open file for writing." << std::endl;
@@ -82,6 +87,7 @@ int receiveTCPFile(struct fileInfo *info) {
   file.seekp(-1, std::ios::end);
   if (file.peek() == '\n') {
     file.trunc;
+    bytesRead--; // we don't want to count the newline
   } else {
     std::cerr << "[ERR]: Message does not match expected format." << std::endl;
     return -1;
@@ -147,11 +153,15 @@ int handleRSB(struct protocolMessage response) {
     const int ret = parseFileArgs(info);
     if (ret == -1) {
       std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
+      // TODO: close TCP socket
       return -1;
     }
-    if (receiveTCPFile(info) == -1) {
+    if (receiveTCPFile(info, "scoreboard") == -1) {
+      // TODO: close TCP socket
       return -1;
     }
+    std::cout << "[INFO]: File received successfully." << std::endl;
+    std::cout << "SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES" << std::endl;
     return displayFile(info->fileName);
     // TODO: close TCP socket
   } else if (response.status == "EMPTY") {
@@ -164,8 +174,18 @@ int handleRSB(struct protocolMessage response) {
 
 int handleRHL(struct protocolMessage response) {
   if (response.status == "OK") {
-    std::cout << "[INFO]: The server has held the following games:" << std::endl;
-    std::cout << response.body << std::endl;
+    struct fileInfo *info;
+    const int ret = parseFileArgs(info);
+    if (ret == -1) {
+      std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
+      // TODO: close TCP socket
+      return -1;
+    }
+    if (receiveTCPFile(info, "hints") == -1) {
+      // TODO: close TCP socket
+      return -1;
+    }
+    std::cout << "[INFO]: File received successfully, stored in the hints directory." << std::endl;
   } else if (response.status == "NOK") {
     std::cout << "[INFO]: The server could not send any hints at the moment." << std::endl;
     // TODO: close TCP socket
