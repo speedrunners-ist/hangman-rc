@@ -29,10 +29,9 @@ void createSocketUDP(std::string addr, std::string port) {
     if (recvfrom(socketFd, buffer, UDP_RECV_SIZE, 0, (struct sockaddr *)&addrClient, &addrlen) ==
         -1) /*error*/
       exit(1);
+    std::cout << "[INFO]: Received message: " << buffer << std::endl;
 
     parseUDPResponse(buffer);
-
-    std::cout << "[INFO]: Received message: " << buffer << std::endl;
   }
 }
 
@@ -42,19 +41,17 @@ int exchangeUDPMessage(std::string message, char *response) {
     return -1;
   }
 
-  std::cout << "[INFO]: Sending message: " << message;
+  std::cout << "[INFO]: Sending message: " << message << std::endl;
 
-  int triesLeft = UDP_TRIES;
-
-  if (sendto(socketFd, message.c_str(), message.length(), 0, serverInfo->ai_addr,
-             serverInfo->ai_addrlen) == -1) {
+  if (sendto(socketFd, message.c_str(), message.length(), 0, (struct sockaddr *)&addrClient,
+             addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
   } else {
     return 0;
   }
 
-  std::cerr << RECVFROM_ERROR << std::endl;
+  std::cerr << SENDTO_ERROR << std::endl;
   return -1;
 }
 
