@@ -8,6 +8,7 @@ static struct sockaddr_in addrClient;
 static char buffer[UDP_RECV_SIZE];
 static ssize_t nread;
 struct addrinfo hints;
+static bool verbose;
 
 // clang-format off
 static commandHandler handleUDPClientMessage = {
@@ -18,6 +19,11 @@ static commandHandler handleUDPClientMessage = {
   {"REV", handleREV}
 };
 // clang-format on
+
+void setServerParamaters(std::string filepath, bool verbose) {
+  verbose = verbose;
+  setPath(filepath);
+}
 
 void createSocketUDP(std::string addr, std::string port) {
   socketFd = newSocket(SOCK_DGRAM, addr, port, &hints, &serverInfo);
@@ -107,9 +113,16 @@ int handleSNG(struct protocolMessage message) {
   std::string plid = body.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
 
+  // TODO: Check if player is already in the game
   if (validatePlayerID(plid) == 0) {
     setPlayerID(plid);
-    const std::string response = "RSG OK ";
+
+    std::string wordDescription = readWordFromFile();
+
+    std::cout << "[INFO]: Sending message: " << wordDescription << std::endl;
+
+    const std::string response = "RSG OK " + wordDescription;
+
     return generalUDPHandler(response);
   }
   return -1;

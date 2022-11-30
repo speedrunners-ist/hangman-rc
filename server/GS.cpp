@@ -1,4 +1,3 @@
-#include "server-api.h"
 #include "server-protocol.h"
 
 int main(int argc, char *argv[]) {
@@ -38,6 +37,8 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << "Starting server..." << std::endl;
+
+  setServerParamaters(filePath, verbose);
 
   createSocketUDP("", GSport);
 }

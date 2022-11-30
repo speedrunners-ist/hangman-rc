@@ -3,6 +3,7 @@
 
 #include "common/common.h"
 #include <algorithm>
+#include <fstream>
 #include <functional>
 
 typedef std::map<char, bool> Alphabet;
@@ -67,5 +68,8 @@ int validatePlayerID(std::string id);
 void exitGracefully(std::string errorMessage);
 bool forceExit(std::string command);
 void continueReading(char *buffer);
+
+void setPath(std::string filepath);
+std::string readWordFromFile();
 
 #endif /* SERVER_API_H */

@@ -1,5 +1,9 @@
 #include "server-api.h"
 
+static std::string filepath;
+static std::vector<std::string> lines;
+static int totalLines;
+
 // GameState methods implementation
 GameState::GameState() { this->active = false; }
 GameState::GameState(int length, int mistakes) {
@@ -169,4 +173,60 @@ bool forceExit(std::string command) { return command == "exit" && !play.isActive
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
   std::cout << "> ";
+}
+
+int getNumberMistakes(int wordLength) {
+  if (wordLength <= 6) {
+    return 7;
+  } else if (wordLength <= 10) {
+    return 8;
+  } else {
+    return 9;
+  }
+}
+
+std::string readWordFromFile() {
+  int randomLineNumber = rand() % totalLines;
+
+  std::string randomLine = lines.at(randomLineNumber);
+
+  const size_t wordPos = randomLine.find(' ');
+  std::string word = randomLine.substr(0, wordPos);
+  std::string file = randomLine.substr(wordPos + 1);
+  file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
+
+  int wordLength = word.length();
+
+  int mistakes = getNumberMistakes(wordLength);
+
+  createGame(wordLength, mistakes);
+
+  return buildSplitString({std::to_string(wordLength), std::to_string(mistakes)});
+}
+
+// TODO: could be better
+void setPath(std::string path) {
+
+  // see if the path is valid
+  if (access(path.c_str(), F_OK) == -1) {
+    std::cerr << "[ERR]: Invalid path." << std::endl;
+    return;
+  }
+
+  filepath = path;
+
+  std::ifstream file(filepath);
+
+  std::string line;
+
+  totalLines = 0;
+
+  while (std::getline(file, line)) {
+    lines.push_back(line);
+    totalLines++;
+  }
+
+  if (totalLines == 0) {
+    std::cout << "File is empty." << std::endl;
+  }
 }
