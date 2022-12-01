@@ -17,7 +17,7 @@ int createSocketTCP(struct peerInfo peer) {
     std::cerr << "[ERR]: Failed to connect to TCP server. Exiting." << std::endl;
     return -1;
   }
-  return 0;
+  return socketFdTCP;
 }
 
 int disconnectTCP() {
@@ -167,6 +167,7 @@ int generalTCPHandler(std::string message, struct peerInfo peer) {
 // TODO: can't forget to close socket
 int handleRSB(struct protocolMessage response) {
   // TODO: check if the last character in body is the expected one
+  std::cout << response.body;
   if (response.status == "OK") {
     struct fileInfo info;
     int ret = parseFileArgs(info);
@@ -258,36 +259,36 @@ int handleRST(struct protocolMessage response) {
   return 0;
 }
 
-int sendGSB(std::string input, struct peerInfo peer) {
-  if (validateArgsAmount(input, SCOREBOARD_ARGS) == -1) {
+int sendGSB(struct messageInfo info) {
+  if (validateArgsAmount(info.input, SCOREBOARD_ARGS) == -1) {
     return -1;
   }
   const std::string message = buildSplitString({"GSB"});
-  return generalTCPHandler(message, peer);
+  return generalTCPHandler(message, info.peer);
 }
 
-int sendGHL(std::string input, struct peerInfo peer) {
-  if (validateArgsAmount(input, HINT_ARGS) == -1) {
+int sendGHL(struct messageInfo info) {
+  if (validateArgsAmount(info.input, HINT_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  const std::string plid = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  const std::string plid = info.input.substr(pos1 + 1);
   if (validatePlayerID(plid) == -1) {
     return -1;
   }
   const std::string message = buildSplitString({"GHL", plid});
-  return generalTCPHandler(message, peer);
+  return generalTCPHandler(message, info.peer);
 }
 
-int sendSTA(std::string input, struct peerInfo peer) {
-  if (validateArgsAmount(input, STATE_ARGS) == -1) {
+int sendSTA(struct messageInfo info) {
+  if (validateArgsAmount(info.input, STATE_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  const std::string plid = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  const std::string plid = info.input.substr(pos1 + 1);
   if (validatePlayerID(plid) == -1) {
     return -1;
   }
   const std::string message = buildSplitString({"GST", plid});
-  return generalTCPHandler(message, peer);
+  return generalTCPHandler(message, info.peer);
 }

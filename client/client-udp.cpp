@@ -230,13 +230,12 @@ int handleRRV(struct protocolMessage response) {
 }
 
 // handlers: player requests
-int sendSNG(std::string input, struct peerInfo peer) {
-  (void)peer; // we don't need the peer info for SNG requests
-  if (validateArgsAmount(input, START_ARGS) == -1) {
+int sendSNG(struct messageInfo info) {
+  if (validateArgsAmount(info.input, START_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  std::string plid = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  std::string plid = info.input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (validatePlayerID(plid) == 0) {
     setPlayerID(plid);
@@ -246,13 +245,12 @@ int sendSNG(std::string input, struct peerInfo peer) {
   return -1;
 }
 
-int sendPLG(std::string input, struct peerInfo peer) {
-  (void)peer; // we don't need the peer info for PLG requests
-  if (validateArgsAmount(input, PLAY_ARGS) == -1) {
+int sendPLG(struct messageInfo info) {
+  if (validateArgsAmount(info.input, PLAY_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  std::string letter = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  std::string letter = info.input.substr(pos1 + 1);
   letter.erase(std::remove(letter.begin(), letter.end(), '\n'), letter.end());
   if (letter.length() != 1 || !std::isalpha(letter[0])) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
@@ -264,13 +262,12 @@ int sendPLG(std::string input, struct peerInfo peer) {
   return generalUDPHandler(message);
 }
 
-int sendPWG(std::string input, struct peerInfo peer) {
-  (void)peer; // we don't need the peer info for PWG requests
-  if (validateArgsAmount(input, GUESS_ARGS) == -1) {
+int sendPWG(struct messageInfo info) {
+  if (validateArgsAmount(info.input, GUESS_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  std::string guess = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  std::string guess = info.input.substr(pos1 + 1);
   guess.erase(std::remove(guess.begin(), guess.end(), '\n'), guess.end());
   if (guess.length() != getWordLength()) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR(getWordLength()) << std::endl;
@@ -282,13 +279,12 @@ int sendPWG(std::string input, struct peerInfo peer) {
   return generalUDPHandler(message);
 }
 
-int sendQUT(std::string input, struct peerInfo peer) {
+int sendQUT(struct messageInfo info) {
   // TODO: can't forget to close all open TCP connections - what do we have to do here, exactly?
-  (void)peer; // we don't need the peer info for QUT requests
-  if (validateArgsAmount(input, QUIT_ARGS) == -1) {
+  if (validateArgsAmount(info.input, QUIT_ARGS) == -1) {
     return -1;
   }
-  const std::string command = input.substr(0, input.find('\n'));
+  const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitString({"QUT", getPlayerID()});
   if (command == "quit") {
     return generalUDPHandler(message);
@@ -296,9 +292,8 @@ int sendQUT(std::string input, struct peerInfo peer) {
   return generalUDPHandler(message) == 0 ? EXIT_HANGMAN : -1;
 }
 
-int sendREV(std::string input, struct peerInfo peer) {
-  (void)peer; // we don't need the peer info for REV requests
-  if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
+int sendREV(struct messageInfo info) {
+  if (validateArgsAmount(info.input, REVEAL_ARGS) == -1) {
     return -1;
   }
   const std::string message = buildSplitString({"REV", getPlayerID()});

@@ -74,8 +74,10 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
+    messageInfo message = {input, peer};
+
     // if the command is valid, call the appropriate function
-    if (forceExit(command) || handlePlayerMessage[command](input, peer) == EXIT_HANGMAN) {
+    if (forceExit(command) || handlePlayerMessage[command](message) == EXIT_HANGMAN) {
       break;
     }
     continueReading(buffer);

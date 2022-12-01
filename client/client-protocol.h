@@ -47,8 +47,7 @@
 #define RQT_ERR "Failed to quit game. Try again later."
 
 // TODO: If equal to server move to common.h
-typedef std::map<std::string, std::function<int(std::string input, struct peerInfo peer)>>
-    commandHandler;
+typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
 typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
 int createSocketUDP(struct peerInfo peer);
@@ -67,15 +66,15 @@ int handleRHL(struct protocolMessage response);
 int handleRST(struct protocolMessage response);
 
 // UDP Client message handlers
-int sendSNG(std::string input, struct peerInfo peer);
-int sendPLG(std::string input, struct peerInfo peer);
-int sendPWG(std::string input, struct peerInfo peer);
-int sendQUT(std::string input, struct peerInfo peer);
-int sendREV(std::string input, struct peerInfo peer);
+int sendSNG(struct messageInfo info);
+int sendPLG(struct messageInfo info);
+int sendPWG(struct messageInfo info);
+int sendQUT(struct messageInfo info);
+int sendREV(struct messageInfo info);
 
 // TCP Client message handlers
-int sendGSB(std::string input, struct peerInfo peer);
-int sendGHL(std::string input, struct peerInfo peer);
-int sendSTA(std::string input, struct peerInfo peer);
+int sendGSB(struct messageInfo info);
+int sendGHL(struct messageInfo info);
+int sendSTA(struct messageInfo info);
 
 #endif /* CLIENT_PROTOCOL_H */

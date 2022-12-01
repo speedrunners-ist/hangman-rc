@@ -52,6 +52,11 @@ struct peerInfo {
   std::string port;
 };
 
+struct messageInfo {
+  std::string input;
+  struct peerInfo peer;
+};
+
 int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
 int disconnectUDP();
 int disconnectTCP();
