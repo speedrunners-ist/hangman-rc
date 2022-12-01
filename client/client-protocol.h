@@ -46,6 +46,13 @@
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game. Try again later."
 
+#define SB_HEADER "[RANK]: SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES"
+#define SB_FAIL "[INFO]: The server hasn't held any games yet."
+#define H_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
+#define H_FAIL "[INFO]: The server could not send any hints at the moment."
+#define ST_ACT "[INFO]: Displaying information about the current game."
+#define ST_FIN "[INFO]: Displaying information about the last finished game."
+
 // TODO: If equal to server move to common.h
 typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
 typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
