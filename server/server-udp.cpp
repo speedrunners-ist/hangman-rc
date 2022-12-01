@@ -6,7 +6,6 @@ static char responseUDP[UDP_RECV_SIZE];
 static socklen_t addrlen;
 static struct sockaddr_in addrClient;
 static char buffer[UDP_RECV_SIZE];
-static ssize_t nread;
 struct addrinfo hints;
 static bool verbose;
 static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
@@ -71,6 +70,7 @@ void createSocketUDP(std::string addr, std::string port) {
 }
 
 int exchangeUDPMessage(std::string message, char *response) {
+  (void)response;
   if (serverInfo == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
@@ -120,9 +120,7 @@ int parseUDPResponse(char *response) {
 int generalUDPHandler(std::string message) {
   memset(responseUDP, 0, UDP_RECV_SIZE);
   const int ret = exchangeUDPMessage(message, responseUDP);
-  if (ret == -1) {
-    return -1;
-  }
+  return ret;
   // return parseUDPResponse(responseUDP);
 }
 
@@ -144,7 +142,7 @@ int sendRSG(std::string input) {
 
     default:
       std::cout << "Error in sendRSG" << std::endl;
-      break;
+      return -1;
   }
   return generalUDPHandler(response);
 }
@@ -187,7 +185,7 @@ int sendRLG(std::string input) {
 
     default:
       std::cout << "Error in sendRLG" << std::endl;
-      break;
+      return -1;
   }
 
   return generalUDPHandler(response);
@@ -225,7 +223,7 @@ int sendRWG(std::string input) {
 
     default:
       std::cout << "Error in sendRWG" << std::endl;
-      break;
+      return -1;
   }
 
   return generalUDPHandler(response);
@@ -248,7 +246,7 @@ int sendRQT(std::string input) {
 
     default:
       std::cout << "Error in sendRQT" << std::endl;
-      break;
+      return -1;
   }
   return generalUDPHandler(response);
 }
