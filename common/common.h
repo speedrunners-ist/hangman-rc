@@ -32,19 +32,23 @@
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
-#define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
+
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
 #define TCP_RECV_MESSAGE_ERROR "[ERR]: Failed to receive message via TCP."
 #define TCP_FILE_ARGS_ERROR "[ERR]: Failed to receive file arguments."
 
+#define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
+
 #define INVALID_FILE_ARGS "[ERR]: Arguments for file transfer are invalid."
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."
-#define FILE_RECV_SUCCESS "[OK]: File received successfully."
+#define FILE_RECV_SUCCESS "[INFO]: File received successfully."
 
 #define SB_DIR "scoreboard/"
 #define H_DIR "hints/"
 #define ST_DIR "state/"
+
+#define EXIT_PROGRAM "[INFO]: Exiting program."
 
 struct protocolMessage {
   std::string code;

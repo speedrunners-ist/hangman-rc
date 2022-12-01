@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   }
 
   // TODO: should we remove the created directories?
-  std::cout << "[INFO]: Exiting the program. Thanks for playing!" << std::endl;
+  std::cout << EXIT_PROGRAM << std::endl;
   if (disconnectUDP() == -1) {
     exit(EXIT_FAILURE);
   }

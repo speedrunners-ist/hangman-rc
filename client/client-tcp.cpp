@@ -72,7 +72,9 @@ int receiveTCPMessage(std::string &message, int args) {
   char c;
   do {
     // FIXME: there will be a problem if the response is "ERR\n"?
+    turnOnSocketTimer(socketFdTCP);
     bytesReceived = read(socketFdTCP, &c, 1);
+    turnOffSocketTimer(socketFdTCP);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
       return -1;
@@ -105,9 +107,10 @@ int receiveTCPFile(struct fileInfo &info, std::string dir) {
   char buffer[TCP_CHUNK_SIZE];
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
-    // TODO: should we have timers?
+    turnOnSocketTimer(socketFdTCP);
     bytesReceived =
         read(socketFdTCP, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
+    turnOffSocketTimer(socketFdTCP);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
       return -1;

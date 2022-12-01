@@ -24,7 +24,7 @@ int createSocketUDP(struct peerInfo peer) {
 int disconnectUDP() {
   freeaddrinfo(serverInfoUDP);
   if (close(socketFdUDP) == -1) {
-    std::cerr << "[ERR]: Failed to close UDP socket. Exiting." << std::endl;
+    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
     return -1;
   }
   return 0;
@@ -35,8 +35,6 @@ int exchangeUDPMessage(std::string message, char *response) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
-
-  std::cout << "[INFO]: Sending message: " << message;
 
   int triesLeft = UDP_TRIES;
   do {
@@ -112,7 +110,6 @@ int handleRSG(struct protocolMessage response) {
     const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
     const size_t pos_n_max_errors = response.body.find('\n', pos_n_letters + 1);
     if (pos_n_letters == std::string::npos || pos_n_max_errors != std::string::npos) {
-      std::cout << response.body << std::endl;
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
@@ -140,7 +137,6 @@ int handleRLG(struct protocolMessage response) {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);
     if (pos_n == std::string::npos || pos_correct_positions != std::string::npos) {
-      std::cerr << response.body << std::endl;
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
@@ -161,8 +157,6 @@ int handleRLG(struct protocolMessage response) {
     std::cout << RLG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   } else if (response.status == "OVR") {
-    // the server itself ends the game on its end, so we should add a mechanism on our end
-    // to end the game as well ig
     playIncorrectGuess();
     resetGame();
     std::cout << RLG_OVR << std::endl;
@@ -193,8 +187,6 @@ int handleRWG(struct protocolMessage response) {
     std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   } else if (response.status == "OVR") {
-    // the server itself ends the game on its end, so we should add a mechanism on our end
-    // to end the game as well ig
     playIncorrectGuess();
     resetGame();
     std::cout << RWG_OVR << std::endl;
