@@ -47,11 +47,12 @@
 #define RQT_ERR "Failed to quit game. Try again later."
 
 // TODO: If equal to server move to common.h
-typedef std::map<std::string, std::function<int(std::string input)>> commandHandler;
+typedef std::map<std::string, std::function<int(std::string input, struct peerInfo peer)>>
+    commandHandler;
 typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
-void createSocketUDP(std::string addr, std::string port);
-void createSocketTCP(std::string addr, std::string port);
+int createSocketUDP(struct peerInfo peer);
+int createSocketTCP(struct peerInfo peer);
 
 // UDP Server message servers
 int handleRSG(struct protocolMessage response);
@@ -66,15 +67,15 @@ int handleRHL(struct protocolMessage response);
 int handleRST(struct protocolMessage response);
 
 // UDP Client message handlers
-int sendSNG(std::string input);
-int sendPLG(std::string input);
-int sendPWG(std::string input);
-int sendQUT(std::string input);
-int sendREV(std::string input);
+int sendSNG(std::string input, struct peerInfo peer);
+int sendPLG(std::string input, struct peerInfo peer);
+int sendPWG(std::string input, struct peerInfo peer);
+int sendQUT(std::string input, struct peerInfo peer);
+int sendREV(std::string input, struct peerInfo peer);
 
 // TCP Client message handlers
-int sendGSB(std::string input);
-int sendGHL(std::string input);
-int sendSTA(std::string input);
+int sendGSB(std::string input, struct peerInfo peer);
+int sendGHL(std::string input, struct peerInfo peer);
+int sendSTA(std::string input, struct peerInfo peer);
 
 #endif /* CLIENT_PROTOCOL_H */

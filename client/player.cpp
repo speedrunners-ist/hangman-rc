@@ -43,7 +43,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  createSocketUDP(GSIP, GSport);
+  const struct peerInfo peer = {GSIP, GSport};
+  if (createSocketUDP(peer) == -1) {
+    exit(EXIT_FAILURE);
+  }
+
   char buffer[MAX_USER_INPUT];
   // TODO: should we include a help menu as the first thing the player sees?
   std::cout << "> ";
@@ -71,17 +75,14 @@ int main(int argc, char *argv[]) {
     }
 
     // if the command is valid, call the appropriate function
-    if (forceExit(command) || handlePlayerMessage[command](input) == EXIT_HANGMAN) {
+    if (forceExit(command) || handlePlayerMessage[command](input, peer) == EXIT_HANGMAN) {
       break;
     }
     continueReading(buffer);
   }
 
-  // delete the directory and its contents - should we really do it like this?
-  system("rm -rf hints");
-
-  std::cout << "Exiting the program. Thanks for playing!" << std::endl;
-
+  // TODO: should we remove the created directories?
+  std::cout << "[INFO]: Exiting the program. Thanks for playing!" << std::endl;
   if (disconnectUDP() == -1) {
     exit(EXIT_FAILURE);
   }

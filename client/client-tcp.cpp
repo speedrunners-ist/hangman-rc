@@ -11,12 +11,13 @@ responseHandler handleTCPServerMessage = {
 };
 // clang-format on
 
-void createSocketTCP(std::string addr, std::string port) {
-  socketFdTCP = newSocket(SOCK_STREAM, addr, port, &serverInfoTCP);
+int createSocketTCP(struct peerInfo peer) {
+  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &serverInfoTCP);
   if (connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen) == -1) {
     std::cerr << "[ERR]: Failed to connect to TCP server. Exiting." << std::endl;
-    exit(EXIT_FAILURE);
+    return -1;
   }
+  return 0;
 }
 
 int disconnectTCP() {
@@ -152,8 +153,11 @@ int parseFileArgs(struct fileInfo &info) {
   return (info.delimiter == ' ') ? 0 : -1;
 }
 
-int generalTCPHandler(std::string message) {
+int generalTCPHandler(std::string message, struct peerInfo peer) {
   struct protocolMessage serverMessage;
+  if (createSocketTCP(peer) == -1) {
+    return -1;
+  }
   if (exchangeTCPMessage(message, serverMessage, TCP_DEFAULT_ARGS) == -1) {
     return -1;
   }
@@ -254,15 +258,15 @@ int handleRST(struct protocolMessage response) {
   return 0;
 }
 
-int sendGSB(std::string input) {
+int sendGSB(std::string input, struct peerInfo peer) {
   if (validateArgsAmount(input, SCOREBOARD_ARGS) == -1) {
     return -1;
   }
   const std::string message = buildSplitString({"GSB"});
-  return generalTCPHandler(message);
+  return generalTCPHandler(message, peer);
 }
 
-int sendGHL(std::string input) {
+int sendGHL(std::string input, struct peerInfo peer) {
   if (validateArgsAmount(input, HINT_ARGS) == -1) {
     return -1;
   }
@@ -272,10 +276,10 @@ int sendGHL(std::string input) {
     return -1;
   }
   const std::string message = buildSplitString({"GHL", plid});
-  return generalTCPHandler(message);
+  return generalTCPHandler(message, peer);
 }
 
-int sendSTA(std::string input) {
+int sendSTA(std::string input, struct peerInfo peer) {
   if (validateArgsAmount(input, STATE_ARGS) == -1) {
     return -1;
   }
@@ -285,5 +289,5 @@ int sendSTA(std::string input) {
     return -1;
   }
   const std::string message = buildSplitString({"GST", plid});
-  return generalTCPHandler(message);
+  return generalTCPHandler(message, peer);
 }

@@ -4,9 +4,8 @@
 int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo) {
   int socketFd = socket(AF_INET, type, 0);
   if (socketFd == -1) {
-    // FIXME: should we really exit here?
-    std::cout << "[ERR]: Failed to create socket. Exiting." << std::endl;
-    exit(EXIT_FAILURE);
+    std::cout << "[ERR]: Failed to create socket." << std::endl;
+    return -1;
   }
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
@@ -14,17 +13,11 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo **se
   hints.ai_socktype = type;
 
   // TODO: see it this works
-  int status;
-  if (!addr.empty()) {
-    status = getaddrinfo(addr.c_str(), port.c_str(), &hints, serverInfo);
-
-  } else {
-    status = getaddrinfo(NULL, port.c_str(), &hints, serverInfo);
-  }
-
+  std::cout << "[INFO]: Connecting to " << addr << ":" << port << std::endl;
+  const int status = getaddrinfo(addr.c_str(), port.c_str(), &hints, serverInfo);
   if (status != 0) {
-    std::cout << "[ERR]: Failed to get address info. Exiting." << std::endl;
-    exit(EXIT_FAILURE);
+    std::cerr << "[ERR]: Failed to get address info. Exiting." << std::endl;
+    return -1;
   }
   return socketFd;
 }
@@ -34,7 +27,7 @@ int turnOnSocketTimer(int socketFd) {
   memset(&tv, 0, sizeof(tv));
   tv.tv_sec = SOCKET_TIMEOUT;
   if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cout << "[ERR]: Failed to set socket timeout. Exiting." << std::endl;
+    std::cerr << "[ERR]: Failed to set socket timeout. Exiting." << std::endl;
     // FIXME: is this exit graceful?
     exit(EXIT_FAILURE);
   }

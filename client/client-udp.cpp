@@ -16,8 +16,8 @@ responseHandler handleUDPServerMessage = {
 };
 // clang-format on
 
-void createSocketUDP(std::string addr, std::string port) {
-  socketFdUDP = newSocket(SOCK_DGRAM, addr, port, &serverInfoUDP);
+int createSocketUDP(struct peerInfo peer) {
+  return newSocket(SOCK_DGRAM, peer.addr, peer.port, &serverInfoUDP);
 }
 
 int disconnectUDP() {
@@ -229,7 +229,8 @@ int handleRRV(struct protocolMessage response) {
 }
 
 // handlers: player requests
-int sendSNG(std::string input) {
+int sendSNG(std::string input, struct peerInfo peer) {
+  (void)peer; // we don't need the peer info for SNG requests
   if (validateArgsAmount(input, START_ARGS) == -1) {
     return -1;
   }
@@ -244,7 +245,8 @@ int sendSNG(std::string input) {
   return -1;
 }
 
-int sendPLG(std::string input) {
+int sendPLG(std::string input, struct peerInfo peer) {
+  (void)peer; // we don't need the peer info for PLG requests
   if (validateArgsAmount(input, PLAY_ARGS) == -1) {
     return -1;
   }
@@ -261,7 +263,8 @@ int sendPLG(std::string input) {
   return generalUDPHandler(message);
 }
 
-int sendPWG(std::string input) {
+int sendPWG(std::string input, struct peerInfo peer) {
+  (void)peer; // we don't need the peer info for PWG requests
   if (validateArgsAmount(input, GUESS_ARGS) == -1) {
     return -1;
   }
@@ -278,8 +281,9 @@ int sendPWG(std::string input) {
   return generalUDPHandler(message);
 }
 
-int sendQUT(std::string input) {
+int sendQUT(std::string input, struct peerInfo peer) {
   // TODO: can't forget to close all open TCP connections - what do we have to do here, exactly?
+  (void)peer; // we don't need the peer info for QUT requests
   if (validateArgsAmount(input, QUIT_ARGS) == -1) {
     return -1;
   }
@@ -291,7 +295,8 @@ int sendQUT(std::string input) {
   return generalUDPHandler(message) == 0 ? EXIT_HANGMAN : -1;
 }
 
-int sendREV(std::string input) {
+int sendREV(std::string input, struct peerInfo peer) {
+  (void)peer; // we don't need the peer info for REV requests
   if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
     return -1;
   }

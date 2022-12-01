@@ -47,6 +47,11 @@ struct fileInfo {
   char delimiter;
 };
 
+struct peerInfo {
+  std::string addr;
+  std::string port;
+};
+
 int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
 int disconnectUDP();
 int disconnectTCP();
@@ -60,7 +65,7 @@ int exchangeUDPMessage(std::string message, char *response);
 int parseUDPResponse(char *response);
 
 // TCP utils functions
-int generalTCPHandler(std::string message);
+int generalTCPHandler(std::string message, struct peerInfo peer);
 int exchangeTCPMessage(std::string message, char *response);
 int sendTCPMessage(std::string message);
 int receiveTCPMessage(std::string &message, int args);
