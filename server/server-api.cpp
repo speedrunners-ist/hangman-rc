@@ -305,3 +305,12 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   }
   return WRONG_GUESS;
 }
+
+int closeGameSession(std::string plid) {
+  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+    return CLOSE_GAME_ERROR;
+  }
+
+  GameSessisons.erase(plid);
+  return CLOSE_GAME_SUCCESS;
+}

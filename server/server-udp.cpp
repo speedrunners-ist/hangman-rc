@@ -50,6 +50,8 @@ void createSocketUDP(std::string addr, std::string port) {
     }
 
     parseUDPResponse(buffer);
+
+    memset(buffer, 0, UDP_RECV_SIZE);
   }
 }
 
@@ -214,7 +216,26 @@ int sendRWG(std::string input) {
 
   return 0;
 }
-int sendRQT(std::string input) { return 0; }
+int sendRQT(std::string input) {
+  std::string plid = input;
+
+  int ret = closeGameSession(plid);
+  std::string response;
+
+  switch (ret) {
+    case CLOSE_GAME_ERROR:
+      response = buildSplitString({"RSG", "ERR"});
+      break;
+    case CLOSE_GAME_SUCCESS:
+      response = buildSplitString({"RSG", "OK"});
+      break;
+
+    default:
+      std::cout << "Error in sendRQT" << std::endl;
+      break;
+  }
+  return generalUDPHandler(response);
+}
 int sendRRV(std::string input) { return 0; }
 
 // Server message handlers
@@ -253,9 +274,14 @@ int handlePWG(struct protocolMessage message) {
   return 0;
 }
 int handleQUT(struct protocolMessage message) {
-  sendRQT(message.code);
-  std::cout << message.code << std::endl;
-  return 0;
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string plid = body.substr(pos1 + 1);
+  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
+
+  return sendRQT(plid);
 }
 int handleREV(struct protocolMessage message) {
   sendRRV(message.code);

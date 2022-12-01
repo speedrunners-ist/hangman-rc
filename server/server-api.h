@@ -68,6 +68,10 @@ public:
 #define TRIAL_MISMATCH 6
 #define SYNTAX_ERROR 7
 
+// RQT return codes
+#define CLOSE_GAME_ERROR 1
+#define CLOSE_GAME_SUCCESS 2
+
 GameState createGame(int length, int mistakes);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
@@ -96,5 +100,6 @@ int isOngoingGame(std::string plid);
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
 int getOccurances(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
+int closeGameSession(std::string plid);
 
 #endif /* SERVER_API_H */
