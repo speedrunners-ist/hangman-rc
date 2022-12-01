@@ -21,6 +21,21 @@ static commandHandler handleUDPClientMessage = {
 };
 // clang-format on
 
+int validatePort(std::string port) {
+  int portNum;
+  std::string portNumStr;
+  try {
+    // stdi stops at the final or first non-numeric character
+    portNum = std::stoi(port);
+    portNumStr = std::to_string(portNum);
+  } catch (std::exception &e) {
+    return -1;
+  }
+  if (portNumStr != port || portNum < 0 || portNum > 65535)
+    return -1;
+  return 0;
+}
+
 void setServerParamaters(std::string filepath, bool verboseValue) {
   verbose = verboseValue;
   setPath(filepath);

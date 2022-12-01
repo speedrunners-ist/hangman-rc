@@ -19,8 +19,11 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(argv[i], "-p") == 0) {
       if (i + 1 >= argc) {
-        // TODO check if port is valid
         std::cout << "[ERR]: Invalid input. Expected port number." << std::endl;
+        return -1;
+      }
+      if (validatePort(argv[i + 1]) == -1) {
+        std::cout << "[ERR]: Invalid input. Expected valid port number." << std::endl;
         return -1;
       }
       GSport = argv[i + 1];
