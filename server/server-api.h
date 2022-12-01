@@ -95,5 +95,6 @@ int isOngoingGame(std::string plid);
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
 int getOccurances(std::string word, char letter, std::string &positions);
+int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 
 #endif /* SERVER_API_H */

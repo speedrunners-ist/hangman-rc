@@ -236,8 +236,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   GameState *play = &GameSessisons[plid];
 
-  std::cout << "trial " << trial << std::endl;
-  std::cout << "play trials " << play->getTrials() << std::endl;
+  arguments = play->getTrials();
 
   if (std::stoi(trial) != play->getTrials()) {
     return TRIAL_MISMATCH;
@@ -276,4 +275,33 @@ int getOccurances(std::string word, char letter, std::string &positions) {
     }
   }
   return numberCorrect;
+}
+
+int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
+
+  GameState *play = &GameSessisons[plid];
+  arguments = play->getTrials();
+
+  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+    return SYNTAX_ERROR;
+  }
+
+  arguments = trial;
+
+  if (std::stoi(trial) != play->getTrials() || word == play->getLastWordGuess()) {
+    return TRIAL_MISMATCH;
+  }
+
+  play->setLastWordGuess(word);
+
+  // TODO: see how to handle win game
+  if (play->getWord() == word) {
+    return SUCCESS_GUESS;
+  }
+
+  play->incorrectGuess();
+  if (play->getAvailableMistakes() == -1) {
+    return WRONG_FINAL_GUESS;
+  }
+  return WRONG_GUESS;
 }
