@@ -97,36 +97,35 @@ int receiveTCPFile(struct fileInfo &info, std::string dir) {
     exit(EXIT_FAILURE);
   }
   std::fstream file;
-  file.open(dir + "/" + info.fileName, std::fstream::out | std::fstream::binary);
-  file.clear();
+  // TODO: create these folders in the client directory
+  file.open(dir + "/" + info.fileName);
+  std::cout << "[INFO]: Receiving file: " << dir + "/" + info.fileName << std::endl;
+  // file.clear();
   if (!file.is_open()) {
-    std::cerr << "[ERR]: Failed to open file for writing." << std::endl;
+    std::cerr << "[ERR]: Failed to open file." << std::endl;
     return -1;
   }
   // read from socket and write to file until file size is reached, in chunks
   char buffer[TCP_CHUNK_SIZE];
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
-    bytesReceived = read(socketFdTCP, buffer, TCP_CHUNK_SIZE);
+    // TODO: should we have timers?
+    bytesReceived =
+        read(socketFdTCP, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
     if (bytesReceived == -1) {
       std::cerr << "[ERR]: Failed to receive message from TCP server." << std::endl;
       return -1;
     }
+    // print buffer
+    std::cout << "[INFO]: Received chunk: " << buffer << "-" << std::endl;
     file.write(buffer, bytesReceived);
     bytesRead += (size_t)bytesReceived;
     bytesLeft -= (size_t)bytesReceived;
   } while (bytesReceived != 0 && bytesLeft > 0);
-  // if the last character is a newline, everything is fine, remove it
-  file.seekp(-1, std::ios::end);
-  if (file.peek() == '\n') {
-    file.write("", 1); // clears the newline
-    bytesRead--;       // we don't want to count the newline
-    file.close();
-    return (int)bytesRead;
-  }
-  std::cerr << "[ERR]: Message does not match expected format." << std::endl;
+
+  // TODO: should we check if the message ends in a newline?
   file.close();
-  return -1;
+  return (int)bytesRead;
 }
 
 int parseTCPResponse(struct protocolMessage &serverMessage) {
@@ -143,14 +142,19 @@ int parseFileArgs(struct fileInfo &info) {
   std::string fileArgs;
   const int ret = receiveTCPMessage(fileArgs, TCP_FILE_ARGS);
   if (ret == -1) {
+    std::cout << "[ERR]: Failed to receive file arguments." << std::endl;
     return -1;
   }
   info.fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
   fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
   info.fileSize = std::stoi(fileArgs.substr(0, fileArgs.find_first_of(' ')));
-  fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
+  fileArgs.erase(0, fileArgs.find_first_of(' '));
   info.delimiter = fileArgs[0];
-  return (info.delimiter == ' ') ? 0 : -1;
+  if (info.delimiter == ' ') {
+    return 0;
+  }
+  std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
+  return -1;
 }
 
 int generalTCPHandler(std::string message, struct peerInfo peer) {
@@ -167,12 +171,10 @@ int generalTCPHandler(std::string message, struct peerInfo peer) {
 // TODO: can't forget to close socket
 int handleRSB(struct protocolMessage response) {
   // TODO: check if the last character in body is the expected one
-  std::cout << response.body;
   if (response.status == "OK") {
     struct fileInfo info;
     int ret = parseFileArgs(info);
     if (ret == -1) {
-      std::cout << "[INFO]: Arguments for file transfer are invalid." << std::endl;
       disconnectTCP();
       return -1;
     }
@@ -182,7 +184,7 @@ int handleRSB(struct protocolMessage response) {
     }
     std::cout << "[INFO]: File received successfully." << std::endl;
     std::cout << "SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES" << std::endl;
-    ret = displayFileRank(info.fileName);
+    ret = displayFileRank(info.fileName, "scoreboard");
     disconnectTCP();
     return ret;
   } else if (response.status == "EMPTY") {
@@ -254,7 +256,7 @@ int handleRST(struct protocolMessage response) {
     std::cout << "[INFO]: Displaying information about the most recent finished game." << std::endl;
   }
 
-  displayFile(info.fileName);
+  displayFile(info.fileName, "state");
   disconnectTCP();
   return 0;
 }
@@ -271,12 +273,7 @@ int sendGHL(struct messageInfo info) {
   if (validateArgsAmount(info.input, HINT_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = info.input.find(' ');
-  const std::string plid = info.input.substr(pos1 + 1);
-  if (validatePlayerID(plid) == -1) {
-    return -1;
-  }
-  const std::string message = buildSplitString({"GHL", plid});
+  const std::string message = buildSplitString({"GHL", getPlayerID()});
   return generalTCPHandler(message, info.peer);
 }
 
@@ -284,11 +281,6 @@ int sendSTA(struct messageInfo info) {
   if (validateArgsAmount(info.input, STATE_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = info.input.find(' ');
-  const std::string plid = info.input.substr(pos1 + 1);
-  if (validatePlayerID(plid) == -1) {
-    return -1;
-  }
-  const std::string message = buildSplitString({"GST", plid});
+  const std::string message = buildSplitString({"GST", getPlayerID()});
   return generalTCPHandler(message, info.peer);
 }

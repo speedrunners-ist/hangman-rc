@@ -55,5 +55,10 @@ dkms.conf
 server/server
 client/player
 
+# Text files
+scoreboard/
+hints/
+state/
+
 
 .vscode

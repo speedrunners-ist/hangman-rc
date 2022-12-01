@@ -67,8 +67,9 @@ std::string buildSplitString(std::vector<std::string> args) {
   // clang-format on
 }
 
-int displayFileRank(std::string fileName) {
-  std::ifstream file(fileName);
+int displayFileRank(std::string fileName, std::string dir) {
+  std::ifstream file;
+  file.open(dir + "/" + fileName);
   if (!file.is_open()) {
     std::cout << "[ERR]: Failed to open file " << fileName << std::endl;
     return -1;
@@ -82,8 +83,9 @@ int displayFileRank(std::string fileName) {
   return 0;
 }
 
-int displayFile(std::string fileName) {
-  std::ifstream file(fileName);
+int displayFile(std::string fileName, std::string dir) {
+  std::ifstream file;
+  file.open(dir + "/" + fileName);
   if (!file.is_open()) {
     std::cout << "[ERR]: Failed to open file " << fileName << std::endl;
     return -1;

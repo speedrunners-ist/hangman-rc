@@ -88,7 +88,7 @@ int parseFileArgs(struct fileInfo &info);
  */
 unsigned int initialAvailableMistakes(unsigned int wordLength);
 std::string buildSplitString(std::vector<std::string> args);
-int displayFileRank(std::string fileName);
-int displayFile(std::string fileName);
+int displayFileRank(std::string fileName, std::string dir);
+int displayFile(std::string fileName, std::string dir);
 
 #endif /* COMMON_H */
