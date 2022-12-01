@@ -50,7 +50,7 @@ void GameState::incorrectGuess() {
 }
 
 int GameState::correctGuess(std::string positions, int n) {
-
+  (void)positions;
   guessesMade++;
   // guessedLetters[guess] = true;
   spotsLeft -= n;
@@ -165,7 +165,8 @@ int createGameSession(std::string plid, std::string &arguments) {
     return CREATE_GAME_ERROR;
   }
 
-  int randomLineNumber = rand() % totalLines;
+  // TODO: check this
+  ulong randomLineNumber = (ulong)(rand() % totalLines);
   std::string randomLine = lines.at(randomLineNumber);
 
   const size_t wordPos = randomLine.find(' ');
@@ -174,7 +175,8 @@ int createGameSession(std::string plid, std::string &arguments) {
   // TODO: save file name in game state
   file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
 
-  int wordLength = word.length();
+  // TODO: check this conversion
+  int wordLength = (int)word.length();
   int mistakes = getNumberMistakes(wordLength);
 
   GameState newGame = createGame(wordLength, mistakes);
@@ -216,12 +218,7 @@ int isOngoingGame(std::string plid) {
     // There is no game with this plid
     return 0;
   }
-  if (GameSessisons[plid].isActive()) {
-    // There is an active game with this plid
-    return -1;
-  }
-  // There is an inactive game with this plid
-  return 0;
+  return GameSessisons[plid].isActive() ? -1 : 0;
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
@@ -231,7 +228,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   GameState *play = &GameSessisons[plid];
 
-  arguments = play->getTrials();
+  arguments = std::to_string(play->getTrials());
 
   if (std::stoi(trial) != play->getTrials()) {
     return TRIAL_MISMATCH;
@@ -275,7 +272,7 @@ int getOccurances(std::string word, char letter, std::string &positions) {
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
 
   GameState *play = &GameSessisons[plid];
-  arguments = play->getTrials();
+  arguments = std::to_string(play->getTrials());
 
   if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
     return SYNTAX_ERROR;
