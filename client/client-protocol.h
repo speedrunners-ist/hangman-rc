@@ -64,6 +64,8 @@ typedef std::map<std::string, std::function<int(struct protocolMessage response)
 #define H_FAIL "[INFO]: The server could not send any hints at the moment."
 #define ST_ACT "[INFO]: Displaying information about the current game."
 #define ST_FIN "[INFO]: Displaying information about the last finished game."
+#define ST_NOK "[INFO]: The server could not find any games (neither active nor finished)."
+#define ST_ERR "[ERR]: The server has encountered an error while processing your request."
 
 int createSocketUDP(struct peerInfo peer);
 int createSocketTCP(struct peerInfo peer);

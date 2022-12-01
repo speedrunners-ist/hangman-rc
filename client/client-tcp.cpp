@@ -220,12 +220,11 @@ int handleRHL(struct protocolMessage response) {
 
 int handleRST(struct protocolMessage response) {
   if (response.status == "NOK") {
-    std::cout << "[INFO]: The server could not find any games (neither active nor finished)."
-              << std::endl;
+    std::cout << ST_NOK << std::endl;
     disconnectTCP();
     return 0;
   } else if (response.status == "ERR") {
-    std::cout << "[INFO]: The server has encountered an error." << std::endl;
+    std::cerr << ST_ERR << std::endl;
     disconnectTCP();
     return -1;
   }
