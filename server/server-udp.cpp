@@ -38,7 +38,7 @@ void createSocketUDP(std::string addr, std::string port) {
     if (recvfrom(socketFd, buffer, UDP_RECV_SIZE, 0, (struct sockaddr *)&addrClient, &addrlen) ==
         -1) /*error*/
       exit(1);
-    std::cout << "[INFO]: Received message: " << buffer << std::endl;
+    std::cout << "[INFO]: Received message: " << buffer;
 
     // TODO put type of request
     if (verbose) {
@@ -61,7 +61,7 @@ int exchangeUDPMessage(std::string message, char *response) {
     return -1;
   }
 
-  std::cout << "[INFO]: Sending message: " << message << std::endl;
+  std::cout << "[INFO]: Sending message: " << message;
 
   if (sendto(socketFd, message.c_str(), message.length(), 0, (struct sockaddr *)&addrClient,
              addrlen) == -1) {
@@ -79,6 +79,7 @@ int parseUDPResponse(char *response) {
   const std::string responseStr(response);
   const size_t pos1 = responseStr.find(' ');
 
+  // TODO: remove ig
   if (pos1 == std::string::npos) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
