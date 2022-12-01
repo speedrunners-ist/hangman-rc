@@ -41,9 +41,11 @@ int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessag
   if (sendTCPMessage(message) == -1) {
     return -1;
   }
+  std::cout << "[INFO]: Waiting for response..." << std::endl;
   turnOnSocketTimer(socketFdTCP);
   const int ret = receiveTCPMessage(responseMessage, args);
   turnOffSocketTimer(socketFdTCP);
+  std::cout << "[INFO]: Received response!" << std::endl;
   if (ret == -1) {
     return -1;
   }
@@ -73,7 +75,7 @@ int receiveTCPMessage(std::string &message, int args) {
   int readArgs = 0;
   char c;
   do {
-    // FIXME: will there be a problem if the response is "ERR\n"?
+    // FIXME: there will be a problem if the response is "ERR\n"?
     bytesReceived = read(socketFdTCP, &c, 1);
     if (bytesReceived == -1) {
       std::cerr << "[ERR]: Failed to receive message from TCP server." << std::endl;
@@ -98,7 +100,7 @@ int receiveTCPFile(struct fileInfo &info, std::string dir) {
   }
   std::fstream file;
   // TODO: create these folders in the client directory
-  file.open(dir + "/" + info.fileName);
+  file.open(dir + "/" + info.fileName, std::ios::out | std::ios::in | std::ios::trunc);
   std::cout << "[INFO]: Receiving file: " << dir + "/" + info.fileName << std::endl;
   // file.clear();
   if (!file.is_open()) {
@@ -117,7 +119,6 @@ int receiveTCPFile(struct fileInfo &info, std::string dir) {
       return -1;
     }
     // print buffer
-    std::cout << "[INFO]: Received chunk: " << buffer << "-" << std::endl;
     file.write(buffer, bytesReceived);
     bytesRead += (size_t)bytesReceived;
     bytesLeft -= (size_t)bytesReceived;
@@ -183,7 +184,7 @@ int handleRSB(struct protocolMessage response) {
       return -1;
     }
     std::cout << "[INFO]: File received successfully." << std::endl;
-    std::cout << "SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES" << std::endl;
+    std::cout << "[RANK]: SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES" << std::endl;
     ret = displayFileRank(info.fileName, "scoreboard");
     disconnectTCP();
     return ret;
@@ -281,6 +282,6 @@ int sendSTA(struct messageInfo info) {
   if (validateArgsAmount(info.input, STATE_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildSplitString({"GST", getPlayerID()});
+  const std::string message = buildSplitString({"STA", getPlayerID()});
   return generalTCPHandler(message, info.peer);
 }
