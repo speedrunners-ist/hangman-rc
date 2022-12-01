@@ -43,51 +43,16 @@ void GameState::setSpotsLeft(int spots) { this->spotsLeft = spots; }
 int GameState::getSpotsLeft() { return spotsLeft; }
 
 void GameState::incorrectGuess() {
-  char guess = getLastGuess();
   // TODO: do we have to check if we're setting to true something that's already true?
-  guessedLetters[guess] = true;
   guessesMade++;
   mistakesLeft--;
   incrementTrials();
 }
 
 int GameState::correctGuess(std::string positions, int n) {
-  char guess = getLastGuess();
-  std::string initialWord = word; // TODO: check if this is a copy or a reference
-  int readPositions = 0;
-  size_t pos;
-  do {
-    pos = positions.find_first_of(" \n");
-    std::string posStr = positions.substr(0, pos);
-    const size_t posNum = (size_t)std::stoi(posStr);
-    if (posNum < 1 || posNum > wordLength) {
-      std::cerr << "[ERR]: Server response includes invalid positions." << std::endl;
-      setWord(initialWord);
-      return -1;
-    } else if (word[posNum - 1] != '_') {
-      std::cout << "Current word: " << word << std::endl;
-      std::cout << "Position " << posNum << " is already filled." << std::endl;
-      std::cerr << "[ERR]: Server response includes an already filled position." << std::endl;
-      setWord(initialWord);
-      return -1;
-    }
-    word[posNum - 1] = guess;
-    positions = positions.substr(pos + 1);
-    readPositions++;
-  } while (pos != std::string::npos);
 
-  if (n != readPositions) {
-    // the answer didn't include as many positions as expected
-    std::cerr << "[ERR]: Expected a different amount of positions than the ones given."
-              << std::endl;
-    std::cerr << "[ERR]: Expected " << n << " positions, but got " << readPositions << "."
-              << std::endl;
-    setWord(initialWord);
-    return -1;
-  }
-  std::cout << "You guessed correctly! Word is now: " << getWord() << std::endl;
   guessesMade++;
-  guessedLetters[guess] = true;
+  // guessedLetters[guess] = true;
   spotsLeft -= n;
   incrementTrials();
 
@@ -269,32 +234,32 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return SYNTAX_ERROR;
   }
 
-  GameState play = GameSessisons[plid];
+  GameState *play = &GameSessisons[plid];
 
   std::cout << "trial " << trial << std::endl;
-  std::cout << "play trials " << play.getTrials() << std::endl;
+  std::cout << "play trials " << play->getTrials() << std::endl;
 
-  if (std::stoi(trial) != play.getTrials()) {
+  if (std::stoi(trial) != play->getTrials()) {
     return TRIAL_MISMATCH;
   }
 
-  if (play.isLetterGuessed(letter[0])) {
+  if (play->isLetterGuessed(letter[0])) {
     return DUPLICATE_GUESS;
   }
 
-  int numberCorrect = getOccurances(play.getWord(), letter[0], arguments);
+  int numberCorrect = getOccurances(play->getWord(), letter[0], arguments);
 
   if (numberCorrect == 0) {
-    play.incorrectGuess();
-    if (play.getAvailableMistakes() == -1) {
+    play->incorrectGuess();
+    if (play->getAvailableMistakes() == -1) {
       return WRONG_FINAL_GUESS;
     }
     return WRONG_GUESS;
   }
 
-  play.correctGuess(arguments, numberCorrect);
+  play->correctGuess(arguments, numberCorrect);
 
-  if (play.getSpotsLeft() == 0) {
+  if (play->getSpotsLeft() == 0) {
     return SUCCESS_FINAL_GUESS;
   }
 
