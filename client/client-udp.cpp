@@ -17,7 +17,8 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 int createSocketUDP(struct peerInfo peer) {
-  return newSocket(SOCK_DGRAM, peer.addr, peer.port, &serverInfoUDP);
+  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &serverInfoUDP);
+  return socketFdUDP;
 }
 
 int disconnectUDP() {
