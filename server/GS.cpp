@@ -61,7 +61,10 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Starting server..." << std::endl;
 
-  setServerParamaters(filePath, verbose);
+  if (setServerParamaters(filePath, verbose) == -1) {
+    std::cout << "[ERR]: Failed to set server parameters. Exiting..." << std::endl;
+    return -1;
+  }
 
   createSocketUDP("", GSport);
 }

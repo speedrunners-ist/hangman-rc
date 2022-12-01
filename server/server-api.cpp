@@ -190,20 +190,12 @@ int createGameSession(std::string plid, std::string &arguments) {
 }
 
 // TODO: could be better
-void setPath(std::string path) {
-
-  // see if the path is valid
-  if (access(path.c_str(), F_OK) == -1) {
-    std::cerr << "[ERR]: Invalid path." << std::endl;
-    return;
-  }
-
-  filepath = path;
+int setPath(std::string path) {
 
   std::ifstream file(filepath);
-
   std::string line;
 
+  filepath = path;
   totalLines = 0;
 
   while (std::getline(file, line)) {
@@ -213,7 +205,10 @@ void setPath(std::string path) {
 
   if (totalLines == 0) {
     std::cout << "File is empty." << std::endl;
+    return -1;
   }
+
+  return 0;
 }
 
 int isOngoingGame(std::string plid) {

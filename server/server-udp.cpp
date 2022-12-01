@@ -36,9 +36,9 @@ int validatePort(std::string port) {
   return 0;
 }
 
-void setServerParamaters(std::string filepath, bool verboseValue) {
+int setServerParamaters(std::string filepath, bool verboseValue) {
   verbose = verboseValue;
-  setPath(filepath);
+  return setPath(filepath);
 }
 
 void createSocketUDP(std::string addr, std::string port) {

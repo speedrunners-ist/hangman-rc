@@ -93,7 +93,7 @@ void exitGracefully(std::string errorMessage);
 bool forceExit(std::string command);
 void continueReading(char *buffer);
 
-void setPath(std::string filepath);
+int setPath(std::string filepath);
 int createGameSession(std::string plid, std::string &arguments);
 int isOngoingGame(std::string plid);
 
