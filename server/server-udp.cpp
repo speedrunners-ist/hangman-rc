@@ -236,7 +236,7 @@ int sendRQT(std::string input) {
   }
   return generalUDPHandler(response);
 }
-int sendRRV(std::string input) { return 0; }
+int sendRRV(std::string input) { return sendRQT(input); }
 
 // Server message handlers
 int handleSNG(struct protocolMessage message) {
@@ -284,7 +284,12 @@ int handleQUT(struct protocolMessage message) {
   return sendRQT(plid);
 }
 int handleREV(struct protocolMessage message) {
-  sendRRV(message.code);
-  std::cout << message.code << std::endl;
-  return 0;
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string plid = body.substr(pos1 + 1);
+  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
+
+  return sendRRV(plid);
 }
