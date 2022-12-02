@@ -206,19 +206,19 @@ int sendRWG(std::string input) {
 
   switch (ret) {
     case SUCCESS_GUESS:
-      response = buildSplitString({"RLG", "WIN", arguments});
+      response = buildSplitString({"RWG", "WIN", arguments});
       break;
     case WRONG_GUESS:
-      response = buildSplitString({"RLG", "NOK", arguments});
+      response = buildSplitString({"RWG", "NOK", arguments});
       break;
     case WRONG_FINAL_GUESS:
-      response = buildSplitString({"RLG", "OVR", arguments});
+      response = buildSplitString({"RWG", "OVR", arguments});
       break;
     case TRIAL_MISMATCH:
-      response = buildSplitString({"RLG", "INV", arguments});
+      response = buildSplitString({"RWG", "INV", arguments});
       break;
     case SYNTAX_ERROR:
-      response = buildSplitString({"RLG", "ERR"});
+      response = buildSplitString({"RWG", "ERR"});
       break;
 
     default:
@@ -238,10 +238,10 @@ int sendRQT(std::string input) {
 
   switch (ret) {
     case CLOSE_GAME_ERROR:
-      response = buildSplitString({"RSG", "ERR"});
+      response = buildSplitString({"RQT", "ERR"});
       break;
     case CLOSE_GAME_SUCCESS:
-      response = buildSplitString({"RSG", "OK"});
+      response = buildSplitString({"RQT", "OK"});
       break;
 
     default:
