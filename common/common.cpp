@@ -32,10 +32,7 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
   if (!addr.empty())
     return socketFd;
 
-  const sockaddr *addrPtr = (*serverInfo)->ai_addr;
-  const socklen_t addrLen = (*serverInfo)->ai_addrlen;
-
-  if (bind(socketFd, addrPtr, addrLen) != 0) {
+  if (bind(socketFd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
     std::cout << "[ERR]: Failed to bind socket. Exiting." << std::endl;
     exit(1);
   }

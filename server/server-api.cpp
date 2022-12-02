@@ -194,10 +194,10 @@ int createGameSession(std::string plid, std::string &arguments) {
 // TODO: could be better
 int setPath(std::string path) {
 
+  filepath = path;
   std::ifstream file(filepath);
   std::string line;
 
-  filepath = path;
   totalLines = 0;
 
   while (std::getline(file, line)) {
@@ -259,13 +259,16 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
 int getOccurances(std::string word, char letter, std::string &positions) {
   int numberCorrect = 0;
+  std::string auxiliar = "";
 
   for (size_t i = 0; i < word.length(); i++) {
     if (word[i] == letter) {
-      positions += std::to_string(i) + " ";
+      auxiliar.append(" ").append(std::to_string(i));
       numberCorrect++;
     }
   }
+  positions.append(std::to_string(numberCorrect)).append(auxiliar);
+
   return numberCorrect;
 }
 
