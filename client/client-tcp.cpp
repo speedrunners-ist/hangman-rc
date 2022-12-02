@@ -181,7 +181,7 @@ int handleRSB(struct protocolMessage response) {
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
     std::cout << SB_HEADER << std::endl;
-    ret = displayFileRank(info.fileName, SB_DIR);
+    ret = displayFile(info.fileName, SB_DIR);
     disconnectTCP();
     return ret;
   } else if (response.status == "EMPTY") {
