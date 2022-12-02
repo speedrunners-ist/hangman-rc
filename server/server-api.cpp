@@ -267,7 +267,7 @@ int getOccurances(std::string word, char letter, std::string &positions) {
       numberCorrect++;
     }
   }
-  positions.append(std::to_string(numberCorrect)).append(auxiliar);
+  positions.append(" ").append(std::to_string(numberCorrect)).append(auxiliar);
 
   return numberCorrect;
 }
