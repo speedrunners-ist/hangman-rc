@@ -186,7 +186,7 @@ int createGameSession(std::string plid, std::string &arguments) {
 
   GameSessisons.insert(std::pair<std::string, GameState>(plid, newGame));
 
-  arguments.append(std::to_string(wordLength)).append(std::to_string(mistakes));
+  arguments.append(std::to_string(wordLength)).append(" ").append(std::to_string(mistakes));
 
   return CREATE_GAME_SUCCESS;
 }
