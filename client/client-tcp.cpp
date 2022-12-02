@@ -237,7 +237,7 @@ int handleRST(struct protocolMessage response) {
     return -1;
   }
 
-  const int bytesRead = receiveTCPFile(info, "state");
+  const int bytesRead = receiveTCPFile(info, ST_DIR);
   if (bytesRead == -1) {
     disconnectTCP();
     return -1;
