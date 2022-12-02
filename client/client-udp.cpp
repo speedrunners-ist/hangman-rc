@@ -2,7 +2,6 @@
 
 struct addrinfo *serverInfoUDP;
 int socketFdUDP;
-char responseUDP[UDP_RECV_SIZE];
 
 // TODO: change this to read a specific amount of bytes from the socket for each specific command
 
@@ -30,7 +29,7 @@ int disconnectUDP() {
   return 0;
 }
 
-int exchangeUDPMessage(std::string message, char *response) {
+int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBytes) {
   if (serverInfoUDP == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
@@ -46,9 +45,8 @@ int exchangeUDPMessage(std::string message, char *response) {
 
     socklen_t addrLen = sizeof(serverInfoUDP->ai_addr);
     turnOnSocketTimer(socketFdUDP);
-    // TODO: we should probably expect a given amount of bytes, not necessarily UDP_RECV_SIZE
     const ssize_t bytesReceived =
-        recvfrom(socketFdUDP, response, UDP_RECV_SIZE, 0, serverInfoUDP->ai_addr, &addrLen);
+        recvfrom(socketFdUDP, response, maxExpectedBytes, 0, serverInfoUDP->ai_addr, &addrLen);
     turnOffSocketTimer(socketFdUDP);
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
@@ -94,9 +92,10 @@ int parseUDPResponse(char *response) {
 }
 
 // UDP handlers
-int generalUDPHandler(std::string message) {
-  memset(responseUDP, 0, UDP_RECV_SIZE);
-  const int ret = exchangeUDPMessage(message, responseUDP);
+int generalUDPHandler(std::string message, size_t maxExpectedBytes) {
+  char responseUDP[maxExpectedBytes];
+  memset(responseUDP, 0, maxExpectedBytes);
+  const int ret = exchangeUDPMessage(message, responseUDP, maxExpectedBytes);
   if (ret == -1) {
     return -1;
   }
@@ -232,7 +231,7 @@ int sendSNG(struct messageInfo info) {
   if (validatePlayerID(plid) == 0) {
     setPlayerID(plid);
     const std::string message = buildSplitString({"SNG", plid});
-    return generalUDPHandler(message);
+    return generalUDPHandler(message, RSG_BYTES);
   }
   return -1;
 }
@@ -251,7 +250,7 @@ int sendPLG(struct messageInfo info) {
   const std::string message =
       buildSplitString({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
-  return generalUDPHandler(message);
+  return generalUDPHandler(message, RLG_BYTES);
 }
 
 int sendPWG(struct messageInfo info) {
@@ -268,7 +267,7 @@ int sendPWG(struct messageInfo info) {
   const std::string message =
       buildSplitString({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   setLastWordGuess(guess);
-  return generalUDPHandler(message);
+  return generalUDPHandler(message, RWG_BYTES);
 }
 
 int sendQUT(struct messageInfo info) {
@@ -279,9 +278,9 @@ int sendQUT(struct messageInfo info) {
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitString({"QUT", getPlayerID()});
   if (command == "quit") {
-    return generalUDPHandler(message);
+    return generalUDPHandler(message, RQT_BYTES);
   }
-  return generalUDPHandler(message) == 0 ? EXIT_HANGMAN : -1;
+  return generalUDPHandler(message, RQT_BYTES) == 0 ? EXIT_HANGMAN : -1;
 }
 
 int sendREV(struct messageInfo info) {
@@ -289,5 +288,5 @@ int sendREV(struct messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitString({"REV", getPlayerID()});
-  return generalUDPHandler(message);
+  return generalUDPHandler(message, RRV_BYTES);
 }

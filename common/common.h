@@ -22,7 +22,6 @@
 #define DEFAULT_GSPORT "58011"
 
 // sizes below are arbitrary, in bytes
-#define UDP_RECV_SIZE 1024
 #define TCP_CHUNK_SIZE 1024
 #define MAX_USER_INPUT 1024
 
@@ -82,8 +81,8 @@ int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
 
 // UDP utils functions
-int generalUDPHandler(std::string message);
-int exchangeUDPMessage(std::string message, char *response);
+int generalUDPHandler(std::string message, size_t maxExpectedBytes);
+int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBytes);
 int parseUDPResponse(char *response);
 
 // TCP utils functions

@@ -17,6 +17,15 @@ typedef std::map<std::string, std::function<int(struct protocolMessage response)
 #define HINT_ARGS 1
 #define STATE_ARGS 1
 
+// Maximum amount of bytes that can be sent by the server for each UDP command
+// Macros defined as the sum of each element's max byte amount
+// Account for spaces and for the newline in the end
+#define RSG_BYTES 3 + 1 + 3 + 1 + 2 + 1 + 1 + 1
+#define RLG_BYTES 3 + 1 + 3 + 1  + 1 + 2 + 2 * 30 + 1
+#define RWG_BYTES 3 + 1 + 3 + 1 + 1 + 1
+#define RQT_BYTES 3 + 1 + 3 + 1
+#define RRV_BYTES 3 + 1 + 30 + 1
+
 #define TCP_DEFAULT_ARGS 2
 #define TCP_FILE_ARGS 2
 
