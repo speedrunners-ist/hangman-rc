@@ -250,7 +250,26 @@ int sendRQT(std::string input) {
   }
   return generalUDPHandler(response);
 }
-int sendRRV(std::string input) { return sendRQT(input); }
+int sendRRV(std::string input) {
+  std::string plid = input;
+
+  int ret = closeGameSession(plid);
+  std::string response;
+
+  switch (ret) {
+    case CLOSE_GAME_ERROR:
+      response = buildSplitString({"RRV", "ERR"});
+      break;
+    case CLOSE_GAME_SUCCESS:
+      response = buildSplitString({"RRV", "OK"});
+      break;
+
+    default:
+      std::cout << "Error in sendRRV" << std::endl;
+      return -1;
+  }
+  return generalUDPHandler(response);
+}
 
 // Server message handlers
 int handleSNG(struct protocolMessage message) {
