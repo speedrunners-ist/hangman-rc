@@ -1,8 +1,9 @@
 #include "client-protocol.h"
 
-struct addrinfo *serverInfo;
-int socketFd;
-char responseUDP[UDP_RECV_SIZE];
+static struct addrinfo *serverInfo;
+static int socketFd;
+static char responseUDP[UDP_RECV_SIZE];
+struct addrinfo hints;
 
 // clang-format off
 responseHandler handleUDPServerMessage = {
@@ -15,7 +16,7 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 void createSocketUDP(std::string addr, std::string port) {
-  socketFd = newSocket(SOCK_DGRAM, addr, port, &serverInfo);
+  socketFd = newSocket(SOCK_DGRAM, addr, port, &hints, &serverInfo);
 }
 
 // TODO: in order for the program to exit gracefully, we always need to close any open sockets!!

@@ -18,7 +18,7 @@
 #include <vector>
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
-#define DEFAULT_GSPORT "58011"
+#define DEFAULT_GSPORT "58001"
 
 #define MAX_USER_INPUT 1024
 
@@ -38,8 +38,8 @@ struct protocolMessage {
   std::string body;
 };
 
-int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
-
+int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
+              struct addrinfo **serverInfo);
 // UDP utils functions
 int generalUDPHandler(std::string message);
 int exchangeUDPMessage(std::string message, char *response);
