@@ -52,8 +52,8 @@ Mkfile.old
 dkms.conf
 
 # Compiled artifacts
-server/server
 client/player
+server/GS
 
 # Text files
 scoreboard/

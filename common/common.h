@@ -19,11 +19,12 @@
 #include <vector>
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
-#define DEFAULT_GSPORT "58011"
+#define DEFAULT_GSPORT "58001"
 
 // sizes below are arbitrary, in bytes
 #define TCP_CHUNK_SIZE 1024
 #define MAX_USER_INPUT 1024
+#define UDP_RECV_SIZE 1024
 
 #define EXIT_HANGMAN 1
 #define UDP_TRIES 3
@@ -73,7 +74,8 @@ struct messageInfo {
   struct peerInfo peer;
 };
 
-int newSocket(int type, std::string addr, std::string port, struct addrinfo **serverInfo);
+int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
+              struct addrinfo **serverInfo);
 int disconnectUDP();
 int disconnectTCP();
 

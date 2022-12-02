@@ -1,6 +1,7 @@
 #include "client-protocol.h"
 
 struct addrinfo *serverInfoTCP;
+struct addrinfo hintsTCP;
 int socketFdTCP;
 
 // clang-format off
@@ -12,7 +13,7 @@ responseHandler handleTCPServerMessage = {
 // clang-format on
 
 int createSocketTCP(struct peerInfo peer) {
-  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &serverInfoTCP);
+  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &hintsTCP, &serverInfoTCP);
   if (connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen) == -1) {
     std::cerr << TCP_SERVER_ERROR << std::endl;
     return -1;

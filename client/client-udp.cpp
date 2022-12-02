@@ -1,6 +1,7 @@
 #include "client-protocol.h"
 
 struct addrinfo *serverInfoUDP;
+struct addrinfo hintsUDP;
 int socketFdUDP;
 
 // TODO: change this to read a specific amount of bytes from the socket for each specific command
@@ -16,7 +17,7 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 int createSocketUDP(struct peerInfo peer) {
-  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &serverInfoUDP);
+  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &hintsUDP, &serverInfoUDP);
   return socketFdUDP;
 }
 
