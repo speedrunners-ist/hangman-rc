@@ -36,6 +36,14 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
     std::cout << "[ERR]: Failed to bind socket. Exiting." << std::endl;
     exit(EXIT_FAILURE); // TODO standardize exit
   }
+
+  if (!addr.empty())
+    return socketFd;
+
+  if (bind(socketFd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
+    std::cout << "[ERR]: Failed to bind socket. Exiting." << std::endl;
+    exit(1);
+  }
   return socketFd;
 }
 
