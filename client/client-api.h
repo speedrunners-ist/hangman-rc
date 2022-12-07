@@ -9,6 +9,10 @@
 
 typedef std::map<char, bool> Alphabet;
 
+#define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
+#define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
+#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
+
 class GameState {
   int wordLength;
   int mistakesLeft;
@@ -38,18 +42,6 @@ public:
   void correctFinalWordGuess();
 };
 
-// Error Messages
-#define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
-#define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
-#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
-#define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
-#define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
-#define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
-#define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                        \
-  "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
-#define UNEXPECTED_COMMAND_ERROR(commands)                                                         \
-  "[ERR]: Invalid input. Expected one of the following commands: " + commands
-
 void createGame(int length, int mistakes);
 int getAvailableMistakes();
 std::string getWord();
@@ -68,7 +60,6 @@ int getTrials();
 
 int validateArgsAmount(std::string input, int n);
 int validatePlayerID(std::string id);
-void exitGracefully(std::string errorMessage);
 bool forceExit(std::string command);
 void continueReading(char *buffer);
 

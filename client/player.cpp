@@ -43,12 +43,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  createSocketUDP(GSIP, GSport);
-  int res = mkdir("hints", 0700);
-  if (res == -1 && errno != EEXIST) {
-    // if the directory can't be created and it doesn't already exist
-    std::cerr << MKDIR_ERROR << std::endl;
-    // TODO: close socket
+  const struct peerInfo peer = {GSIP, GSport};
+  if (createSocketUDP(peer) == -1) {
     exit(EXIT_FAILURE);
   }
 
@@ -78,19 +74,19 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
+    messageInfo message = {input, peer};
+
     // if the command is valid, call the appropriate function
-    if (forceExit(command) || handlePlayerMessage[command](input) == EXIT_HANGMAN) {
+    if (forceExit(command) || handlePlayerMessage[command](message) == EXIT_HANGMAN) {
       break;
     }
     continueReading(buffer);
   }
 
-  // delete the directory and its contents - should we really do it like this?
-  system("rm -rf hints");
-
-  std::cout << "Exiting the program. Thanks for playing!" << std::endl;
-
-  // close(fd);
-  // freeaddrinfo(serverInfo);
-  // exit(EXIT_SUCCESS);
+  // TODO: should we remove the created directories?
+  std::cout << EXIT_PROGRAM << std::endl;
+  if (disconnectUDP() == -1) {
+    exit(EXIT_FAILURE);
+  }
+  exit(EXIT_SUCCESS);
 }

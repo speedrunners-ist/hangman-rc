@@ -1,9 +1,10 @@
 #include "client-protocol.h"
 
-static struct addrinfo *serverInfo;
-static int socketFd;
-static char responseUDP[UDP_RECV_SIZE];
-struct addrinfo hints;
+struct addrinfo *serverInfoUDP;
+struct addrinfo hintsUDP;
+int socketFdUDP;
+
+// TODO: change this to read a specific amount of bytes from the socket for each specific command
 
 // clang-format off
 responseHandler handleUDPServerMessage = {
@@ -15,33 +16,39 @@ responseHandler handleUDPServerMessage = {
 };
 // clang-format on
 
-void createSocketUDP(std::string addr, std::string port) {
-  socketFd = newSocket(SOCK_DGRAM, addr, port, &hints, &serverInfo);
+int createSocketUDP(struct peerInfo peer) {
+  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &hintsUDP, &serverInfoUDP);
+  return socketFdUDP;
 }
 
-// TODO: in order for the program to exit gracefully, we always need to close any open sockets!!
+int disconnectUDP() {
+  freeaddrinfo(serverInfoUDP);
+  if (close(socketFdUDP) == -1) {
+    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
+}
 
-int exchangeUDPMessage(std::string message, char *response) {
-  if (serverInfo == NULL) {
+int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBytes) {
+  if (serverInfoUDP == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
 
-  std::cout << "[INFO]: Sending message: " << message;
-
   int triesLeft = UDP_TRIES;
   do {
-    if (sendto(socketFd, message.c_str(), message.length(), 0, serverInfo->ai_addr,
-               serverInfo->ai_addrlen) == -1) {
+    if (sendto(socketFdUDP, message.c_str(), message.length(), 0, serverInfoUDP->ai_addr,
+               serverInfoUDP->ai_addrlen) == -1) {
       std::cerr << SENDTO_ERROR << std::endl;
       return -1;
     }
 
-    socklen_t addrLen = sizeof(serverInfo->ai_addr);
-    // TODO: we should probably expect a given amount of bytes, not necessarily UDP_RECV_SIZE
+    socklen_t addrLen = sizeof(serverInfoUDP->ai_addr);
+    turnOnSocketTimer(socketFdUDP);
     const ssize_t bytesReceived =
-        recvfrom(socketFd, response, UDP_RECV_SIZE, 0, serverInfo->ai_addr, &addrLen);
-
+        recvfrom(socketFdUDP, response, maxExpectedBytes, 0, serverInfoUDP->ai_addr, &addrLen);
+    turnOffSocketTimer(socketFdUDP);
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;
@@ -86,9 +93,10 @@ int parseUDPResponse(char *response) {
 }
 
 // UDP handlers
-int generalUDPHandler(std::string message) {
-  memset(responseUDP, 0, UDP_RECV_SIZE);
-  const int ret = exchangeUDPMessage(message, responseUDP);
+int generalUDPHandler(std::string message, size_t maxExpectedBytes) {
+  char responseUDP[maxExpectedBytes];
+  memset(responseUDP, 0, maxExpectedBytes);
+  const int ret = exchangeUDPMessage(message, responseUDP, maxExpectedBytes);
   if (ret == -1) {
     return -1;
   }
@@ -102,7 +110,6 @@ int handleRSG(struct protocolMessage response) {
     const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
     const size_t pos_n_max_errors = response.body.find('\n', pos_n_letters + 1);
     if (pos_n_letters == std::string::npos || pos_n_max_errors != std::string::npos) {
-      std::cout << response.body << std::endl;
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
@@ -130,7 +137,6 @@ int handleRLG(struct protocolMessage response) {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);
     if (pos_n == std::string::npos || pos_correct_positions != std::string::npos) {
-      std::cerr << response.body << std::endl;
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
@@ -151,8 +157,6 @@ int handleRLG(struct protocolMessage response) {
     std::cout << RLG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   } else if (response.status == "OVR") {
-    // the server itself ends the game on its end, so we should add a mechanism on our end
-    // to end the game as well ig
     playIncorrectGuess();
     resetGame();
     std::cout << RLG_OVR << std::endl;
@@ -183,8 +187,6 @@ int handleRWG(struct protocolMessage response) {
     std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   } else if (response.status == "OVR") {
-    // the server itself ends the game on its end, so we should add a mechanism on our end
-    // to end the game as well ig
     playIncorrectGuess();
     resetGame();
     std::cout << RWG_OVR << std::endl;
@@ -220,27 +222,27 @@ int handleRRV(struct protocolMessage response) {
 }
 
 // handlers: player requests
-int sendSNG(std::string input) {
-  if (validateArgsAmount(input, START_ARGS) == -1) {
+int sendSNG(struct messageInfo info) {
+  if (validateArgsAmount(info.input, START_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  std::string plid = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  std::string plid = info.input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (validatePlayerID(plid) == 0) {
     setPlayerID(plid);
     const std::string message = buildSplitString({"SNG", plid});
-    return generalUDPHandler(message);
+    return generalUDPHandler(message, RSG_BYTES);
   }
   return -1;
 }
 
-int sendPLG(std::string input) {
-  if (validateArgsAmount(input, PLAY_ARGS) == -1) {
+int sendPLG(struct messageInfo info) {
+  if (validateArgsAmount(info.input, PLAY_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  std::string letter = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  std::string letter = info.input.substr(pos1 + 1);
   letter.erase(std::remove(letter.begin(), letter.end(), '\n'), letter.end());
   if (letter.length() != 1 || !std::isalpha(letter[0])) {
     std::cerr << EXPECTED_LETTER_ERROR << std::endl;
@@ -249,15 +251,15 @@ int sendPLG(std::string input) {
   const std::string message =
       buildSplitString({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
-  return generalUDPHandler(message);
+  return generalUDPHandler(message, RLG_BYTES);
 }
 
-int sendPWG(std::string input) {
-  if (validateArgsAmount(input, GUESS_ARGS) == -1) {
+int sendPWG(struct messageInfo info) {
+  if (validateArgsAmount(info.input, GUESS_ARGS) == -1) {
     return -1;
   }
-  const size_t pos1 = input.find(' ');
-  std::string guess = input.substr(pos1 + 1);
+  const size_t pos1 = info.input.find(' ');
+  std::string guess = info.input.substr(pos1 + 1);
   guess.erase(std::remove(guess.begin(), guess.end(), '\n'), guess.end());
   if (guess.length() != getWordLength()) {
     std::cerr << EXPECTED_WORD_DIF_LEN_ERROR(getWordLength()) << std::endl;
@@ -266,26 +268,26 @@ int sendPWG(std::string input) {
   const std::string message =
       buildSplitString({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   setLastWordGuess(guess);
-  return generalUDPHandler(message);
+  return generalUDPHandler(message, RWG_BYTES);
 }
 
-int sendQUT(std::string input) {
-  // TODO: can't forget to close all open TCP connections
-  if (validateArgsAmount(input, QUIT_ARGS) == -1) {
+int sendQUT(struct messageInfo info) {
+  // TODO: can't forget to close all open TCP connections - what do we have to do here, exactly?
+  if (validateArgsAmount(info.input, QUIT_ARGS) == -1) {
     return -1;
   }
-  const std::string command = input.substr(0, input.find('\n'));
+  const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitString({"QUT", getPlayerID()});
   if (command == "quit") {
-    return generalUDPHandler(message);
+    return generalUDPHandler(message, RQT_BYTES);
   }
-  return generalUDPHandler(message) == 0 ? EXIT_HANGMAN : -1;
+  return generalUDPHandler(message, RQT_BYTES) == 0 ? EXIT_HANGMAN : -1;
 }
 
-int sendREV(std::string input) {
-  if (validateArgsAmount(input, REVEAL_ARGS) == -1) {
+int sendREV(struct messageInfo info) {
+  if (validateArgsAmount(info.input, REVEAL_ARGS) == -1) {
     return -1;
   }
   const std::string message = buildSplitString({"REV", getPlayerID()});
-  return generalUDPHandler(message);
+  return generalUDPHandler(message, RRV_BYTES);
 }

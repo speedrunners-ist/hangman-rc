@@ -155,15 +155,6 @@ int validatePlayerID(std::string id) {
   return 0;
 }
 
-void exitGracefully(std::string errorMessage) {
-  std::cerr << errorMessage << std::endl;
-
-  // TODO: close socket in case of error
-  // close(fd);
-  // freeaddrinfo(serverInfo);
-  // exit(EXIT_SUCCESS);
-}
-
 bool forceExit(std::string command) { return command == "exit" && !play.isActive(); }
 
 void continueReading(char *buffer) {
