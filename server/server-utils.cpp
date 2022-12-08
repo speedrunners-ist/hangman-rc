@@ -91,3 +91,23 @@ int FindTopScores(SCORELIST *list) {
   list->n_scores = i_file;
   return i_file;
 }
+
+int createGameFile(std::string plid, std::string word, std::string hint) {
+
+  std::fstream file;
+
+  std::string dir = "GAMES/GAME_" + plid + ".txt";
+  std::string content = buildSplitString({word, hint});
+  // TODO: create these folders in the client directory
+  file.open(dir, std::ios::out | std::ios::in | std::ios::trunc);
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << std::endl;
+    return -1;
+  }
+
+  file.write(content.c_str(), content.size());
+
+  file.close();
+
+  return 0;
+}

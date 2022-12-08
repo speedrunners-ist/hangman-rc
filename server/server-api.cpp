@@ -46,6 +46,33 @@ void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength(GameState play) { return play.getWordLength(); }
 
+int getWordHints(std::string &arguments) {
+
+  std::fstream file;
+  std::string line = "";
+  int wordLength = 0;
+
+  file.open(fileName, std::ios::in);
+  if (!file) {
+    return -1;
+  }
+
+  std::getline(file, line);
+  if (line == "") {
+    return -1;
+  }
+
+  line = line.substr(0, line.find(' '));
+  wordLength = (int)line.length();
+
+  arguments = buildSplitString(
+      {std::to_string(wordLength), std::to_string(initialAvailableMistakes(wordLength))});
+
+  file.close();
+
+  return 0;
+}
+
 // Util functions
 int createGameSession(std::string plid, std::string &arguments) {
 
@@ -53,11 +80,17 @@ int createGameSession(std::string plid, std::string &arguments) {
     return CREATE_GAME_ERROR;
   }
 
+  // if game is already ongoing
   if (isOngoingGame(plid) == 1) {
-    std::cout << "Game already exists for player " << plid << std::endl;
+    // if game has moves
     if (isGamePlayed() == -1) {
       return CREATE_GAME_ERROR;
     }
+    // if game has no moves
+
+    getWordHints(arguments);
+
+    return CREATE_GAME_SUCCESS;
   }
 
   // TODO: check this
@@ -81,6 +114,8 @@ int createGameSession(std::string plid, std::string &arguments) {
   GameSessions.insert(std::pair<std::string, GameState>(plid, newGame));
 
   arguments.append(std::to_string(wordLength)).append(" ").append(std::to_string(mistakes));
+
+  createGameFile(plid, word, file);
 
   return CREATE_GAME_SUCCESS;
 }
