@@ -1,14 +1,13 @@
 #include "server-protocol.h"
 
-static struct addrinfo *serverInfo;
-static int socketFd;
-static char responseUDP[UDP_RECV_SIZE];
-static socklen_t addrlen;
-static struct sockaddr_in addrClient;
-static char buffer[UDP_RECV_SIZE];
-struct addrinfo hints;
-static bool verbose;
-static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
+struct addrinfo *resUDP;
+struct addrinfo hintsUDP;
+int socketFdUDP;
+char responseUDP[UDP_RECV_SIZE];
+socklen_t addrlen;
+char buffer[UDP_RECV_SIZE];
+bool verbose;
+char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
 
 // clang-format off
 static commandHandler handleUDPClientMessage = {
@@ -20,74 +19,55 @@ static commandHandler handleUDPClientMessage = {
 };
 // clang-format on
 
-int validatePort(std::string port) {
-  int portNum;
-  std::string portNumStr;
-  try {
-    // stdi stops at the final or first non-numeric character
-    portNum = std::stoi(port);
-    portNumStr = std::to_string(portNum);
-  } catch (std::exception &e) {
-    return -1;
-  }
-  if (portNumStr != port || portNum < 0 || portNum > 65535)
-    return -1;
-  return 0;
-}
-
-int setServerParamaters(std::string filepath, bool verboseValue) {
-  verbose = verboseValue;
+int setServerParameters(std::string filepath, bool vParam) {
+  verbose = vParam;
   return setPath(filepath);
 }
 
 void createSocketUDP(std::string addr, std::string port) {
   int errcode;
-
-  socketFd = newSocket(SOCK_DGRAM, addr, port, &hints, &serverInfo);
+  socketFdUDP = newSocket(SOCK_DGRAM, addr, port, &hintsUDP, &resUDP);
+  if (socketFdUDP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   // Listen for incoming connections
-  while (1) {
-
-    addrlen = sizeof(addrClient);
-    if (recvfrom(socketFd, buffer, UDP_RECV_SIZE, 0, (struct sockaddr *)&addrClient, &addrlen) ==
-        -1) /*error*/
+  while (true) {
+    addrlen = sizeof(resUDP->ai_addr);
+    if (recvfrom(socketFdUDP, buffer, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlen) == -1) {
       exit(1);
+    }
     std::cout << "[INFO]: Received message: " << buffer;
 
-    // TODO put type of request
+    // TODO: put type of request
     if (verbose) {
-      if ((errcode = getnameinfo((struct sockaddr *)&addrClient, addrlen, host, sizeof host,
-                                 service, sizeof service, 0)) != 0)
-        fprintf(stderr, "error: getnameinfo: %s\n", gai_strerror(errcode));
-      else
-        printf("Message sent by [%s:%s]\n", host, service);
+      errcode =
+          getnameinfo(resUDP->ai_addr, addrlen, host, sizeof(host), service, sizeof(service), 0);
+      if (errcode != 0) {
+        std::cerr << "[ERR]: getnameinfo: " << gai_strerror(errcode) << std::endl;
+      } else {
+        std::cout << "[INFO]: Message sent by [" << host << ":" << service << "]" << std::endl;
+      }
     }
 
     parseUDPResponse(buffer);
-
     memset(buffer, 0, UDP_RECV_SIZE);
   }
 }
 
 int exchangeUDPMessage(std::string message, char *response) {
-  (void)response;
-  if (serverInfo == NULL) {
+  if (resUDP == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
 
   std::cout << "[INFO]: Sending message: " << message;
-
-  if (sendto(socketFd, message.c_str(), message.length(), 0, (struct sockaddr *)&addrClient,
-             addrlen) == -1) {
+  if (sendto(socketFdUDP, message.c_str(), message.length(), 0, resUDP->ai_addr, addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
-  } else {
-    return 0;
   }
-
-  std::cerr << SENDTO_ERROR << std::endl;
-  return -1;
+  return 0;
 }
 
 int parseUDPResponse(char *response) {

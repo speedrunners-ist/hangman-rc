@@ -25,9 +25,9 @@ int main(int argc, char *argv[]) {
   }
 
   filePath = argv[optind];
-  std::cout << "Starting server..." << std::endl;
-  if (setServerParamaters(filePath, verbose) == -1) {
-    std::cout << "[ERR]: Failed to set server parameters. Exiting..." << std::endl;
+  std::cout << STARTING_SERVER << std::endl;
+  if (setServerParameters(filePath, verbose) == -1) {
+    std::cerr << STARTING_SERVER_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
 

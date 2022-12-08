@@ -19,9 +19,7 @@
 typedef std::map<std::string, std::function<int(struct protocolMessage request)>> commandHandler;
 typedef std::map<std::string, std::function<int(std::string input)>> responseHandler;
 
-int validatePort(std::string port);
-
-int setServerParamaters(std::string filepath, bool verbose);
+int setServerParameters(std::string filepath, bool vParam);
 
 void createSocketUDP(std::string addr, std::string port);
 

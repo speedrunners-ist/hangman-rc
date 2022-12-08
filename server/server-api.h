@@ -14,14 +14,10 @@ public:
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
-#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
-#define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
-#define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
-#define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
-#define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                        \
-  "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
-#define UNEXPECTED_COMMAND_ERROR(commands)                                                         \
-  "[ERR]: Invalid input. Expected one of the following commands: " + commands
+
+// User Messages
+#define STARTING_SERVER "Starting server..."
+#define STARTING_SERVER_ERROR "[ERR]: Failed to set server parameters. Exiting..."
 
 // RSG return codes
 #define CREATE_GAME_ERROR 1

@@ -1,11 +1,11 @@
 #include "server-protocol.h"
 
-static struct addrinfo hints, *res;
-static int fd, newfd, errcode;
-static struct sockaddr_in addr;
-static socklen_t addrlen;
-static ssize_t n;
-static char buffer[128];
+struct addrinfo hintsTCP, *resTCP;
+int fd, newfd, errcode;
+struct sockaddr_in addr;
+socklen_t addrlen;
+ssize_t n;
+char buffer[128];
 
 void openTCP(std::string GSport) {
   const char *GSPORT = GSport.c_str();
@@ -13,14 +13,14 @@ void openTCP(std::string GSport) {
   if ((fd = socket(AF_INET, SOCK_STREAM, 0) == -1)) // TCP socket
     exit(1);                                        // error
 
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_INET;       // IPv4
-  hints.ai_socktype = SOCK_STREAM; // TCP socket
-  hints.ai_flags = AI_PASSIVE;
+  memset(&hintsTCP, 0, sizeof hintsTCP);
+  hintsTCP.ai_family = AF_INET;       // IPv4
+  hintsTCP.ai_socktype = SOCK_STREAM; // TCP socket
+  hintsTCP.ai_flags = AI_PASSIVE;
 
-  if ((errcode = getaddrinfo(NULL, GSPORT, &hints, &res)) != 0)
+  if ((errcode = getaddrinfo(NULL, GSPORT, &hintsTCP, &resTCP)) != 0)
     exit(1); /*error*/
-  if (bind(fd, res->ai_addr, res->ai_addrlen) == -1)
+  if (bind(fd, resTCP->ai_addr, resTCP->ai_addrlen) == -1)
     exit(1); /*error*/
 
   // TODO: change number of connections to Constant
@@ -43,7 +43,7 @@ void openTCP(std::string GSport) {
 
     close(newfd);
   }
-  freeaddrinfo(res);
+  freeaddrinfo(resTCP);
   close(fd);
 }
 
