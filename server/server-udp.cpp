@@ -1,13 +1,13 @@
 #include "server-protocol.h"
 
-struct addrinfo *resUDP;
-struct addrinfo hintsUDP;
-int socketFdUDP;
-char responseUDP[UDP_RECV_SIZE];
-socklen_t addrlen;
-char buffer[UDP_RECV_SIZE];
-bool verbose;
-char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
+static struct addrinfo *resUDP;
+static struct addrinfo hintsUDP;
+static int socketFdUDP;
+static char responseUDP[UDP_RECV_SIZE];
+static socklen_t addrlen;
+static char buffer[UDP_RECV_SIZE];
+static bool verbose;
+static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
 
 // clang-format off
 static commandHandler handleUDPClientMessage = {
