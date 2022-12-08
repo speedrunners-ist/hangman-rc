@@ -1,17 +1,12 @@
 #include "client-api.h"
 
-/*** ClientGameState methods implementation ***/
-
-ClientGameState::ClientGameState() { GameState(); }
-ClientGameState::ClientGameState(int length, int mistakes) { GameState(length, mistakes); }
-
 /*** ClientAPI methods implementation ***/
 
-ClientGameState play;
+GameState play;
 std::string playerID;
 
 // Game state functions, useful for the client's protocol implementations
-void createGame(int length, int mistakes) { play = ClientGameState(length, mistakes); }
+void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
 int getAvailableMistakes() { return play.getAvailableMistakes(); }
 std::string getWord() { return play.getWord(); }
 int playCorrectGuess(std::string positions, int n) {
