@@ -93,6 +93,11 @@ public:
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
+#define INVALID_POSITIONS_ERROR "[ERR]: Server response includes invalid positions."
+#define ALREADY_FILLED_ERROR "[ERR]: Position already filled."
+#define DIFF_POSITIONS_ERROR "[ERR]: Expected a different amount of positions than the ones given."
+#define EXPECTED_POSITIONS(n, m) "[ERR]: Expected " << n << " positions, but got " << m << "."
+#define CORRECT_GUESS(word) "[INFO]: Correct guess. Word is now: " << word
 
 struct protocolMessage {
   std::string code;

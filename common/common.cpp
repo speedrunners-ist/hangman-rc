@@ -54,13 +54,11 @@ int GameState::correctGuess(std::string positions, int n) {
     std::string posStr = positions.substr(0, pos);
     const size_t posNum = (size_t)std::stoi(posStr);
     if (posNum < 1 || posNum > wordLength) {
-      std::cerr << "[ERR]: Server response includes invalid positions." << std::endl;
+      std::cerr << INVALID_POSITIONS_ERROR << std::endl;
       setWord(initialWord);
       return -1;
     } else if (word[posNum - 1] != '_') {
-      std::cout << "Current word: " << word << std::endl;
-      std::cout << "Position " << posNum << " is already filled." << std::endl;
-      std::cerr << "[ERR]: Server response includes an already filled position." << std::endl;
+      std::cerr << ALREADY_FILLED_ERROR << std::endl;
       setWord(initialWord);
       return -1;
     }
@@ -71,14 +69,12 @@ int GameState::correctGuess(std::string positions, int n) {
 
   if (n != readPositions) {
     // the answer didn't include as many positions as expected
-    std::cerr << "[ERR]: Expected a different amount of positions than the ones given."
-              << std::endl;
-    std::cerr << "[ERR]: Expected " << n << " positions, but got " << readPositions << "."
-              << std::endl;
+    std::cerr << DIFF_POSITIONS_ERROR << std::endl;
+    std::cerr << EXPECTED_POSITIONS(n, readPositions) << std::endl;
     setWord(initialWord);
     return -1;
   }
-  std::cout << "You guessed correctly! Word is now: " << getWord() << std::endl;
+  std::cout << CORRECT_GUESS(getWord()) << std::endl;
   guessesMade++;
   guessedLetters[guess] = true;
   return 0;

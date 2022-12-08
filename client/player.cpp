@@ -83,7 +83,6 @@ int main(int argc, char *argv[]) {
     continueReading(buffer);
   }
 
-  // TODO: should we remove the created directories?
   std::cout << EXIT_PROGRAM << std::endl;
   if (disconnectUDP() == -1) {
     exit(EXIT_FAILURE);
