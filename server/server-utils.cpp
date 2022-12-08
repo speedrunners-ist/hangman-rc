@@ -21,7 +21,6 @@ int findOccurringGame(char *PLID, char *fname) {
       auxStr = auxStr.substr(5, 6);
       if (strcmp(auxStr.c_str(), PLID) == 0) {
         sprintf(fname, "GAMES/%s", filelist[n_entries]->d_name);
-        std::cout << "fname: " << fname << std::endl;
         found = 1;
       }
       free(filelist[n_entries]);

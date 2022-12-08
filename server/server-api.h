@@ -51,5 +51,6 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 int getOccurrences(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
+int isGamePlayed();
 
 #endif /* SERVER_API_H */

@@ -1,6 +1,9 @@
 #include "server-api.h"
 
+// wordlist file
 std::string filepath;
+// game state file
+std::string fileName;
 std::vector<std::string> lines;
 int totalLines;
 std::map<std::string, GameState> GameSessions;
@@ -46,8 +49,15 @@ int getWordLength(GameState play) { return play.getWordLength(); }
 // Util functions
 int createGameSession(std::string plid, std::string &arguments) {
 
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) != 0) {
+  if (validatePlayerID(plid) != 0) {
     return CREATE_GAME_ERROR;
+  }
+
+  if (isOngoingGame(plid) == 1) {
+    std::cout << "Game already exists for player " << plid << std::endl;
+    if (isGamePlayed() == -1) {
+      return CREATE_GAME_ERROR;
+    }
   }
 
   // TODO: check this
@@ -99,20 +109,63 @@ int setPath(std::string path) {
 
 int isOngoingGame(std::string plid) {
 
-  if (findOccurringGame((char *)plid.c_str(), (char *)filepath.c_str()) == 0) {
+  fileName = "";
+  return findOccurringGame((char *)plid.c_str(), (char *)fileName.c_str()) == 0 ? 0 : 1;
+}
+
+// TODO: check better
+int checkHeader(std::string line) {
+  std::string word;
+  word = line.substr(0, line.find(' '));
+  if (word == "")
+    return -1;
+  line.erase(0, line.find(' ') + 1);
+  word = "";
+  word = line.substr(0, line.find('\n'));
+  if (word == "")
+    return -1;
+
+  // TODO: check file exists
+  return 0;
+}
+
+int isGamePlayed() {
+
+  std::fstream file;
+  std::string line;
+
+  file.open(fileName, std::ios::in);
+  if (!file) {
     return -1;
   }
 
-  if (GameSessions.find(plid) == GameSessions.end()) {
-    // There is no game with this plid
-    return 0;
+  // see first line
+  std::getline(file, line);
+  if (checkHeader(line) == -1) {
+    file.close();
+    return -1;
   }
-  return GameSessions[plid].isActive() ? -1 : 0;
+
+  // see second line
+  line = "";
+  std::getline(file, line);
+  file.close();
+  return line == "" ? 0 : -1;
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+  if (validatePlayerID(plid) != 0) {
     return SYNTAX_ERROR;
+  }
+
+  // see if file is empty
+  if (isOngoingGame(plid) == 1) {
+
+    fflush(stdout);
+    // see if file has actions
+    if (isGamePlayed() == -1) {
+      return SYNTAX_ERROR;
+    }
   }
 
   GameState *play = &GameSessions[plid];
