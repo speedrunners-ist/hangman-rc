@@ -1,52 +1,41 @@
 #include "server-protocol.h"
 
 static struct addrinfo hintsTCP, *resTCP;
-static int fd, newfd, errcode;
-static struct sockaddr_in addr;
+static int socketFdTCP, newfd;
 static socklen_t addrlen;
-static ssize_t n;
-static char buffer[128];
+static ssize_t n, nw;
+static char *ptr, buffer[128];
 
-void openTCP(std::string GSport) {
-  const char *GSPORT = GSport.c_str();
+void createSocketTCP(std::string addr, std::string port) {
+  int errcode;
+  socketFdTCP = newSocket(SOCK_STREAM, addr, port, &hintsTCP, &resTCP);
+  if (socketFdTCP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
-  if ((fd = socket(AF_INET, SOCK_STREAM, 0) == -1)) // TCP socket
-    exit(1);                                        // error
+  if (listen(socketFdTCP, 5) == -1) /*error*/
+    exit(1);
 
-  memset(&hintsTCP, 0, sizeof hintsTCP);
-  hintsTCP.ai_family = AF_INET;       // IPv4
-  hintsTCP.ai_socktype = SOCK_STREAM; // TCP socket
-  hintsTCP.ai_flags = AI_PASSIVE;
-
-  if ((errcode = getaddrinfo(NULL, GSPORT, &hintsTCP, &resTCP)) != 0)
-    exit(1); /*error*/
-  if (bind(fd, resTCP->ai_addr, resTCP->ai_addrlen) == -1)
-    exit(1); /*error*/
-
-  // TODO: change number of connections to Constant
-  if (listen(fd, 5) == -1)
-    exit(1); /*error*/
-
+  // TODO: fix loop
   while (1) {
     addrlen = sizeof(addr);
-    if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1)
-      exit(1); /*error*/
-
-    if (read(newfd, buffer, 128) == -1) /*error*/
-      exit(1);
-
-    write(1, "received: ", 10);
-    write(1, buffer, n);
-
-    if (write(newfd, buffer, n) == -1) /*error*/
-      exit(1);
-
+    if ((newfd = accept(socketFdTCP, (struct sockaddr *)&addr, &addrlen)) == -1)
+      /*error*/ exit(1);
+    while ((n = read(newfd, buffer, 128)) != 0) {
+      if (n == -1) /*error*/
+        exit(1);
+      ptr = &buffer[0];
+      while (n > 0) {
+        if ((nw = write(newfd, ptr, n)) <= 0) /*error*/
+          exit(1);
+        n -= nw;
+        ptr += nw;
+      }
+    }
     close(newfd);
   }
-  freeaddrinfo(resTCP);
-  close(fd);
 }
-
 // Server message handlers
 int handleGSB(struct protocolMessage message) { return 0; }
 int handleGHL(struct protocolMessage message) { return 0; }

@@ -6,6 +6,7 @@ int main(int argc, char *argv[]) {
   std::string GSport = DEFAULT_GSPORT;
   std::string filePath;
   bool verbose = false;
+  int pid;
 
   int opt;
   std::string GSPort = DEFAULT_GSPORT;
@@ -31,5 +32,11 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  createSocketUDP("", GSport);
+  pid = fork();
+
+  if (pid == 0) {
+    createSocketTCP("", GSport);
+  } else if (pid > 0) {
+    createSocketUDP("", GSport);
+  }
 }

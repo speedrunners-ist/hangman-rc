@@ -22,6 +22,7 @@ typedef std::map<std::string, std::function<int(std::string input)>> responseHan
 int setServerParameters(std::string filepath, bool vParam);
 
 void createSocketUDP(std::string addr, std::string port);
+void createSocketTCP(std::string addr, std::string port);
 
 // UDP Server message handlers
 int handleSNG(struct protocolMessage message);
