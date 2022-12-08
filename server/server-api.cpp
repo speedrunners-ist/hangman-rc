@@ -115,7 +115,7 @@ int isOngoingGame(std::string plid) {
 
 // TODO: check better
 int checkHeader(std::string line) {
-  std::string word;
+  std::string word = "";
   word = line.substr(0, line.find(' '));
   if (word == "")
     return -1;
