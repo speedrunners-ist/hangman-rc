@@ -117,8 +117,7 @@ int receiveTCPFile(struct fileInfo &info, std::string dir) {
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
     turnOnSocketTimer(socketFdTCP);
-    bytesReceived =
-        read(socketFdTCP, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
+    bytesReceived = read(socketFdTCP, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
     turnOffSocketTimer(socketFdTCP);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
@@ -140,8 +139,8 @@ int parseTCPResponse(struct protocolMessage &serverMessage) {
   const std::string command = responseBegin.substr(0, 3);
   responseBegin.erase(0, 4);
   const std::string status = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
-  serverMessage.code = command;
-  serverMessage.status = status;
+  serverMessage.first = command;
+  serverMessage.second = status;
   return handleTCPServerMessage[command](serverMessage);
 }
 
@@ -177,7 +176,7 @@ int generalTCPHandler(std::string message, struct peerInfo peer) {
 
 int handleRSB(struct protocolMessage response) {
   // TODO: check if the last character in body is the expected one
-  if (response.status == "OK") {
+  if (response.second == "OK") {
     struct fileInfo info;
     int ret = parseFileArgs(info);
     if (ret == -1) {
@@ -193,7 +192,7 @@ int handleRSB(struct protocolMessage response) {
     ret = displayFile(info.fileName, SB_DIR);
     disconnectTCP();
     return ret;
-  } else if (response.status == "EMPTY") {
+  } else if (response.second == "EMPTY") {
     std::cout << SB_FAIL << std::endl;
     disconnectTCP();
     return 0;
@@ -203,7 +202,7 @@ int handleRSB(struct protocolMessage response) {
 }
 
 int handleRHL(struct protocolMessage response) {
-  if (response.status == "OK") {
+  if (response.second == "OK") {
     struct fileInfo info;
     const int ret = parseFileArgs(info);
     if (ret == -1) {
@@ -220,7 +219,7 @@ int handleRHL(struct protocolMessage response) {
     std::cout << H_SUCCESS(info.fileName, bytesRead) << std::endl;
     disconnectTCP();
     return 0;
-  } else if (response.status == "NOK") {
+  } else if (response.second == "NOK") {
     std::cout << H_FAIL << std::endl;
     disconnectTCP();
     return 0;
@@ -230,11 +229,11 @@ int handleRHL(struct protocolMessage response) {
 }
 
 int handleRST(struct protocolMessage response) {
-  if (response.status == "NOK") {
+  if (response.second == "NOK") {
     std::cout << ST_NOK << std::endl;
     disconnectTCP();
     return 0;
-  } else if (response.status == "ERR") {
+  } else if (response.second == "ERR") {
     std::cerr << ST_ERR << std::endl;
     disconnectTCP();
     return -1;
@@ -255,9 +254,9 @@ int handleRST(struct protocolMessage response) {
   }
 
   std::cout << FILE_RECV_SUCCESS << std::endl;
-  if (response.status == "ACT") {
+  if (response.second == "ACT") {
     std::cout << ST_ACT << std::endl;
-  } else if (response.status == "FIN") {
+  } else if (response.second == "FIN") {
     std::cout << ST_FIN << std::endl;
   }
 

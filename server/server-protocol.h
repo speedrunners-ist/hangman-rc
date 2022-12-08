@@ -3,8 +3,7 @@
 
 #include "server-api.h"
 
-typedef std::map<std::string, std::function<int(struct protocolMessage request)>> commandHandler;
-typedef std::map<std::string, std::function<int(std::string input)>> responseHandler;
+#define INTERNAL_ERROR "[ERR]: Internal error while processing request."
 
 int setServerParameters(std::string filepath, bool vParam);
 

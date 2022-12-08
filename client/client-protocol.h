@@ -3,10 +3,6 @@
 
 #include "client-api.h"
 
-// TODO: If equal to server move to common.h
-typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
-typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
-
 // Expected amount of arguments for each protocol (client-side)
 #define START_ARGS 2
 #define PLAY_ARGS 2

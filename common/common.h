@@ -20,6 +20,8 @@
 #include <vector>
 
 typedef std::map<char, bool> Alphabet;
+typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
+typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
 class GameState {
 protected:
@@ -108,10 +110,10 @@ public:
 #define CORRECT_GUESS(word) "[INFO]: Correct guess. Word is now: " << word
 
 struct protocolMessage {
-  std::string code;
-  size_t codePos;
-  std::string status;
-  size_t statusPos;
+  std::string first;
+  size_t firstPos;
+  std::string second;
+  size_t secondPos;
   std::string body;
 };
 

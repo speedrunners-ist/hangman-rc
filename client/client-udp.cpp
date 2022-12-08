@@ -4,8 +4,6 @@ struct addrinfo *serverInfoUDP;
 struct addrinfo hintsUDP;
 int socketFdUDP;
 
-// TODO: change this to read a specific amount of bytes from the socket for each specific command
-
 // clang-format off
 responseHandler handleUDPServerMessage = {
   {"RSG", handleRSG},
@@ -33,13 +31,13 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
-  return handleUDPServerMessage[response.code](response);
+  return handleUDPServerMessage[response.first](response);
 }
 
 // Server response handlers
 int handleRSG(struct protocolMessage response) {
-  if (response.status == "OK") {
-    const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
+  if (response.second == "OK") {
+    const size_t pos_n_letters = response.body.find(' ', response.secondPos + 1);
     const size_t pos_n_max_errors = response.body.find('\n', pos_n_letters + 1);
     if (pos_n_letters == std::string::npos || pos_n_max_errors != std::string::npos) {
       std::cerr << RSG_ERROR << std::endl;
@@ -47,7 +45,7 @@ int handleRSG(struct protocolMessage response) {
     }
     // TODO: check if n_letters and n_max_errors are valid
     const int n_letters =
-        std::stoi(response.body.substr(response.statusPos + 1, pos_n_letters - response.statusPos - 1));
+        std::stoi(response.body.substr(response.secondPos + 1, pos_n_letters - response.secondPos - 1));
     const int n_max_errors =
         std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_errors - pos_n_letters - 1));
     createGame(n_letters, n_max_errors);
@@ -55,7 +53,7 @@ int handleRSG(struct protocolMessage response) {
     const std::string word = getWord();
     std::cout << RSG_OK(availableMistakes, word) << std::endl;
     return 0;
-  } else if (response.status == "NOK") {
+  } else if (response.second == "NOK") {
     std::cout << RSG_NOK << std::endl;
     return 0;
   }
@@ -64,8 +62,8 @@ int handleRSG(struct protocolMessage response) {
 }
 
 int handleRLG(struct protocolMessage response) {
-  const size_t pos_trial = response.body.find_first_of(' ', response.statusPos + 1);
-  if (response.status == "OK") {
+  const size_t pos_trial = response.body.find_first_of(' ', response.secondPos + 1);
+  if (response.second == "OK") {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);
     if (pos_n == std::string::npos || pos_correct_positions != std::string::npos) {
@@ -76,27 +74,27 @@ int handleRLG(struct protocolMessage response) {
     if (playCorrectGuess(response.body.substr(pos_n + 1), n) == 0) {
       return 0;
     }
-  } else if (response.status == "WIN") {
+  } else if (response.second == "WIN") {
     playCorrectFinalGuess();
     resetGame();
     std::cout << RLG_WIN(getWord()) << std::endl;
     return 0;
-  } else if (response.status == "DUP") {
+  } else if (response.second == "DUP") {
     std::cout << RLG_DUP << std::endl;
     return 0;
-  } else if (response.status == "NOK") {
+  } else if (response.second == "NOK") {
     playIncorrectGuess();
     std::cout << RLG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
-  } else if (response.status == "OVR") {
+  } else if (response.second == "OVR") {
     playIncorrectGuess();
     resetGame();
     std::cout << RLG_OVR << std::endl;
     return 0;
-  } else if (response.status == "INV") {
+  } else if (response.second == "INV") {
     std::cout << RLG_INV << std::endl;
     return 0;
-  } else if (response.status == "ERR") {
+  } else if (response.second == "ERR") {
     std::cout << RLG_ERR << std::endl;
     return 0;
   }
@@ -104,29 +102,29 @@ int handleRLG(struct protocolMessage response) {
 }
 
 int handleRWG(struct protocolMessage response) {
-  const size_t pos_trials = response.body.find('\n', response.statusPos + 1);
+  const size_t pos_trials = response.body.find('\n', response.secondPos + 1);
   if (pos_trials != std::string::npos) {
     std::cerr << RWG_ERROR << std::endl;
     return -1;
   }
-  if (response.status == "WIN") {
+  if (response.second == "WIN") {
     playCorrectFinalWordGuess();
     resetGame();
     std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
-  } else if (response.status == "NOK") {
+  } else if (response.second == "NOK") {
     playIncorrectGuess();
     std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
-  } else if (response.status == "OVR") {
+  } else if (response.second == "OVR") {
     playIncorrectGuess();
     resetGame();
     std::cout << RWG_OVR << std::endl;
     return 0;
-  } else if (response.status == "INV") {
+  } else if (response.second == "INV") {
     std::cout << RWG_INV << std::endl;
     return 0;
-  } else if (response.status == "ERR") {
+  } else if (response.second == "ERR") {
     std::cout << RWG_ERR << std::endl;
     return 0;
   }
@@ -134,11 +132,11 @@ int handleRWG(struct protocolMessage response) {
 }
 
 int handleRQT(struct protocolMessage response) {
-  if (response.status == "OK") {
+  if (response.second == "OK") {
     std::cout << RQT_OK << std::endl;
     return 0;
-  } else if (response.status == "ERR") {
-    if (response.code == "quit") {
+  } else if (response.second == "ERR") {
+    if (response.first == "quit") {
       std::cout << RQT_ERR << std::endl;
     }
     return 0;
@@ -147,7 +145,7 @@ int handleRQT(struct protocolMessage response) {
 }
 
 int handleRRV(struct protocolMessage response) {
-  std::cout << "[REV]: Word is " << response.status << std::endl;
+  std::cout << "[REV]: Word is " << response.second << std::endl;
   return 0;
 }
 
