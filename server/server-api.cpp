@@ -3,53 +3,53 @@
 static std::string filepath;
 static std::vector<std::string> lines;
 static int totalLines;
-static std::map<std::string, GameState> GameSessisons;
+static std::map<std::string, ServerGameState> GameSessions;
 
-// GameState methods implementation
-GameState::GameState() { this->active = false; }
-GameState::GameState(int length, int mistakes) {
-  this->wordLength = length;
-  this->mistakesLeft = mistakes;
-  this->active = true;
+// ServerGameState methods implementation
+ServerGameState::ServerGameState() { active = false; }
+ServerGameState::ServerGameState(int length, int mistakes) {
+  wordLength = length;
+  mistakesLeft = mistakes;
+  active = true;
   // word is a string with length equal to wordLength, filled with underscores
-  this->word = std::string((size_t)length, '_');
+  word = std::string((size_t)length, '_');
   for (char c = 'a'; c <= 'z'; c++) {
     guessedLetters[c] = false;
   }
 }
 
-bool GameState::isActive() { return active; }
+bool ServerGameState::isActive() { return active; }
 
-int GameState::getAvailableMistakes() { return mistakesLeft; }
+int ServerGameState::getAvailableMistakes() { return mistakesLeft; }
 
-char GameState::getLastGuess() { return lastGuess; }
+char ServerGameState::getLastGuess() { return lastGuess; }
 
-std::string GameState::getLastWordGuess() { return lastWordGuess; }
+std::string ServerGameState::getLastWordGuess() { return lastWordGuess; }
 
-int GameState::getWordLength() { return wordLength; }
+int ServerGameState::getWordLength() { return wordLength; }
 
-std::string GameState::getWord() { return word; }
+std::string ServerGameState::getWord() { return word; }
 
-void GameState::setLastGuess(char guess) { lastGuess = guess; }
+void ServerGameState::setLastGuess(char guess) { lastGuess = guess; }
 
-void GameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
+void ServerGameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
 
-void GameState::setWord(std::string newWord) { this->word = newWord; }
+void ServerGameState::setWord(std::string newWord) { word = newWord; }
 
-bool GameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
+bool ServerGameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
 
-void GameState::setSpotsLeft(int spots) { this->spotsLeft = spots; }
+void ServerGameState::setSpotsLeft(int spots) { spotsLeft = spots; }
 
-int GameState::getSpotsLeft() { return spotsLeft; }
+int ServerGameState::getSpotsLeft() { return spotsLeft; }
 
-void GameState::incorrectGuess() {
+void ServerGameState::incorrectGuess() {
   // TODO: do we have to check if we're setting to true something that's already true?
   guessesMade++;
   mistakesLeft--;
   incrementTrials();
 }
 
-int GameState::correctGuess(std::string positions, int n) {
+int ServerGameState::correctGuess(std::string positions, int n) {
   (void)positions;
   guessesMade++;
   // guessedLetters[guess] = true;
@@ -59,7 +59,7 @@ int GameState::correctGuess(std::string positions, int n) {
   return 0;
 }
 
-void GameState::correctFinalGuess() {
+void ServerGameState::correctFinalGuess() {
   char guess = getLastGuess();
   guessedLetters[guess] = true;
   // replace all underscores with the guess
@@ -67,43 +67,43 @@ void GameState::correctFinalGuess() {
   active = false;
 }
 
-void GameState::correctFinalWordGuess() {
+void ServerGameState::correctFinalWordGuess() {
   word = lastWordGuess;
   active = false;
 }
 
-void GameState::incrementTrials() { trials++; }
-int GameState::getTrials() { return trials; }
+void ServerGameState::incrementTrials() { trials++; }
+int ServerGameState::getTrials() { return trials; }
 
 // Game state functions, useful for the client's protocol implementations
-GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
-int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
-std::string getWord(GameState play) { return play.getWord(); }
+ServerGameState createGame(int length, int mistakes) { return ServerGameState(length, mistakes); }
+int getAvailableMistakes(ServerGameState play) { return play.getAvailableMistakes(); }
+std::string getWord(ServerGameState play) { return play.getWord(); }
 
-int playCorrectGuess(GameState play, std::string positions, int n) {
+int playCorrectGuess(ServerGameState play, std::string positions, int n) {
   int ret = play.correctGuess(positions, n);
   if (ret == 0) {
     play.incrementTrials();
   }
   return ret;
 }
-void playIncorrectGuess(GameState play) {
+void playIncorrectGuess(ServerGameState play) {
   play.incrementTrials();
   play.incorrectGuess();
 }
-void playCorrectFinalGuess(GameState play) {
+void playCorrectFinalGuess(ServerGameState play) {
   play.incrementTrials();
   play.correctFinalGuess();
 }
 
-void playCorrectFinalWordGuess(GameState play) {
+void playCorrectFinalWordGuess(ServerGameState play) {
   play.incrementTrials();
   play.correctFinalWordGuess();
 }
 
-void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength(GameState play) { return play.getWordLength(); }
+void setLastGuess(ServerGameState play, char guess) { play.setLastGuess(guess); }
+void setLastWordGuess(ServerGameState play, std::string guess) { play.setLastWordGuess(guess); }
+int getWordLength(ServerGameState play) { return play.getWordLength(); }
 
 // Util functions
 int validateArgsAmount(std::string input, int n) {
@@ -140,7 +140,7 @@ void exitGracefully(std::string errorMessage) {
   // exit(EXIT_SUCCESS);
 }
 
-bool forceExit(GameState play, std::string command) {
+bool forceExit(ServerGameState play, std::string command) {
   return command == "exit" && !play.isActive();
 }
 
@@ -179,12 +179,12 @@ int createGameSession(std::string plid, std::string &arguments) {
   int wordLength = (int)word.length();
   int mistakes = getNumberMistakes(wordLength);
 
-  GameState newGame = createGame(wordLength, mistakes);
+  ServerGameState newGame = createGame(wordLength, mistakes);
   newGame.setWord(word);
 
   newGame.setSpotsLeft(wordLength);
 
-  GameSessisons.insert(std::pair<std::string, GameState>(plid, newGame));
+  GameSessions.insert(std::pair<std::string, ServerGameState>(plid, newGame));
 
   arguments.append(std::to_string(wordLength)).append(" ").append(std::to_string(mistakes));
 
@@ -214,11 +214,11 @@ int setPath(std::string path) {
 }
 
 int isOngoingGame(std::string plid) {
-  if (GameSessisons.find(plid) == GameSessisons.end()) {
+  if (GameSessions.find(plid) == GameSessions.end()) {
     // There is no game with this plid
     return 0;
   }
-  return GameSessisons[plid].isActive() ? -1 : 0;
+  return GameSessions[plid].isActive() ? -1 : 0;
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
@@ -226,7 +226,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return SYNTAX_ERROR;
   }
 
-  GameState *play = &GameSessisons[plid];
+  ServerGameState *play = &GameSessions[plid];
 
   arguments = std::to_string(play->getTrials());
 
@@ -274,7 +274,7 @@ int getOccurances(std::string word, char letter, std::string &positions) {
 
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
 
-  GameState *play = &GameSessisons[plid];
+  ServerGameState *play = &GameSessions[plid];
   arguments = std::to_string(play->getTrials());
 
   if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
@@ -306,6 +306,6 @@ int closeGameSession(std::string plid) {
     return CLOSE_GAME_ERROR;
   }
 
-  GameSessisons.erase(plid);
+  GameSessions.erase(plid);
   return CLOSE_GAME_SUCCESS;
 }

@@ -1,3 +1,0 @@
-apple fruit
-cosine math
-duck animal

@@ -2,27 +2,17 @@
 #define SERVER_API_H
 
 #include "common/common.h"
-#include <algorithm>
-#include <fstream>
-#include <functional>
 
-typedef std::map<char, bool> Alphabet;
-
-class GameState {
-  int wordLength;
-  int mistakesLeft;
-  int guessesMade = 0;
-  int trials = 1;
-  int spotsLeft;
-  char lastGuess;
-  bool active = false;
-  std::string lastWordGuess;
-  Alphabet guessedLetters;
-  std::string word;
-
+class ServerGameState : public GameState {
 public:
-  GameState();
-  GameState(int length, int mistakes);
+  ServerGameState();
+  ServerGameState(int length, int mistakes);
+  void incrementTrials();
+  int getTrials();
+  bool isLetterGuessed(char letter);
+  void setSpotsLeft(int spots);
+  int getSpotsLeft();
+  // Overriding methods
   bool isActive();
   int getAvailableMistakes();
   char getLastGuess();
@@ -36,11 +26,6 @@ public:
   int correctGuess(std::string positions, int n);
   void correctFinalGuess();
   void correctFinalWordGuess();
-  void incrementTrials();
-  int getTrials();
-  bool isLetterGuessed(char letter);
-  void setSpotsLeft(int spots);
-  int getSpotsLeft();
 };
 
 // Error Messages
@@ -72,16 +57,16 @@ public:
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
 
-GameState createGame(int length, int mistakes);
-int getAvailableMistakes(GameState play);
-std::string getWord(GameState play);
-int playCorrectGuess(GameState play, std::string positions, int n);
-void playIncorrectGuess(GameState play);
-void playCorrectFinalGuess(GameState play);
-void playCorrectFinalWordGuess(GameState play);
-void setLastGuess(GameState play, char guess);
-void setLastWordGuess(GameState play, std::string guess);
-int getWordLength(GameState play);
+ServerGameState createGame(int length, int mistakes);
+int getAvailableMistakes(ServerGameState play);
+std::string getWord(ServerGameState play);
+int playCorrectGuess(ServerGameState play, std::string positions, int n);
+void playIncorrectGuess(ServerGameState play);
+void playCorrectFinalGuess(ServerGameState play);
+void playCorrectFinalWordGuess(ServerGameState play);
+void setLastGuess(ServerGameState play, char guess);
+void setLastWordGuess(ServerGameState play, std::string guess);
+int getWordLength(ServerGameState play);
 void setPlayerID(std::string id);
 std::string getPlayerID();
 void incrementTrials();

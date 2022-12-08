@@ -57,7 +57,7 @@ server/GS
 
 # Text files
 scoreboard/
-hints/
+client/hints/
 state/
 
 

@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <algorithm>
 #include <arpa/inet.h>
 #include <cstring>
 #include <fstream>
@@ -18,6 +19,39 @@
 #include <unistd.h>
 #include <vector>
 
+typedef std::map<char, bool> Alphabet;
+
+class GameState {
+protected:
+  int wordLength;
+  int mistakesLeft;
+  int guessesMade = 0;
+  int trials = 1;
+  int spotsLeft;
+  char lastGuess;
+  bool active = false;
+  std::string lastWordGuess;
+  Alphabet guessedLetters;
+  std::string word;
+
+public:
+  void incrementTrials();
+  int getTrials();
+  bool isActive();
+  int getAvailableMistakes();
+  char getLastGuess();
+  std::string getLastWordGuess();
+  int getWordLength();
+  std::string getWord();
+  void setLastGuess(char guess);
+  void setLastWordGuess(std::string guess);
+  void setWord(std::string newWord);
+  void incorrectGuess();
+  int correctGuess(std::string positions, int n);
+  void correctFinalGuess();
+  void correctFinalWordGuess();
+};
+
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
 #define DEFAULT_GSPORT "58001"
 
@@ -30,8 +64,11 @@
 #define UDP_TRIES 3
 #define SOCKET_TIMEOUT 5
 
-#define SOCKET_ERROR "[ERR]: Failed to create socket. Exiting."
-#define GETADDRINFO_ERROR "[ERR]: Failed to get address info. Exiting."
+#define SOCKET_ERROR "[ERR]: Failed to create socket."
+#define SOCKET_TIMER_SET_ERROR "[ERR]: Failed to set socket timeout."
+#define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."
+#define GETADDRINFO_ERROR "[ERR]: Failed to get address info."
+#define BIND_ERROR "[ERR]: Failed to bind socket."
 
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."

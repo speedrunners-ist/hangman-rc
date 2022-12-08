@@ -40,11 +40,19 @@ int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessag
   if (sendTCPMessage(message) == -1) {
     return -1;
   }
-  turnOnSocketTimer(socketFdTCP);
-  const int ret = receiveTCPMessage(responseMessage, args);
-  turnOffSocketTimer(socketFdTCP);
+  int ret = turnOnSocketTimer(socketFdTCP);
+  if (ret == -1) {
+    disconnectTCP();
+    exit(EXIT_FAILURE);
+  }
+  ret = receiveTCPMessage(responseMessage, args);
   if (ret == -1) {
     return -1;
+  }
+  ret = turnOffSocketTimer(socketFdTCP);
+  if (ret == -1) {
+    disconnectTCP();
+    exit(EXIT_FAILURE);
   }
   serverMessage.body = responseMessage;
   return 0;
@@ -190,6 +198,7 @@ int handleRSB(struct protocolMessage response) {
     disconnectTCP();
     return 0;
   }
+  disconnectTCP();
   return -1;
 }
 
@@ -216,6 +225,7 @@ int handleRHL(struct protocolMessage response) {
     disconnectTCP();
     return 0;
   }
+  disconnectTCP();
   return -1;
 }
 

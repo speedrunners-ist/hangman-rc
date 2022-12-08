@@ -1,39 +1,39 @@
 #include "client-api.h"
 
-// GameState methods implementation
-GameState::GameState() { this->active = false; }
-GameState::GameState(int length, int mistakes) {
-  this->wordLength = length;
-  this->mistakesLeft = mistakes;
-  this->active = true;
+// ClientGameState methods implementation
+ClientGameState::ClientGameState() { active = false; }
+ClientGameState::ClientGameState(int length, int mistakes) {
+  wordLength = length;
+  mistakesLeft = mistakes;
+  active = true;
   // word is a string with length equal to wordLength, filled with underscores
-  this->word = std::string((size_t)length, '_');
+  word = std::string((size_t)length, '_');
   for (char c = 'a'; c <= 'z'; c++) {
     guessedLetters[c] = false;
   }
 }
 
-bool GameState::isActive() { return active; }
+bool ClientGameState::isActive() { return active; }
 
-int GameState::getAvailableMistakes() { return mistakesLeft; }
+int ClientGameState::getAvailableMistakes() { return mistakesLeft; }
 
-void GameState::setInactive() { this->active = false; }
+void ClientGameState::setInactive() { active = false; }
 
-char GameState::getLastGuess() { return lastGuess; }
+char ClientGameState::getLastGuess() { return lastGuess; }
 
-std::string GameState::getLastWordGuess() { return lastWordGuess; }
+std::string ClientGameState::getLastWordGuess() { return lastWordGuess; }
 
-int GameState::getWordLength() { return wordLength; }
+int ClientGameState::getWordLength() { return wordLength; }
 
-std::string GameState::getWord() { return word; }
+std::string ClientGameState::getWord() { return word; }
 
-void GameState::setLastGuess(char guess) { lastGuess = guess; }
+void ClientGameState::setLastGuess(char guess) { lastGuess = guess; }
 
-void GameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
+void ClientGameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
 
-void GameState::setWord(std::string newWord) { this->word = newWord; }
+void ClientGameState::setWord(std::string newWord) { word = newWord; }
 
-void GameState::incorrectGuess() {
+void ClientGameState::incorrectGuess() {
   char guess = getLastGuess();
   // TODO: do we have to check if we're setting to true something that's already true?
   guessedLetters[guess] = true;
@@ -41,7 +41,7 @@ void GameState::incorrectGuess() {
   mistakesLeft--;
 }
 
-int GameState::correctGuess(std::string positions, int n) {
+int ClientGameState::correctGuess(std::string positions, int n) {
   char guess = getLastGuess();
   std::string initialWord = word; // TODO: check if this is a copy or a reference
   int readPositions = 0;
@@ -81,7 +81,7 @@ int GameState::correctGuess(std::string positions, int n) {
   return 0;
 }
 
-void GameState::correctFinalGuess() {
+void ClientGameState::correctFinalGuess() {
   char guess = getLastGuess();
   guessedLetters[guess] = true;
   // replace all underscores with the guess
@@ -89,17 +89,17 @@ void GameState::correctFinalGuess() {
   active = false;
 }
 
-void GameState::correctFinalWordGuess() {
+void ClientGameState::correctFinalWordGuess() {
   word = lastWordGuess;
   active = false;
 }
 
-GameState play;
+ClientGameState play;
 std::string playerID;
 int trials = 0;
 
 // Game state functions, useful for the client's protocol implementations
-void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
+void createGame(int length, int mistakes) { play = ClientGameState(length, mistakes); }
 int getAvailableMistakes() { return play.getAvailableMistakes(); }
 std::string getWord() { return play.getWord(); }
 int playCorrectGuess(std::string positions, int n) {

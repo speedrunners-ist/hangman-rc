@@ -5,44 +5,35 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
               struct addrinfo **serverInfo) {
   int socketFd = socket(AF_INET, type, 0);
   if (socketFd == -1) {
-    std::cout << "[ERR]: Failed to create socket." << std::endl;
+    std::cout << SOCKET_ERROR << std::endl;
     return -1;
   }
   memset(hints, 0, sizeof *hints);
   hints->ai_family = AF_INET;
   hints->ai_socktype = type;
 
-  // TODO: see it this works
-  std::cout << "[INFO]: Connecting to " << addr << ":" << port << std::endl;
+  std::cout << "[DEBUG]: Connecting to " << addr << ":" << port << std::endl;
   int status;
   if (!addr.empty()) {
     status = getaddrinfo(addr.c_str(), port.c_str(), hints, serverInfo);
     if (status != 0) {
-      std::cerr << "[ERR]: Failed to get address info. Exiting." << std::endl;
+      std::cerr << GETADDRINFO_ERROR << std::endl;
       return -1;
     }
     return socketFd;
   }
+
+  // in this case, it's the server creating a socket
   hints->ai_flags = AI_PASSIVE;
   status = getaddrinfo(NULL, port.c_str(), hints, serverInfo);
-
   if (status != 0) {
-    // TODO: macro
-    std::cerr << "[ERR]: Failed to get address info. Exiting." << std::endl;
+    std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
 
   if (bind(socketFd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
-    std::cout << "[ERR]: Failed to bind socket. Exiting." << std::endl;
-    exit(EXIT_FAILURE); // TODO standardize exit
-  }
-
-  if (!addr.empty())
-    return socketFd;
-
-  if (bind(socketFd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
-    std::cout << "[ERR]: Failed to bind socket. Exiting." << std::endl;
-    exit(1);
+    std::cout << BIND_ERROR << std::endl;
+    return -1;
   }
   return socketFd;
 }
@@ -52,7 +43,7 @@ int turnOnSocketTimer(int socketFd) {
   memset(&tv, 0, sizeof(tv));
   tv.tv_sec = SOCKET_TIMEOUT;
   if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cerr << "[ERR]: Failed to set socket timeout. Exiting." << std::endl;
+    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     // FIXME: is this exit graceful?
     exit(EXIT_FAILURE);
   }
@@ -63,9 +54,8 @@ int turnOffSocketTimer(int socketFd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cout << "[ERR]: Failed to reset socket timeout. Exiting." << std::endl;
-    // FIXME: is this exit graceful?
-    exit(EXIT_FAILURE);
+    std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
+    return -1;
   }
   return 0;
 }
@@ -96,7 +86,7 @@ int displayFile(std::string fileName, std::string dir) {
   std::ifstream file;
   file.open(dir + "/" + fileName);
   if (!file.is_open()) {
-    std::cout << "[ERR]: Failed to open file " << fileName << std::endl;
+    std::cout << FILE_OPEN_ERROR << fileName << std::endl;
     return -1;
   }
   std::string line;

@@ -45,10 +45,19 @@ int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBy
     }
 
     socklen_t addrLen = sizeof(serverInfoUDP->ai_addr);
-    turnOnSocketTimer(socketFdUDP);
+    int ret = turnOnSocketTimer(socketFdUDP);
+    if (ret == -1) {
+      disconnectUDP();
+      exit(EXIT_FAILURE);
+    }
     const ssize_t bytesReceived =
         recvfrom(socketFdUDP, response, maxExpectedBytes, 0, serverInfoUDP->ai_addr, &addrLen);
-    turnOffSocketTimer(socketFdUDP);
+    ret = turnOffSocketTimer(socketFdUDP);
+    if (ret == -1) {
+      disconnectUDP();
+      exit(EXIT_FAILURE);
+    }
+
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;
@@ -215,9 +224,7 @@ int handleRQT(struct protocolMessage response) {
 }
 
 int handleRRV(struct protocolMessage response) {
-  // TODO: change this for the final version of the project
-  // to-be-guessed word is the second argument - here, the status
-  std::cout << "[DEBUG/RRV]: Word is " << response.status << std::endl;
+  std::cout << "[REV]: Word is " << response.status << std::endl;
   return 0;
 }
 
@@ -272,7 +279,6 @@ int sendPWG(struct messageInfo info) {
 }
 
 int sendQUT(struct messageInfo info) {
-  // TODO: can't forget to close all open TCP connections - what do we have to do here, exactly?
   if (validateArgsAmount(info.input, QUIT_ARGS) == -1) {
     return -1;
   }
