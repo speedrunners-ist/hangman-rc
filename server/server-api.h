@@ -2,6 +2,7 @@
 #define SERVER_API_H
 
 #include "common/common.h"
+#include "server/server-utils.h"
 
 class ServerGameState : public GameState {
 public:
