@@ -1,11 +1,11 @@
 #include "server-protocol.h"
 
-struct addrinfo hintsTCP, *resTCP;
-int fd, newfd, errcode;
-struct sockaddr_in addr;
-socklen_t addrlen;
-ssize_t n;
-char buffer[128];
+static struct addrinfo hintsTCP, *resTCP;
+static int fd, newfd, errcode;
+static struct sockaddr_in addr;
+static socklen_t addrlen;
+static ssize_t n;
+static char buffer[128];
 
 void openTCP(std::string GSport) {
   const char *GSPORT = GSport.c_str();
