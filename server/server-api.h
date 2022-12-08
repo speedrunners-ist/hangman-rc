@@ -7,30 +7,13 @@ class ServerGameState : public GameState {
 public:
   ServerGameState();
   ServerGameState(int length, int mistakes);
-  void incrementTrials();
-  int getTrials();
   bool isLetterGuessed(char letter);
   void setSpotsLeft(int spots);
   int getSpotsLeft();
-  // Overriding methods
-  bool isActive();
-  int getAvailableMistakes();
-  char getLastGuess();
-  std::string getLastWordGuess();
-  int getWordLength();
-  std::string getWord();
-  void setLastGuess(char guess);
-  void setLastWordGuess(std::string guess);
-  void setWord(std::string newWord);
-  void incorrectGuess();
-  int correctGuess(std::string positions, int n);
-  void correctFinalGuess();
-  void correctFinalWordGuess();
 };
 
 // Error Messages
-#define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
-#define MKDIR_ERROR "[ERR]: Failed to create hints directory. Exiting."
+#define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
@@ -72,18 +55,12 @@ std::string getPlayerID();
 void incrementTrials();
 int getTrials();
 
-int validateArgsAmount(std::string input, int n);
-int validatePlayerID(std::string id);
-void exitGracefully(std::string errorMessage);
-bool forceExit(std::string command);
-void continueReading(char *buffer);
-
 int setPath(std::string filepath);
 int createGameSession(std::string plid, std::string &arguments);
 int isOngoingGame(std::string plid);
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
-int getOccurances(std::string word, char letter, std::string &positions);
+int getOccurrences(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
 

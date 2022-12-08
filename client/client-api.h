@@ -7,21 +7,6 @@ class ClientGameState : public GameState {
 public:
   ClientGameState();
   ClientGameState(int length, int mistakes);
-  // Overriding methods
-  bool isActive();
-  int getAvailableMistakes();
-  void setInactive();
-  char getLastGuess();
-  std::string getLastWordGuess();
-  int getWordLength();
-  std::string getWord();
-  void setLastGuess(char guess);
-  void setLastWordGuess(std::string guess);
-  void setWord(std::string newWord);
-  void incorrectGuess();
-  int correctGuess(std::string positions, int n);
-  void correctFinalGuess();
-  void correctFinalWordGuess();
 };
 
 void createGame(int length, int mistakes);
@@ -39,14 +24,6 @@ std::string getPlayerID();
 void incrementTrials();
 void resetGame();
 int getTrials();
-
-int validateArgsAmount(std::string input, int n);
-int validatePlayerID(std::string id);
-bool forceExit(std::string command);
-void continueReading(char *buffer);
-
-#define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
-#define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
-#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
+bool forceExitClient(std::string command);
 
 #endif /* CLIENT_API_H */

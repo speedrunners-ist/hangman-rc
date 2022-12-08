@@ -26,7 +26,7 @@ protected:
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
-  int trials = 1;
+  int trials = 0; // TODO: STANDARDIZE THIS BETWEEN SERVER AND CLIENT
   int spotsLeft;
   char lastGuess;
   bool active = false;
@@ -35,9 +35,12 @@ protected:
   std::string word;
 
 public:
+  GameState();
+  GameState(int length, int mistakes);
   void incrementTrials();
   int getTrials();
   bool isActive();
+  void setInactive();
   int getAvailableMistakes();
   char getLastGuess();
   std::string getLastWordGuess();
@@ -86,6 +89,10 @@ public:
 #define ST_DIR "state/"
 
 #define EXIT_PROGRAM "[INFO]: Exiting program."
+
+#define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
+#define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
+#define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
 
 struct protocolMessage {
   std::string code;
@@ -141,8 +148,12 @@ int parseFileArgs(struct fileInfo &info);
  * @param: wordLength: length of the word to guess
  * @return: number of guesses
  */
-unsigned int initialAvailableMistakes(unsigned int wordLength);
+int initialAvailableMistakes(int wordLength);
 std::string buildSplitString(std::vector<std::string> args);
 int displayFile(std::string fileName, std::string dir);
+int validateArgsAmount(std::string input, int n);
+int validatePlayerID(std::string id);
+bool forceExit(GameState play, std::string command);
+void continueReading(char *buffer);
 
 #endif /* COMMON_H */
