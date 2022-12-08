@@ -184,7 +184,6 @@ int parseUDPMessage(std::string message, struct protocolMessage &response) {
   }
 
   const std::string status = message.substr(pos1 + 1, pos2 - pos1 - 1);
-  std::cout << "[DEBUG]: Parsed message: -" << code << "-/" << status << "/" << std::endl;
   response = {code, pos1, status, pos2, message};
   return 0;
 }
@@ -200,7 +199,6 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
   }
-  std::cout << "[INFO]: Message sent" << std::endl;
   return 0;
 }
 
@@ -222,7 +220,6 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
       exit(EXIT_FAILURE);
     }
     const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
-    std::cout << "[DEBUG]: Received " << bytesReceived << " bytes" << std::endl;
     ret = turnOffSocketTimer(fd);
     if (ret == -1) {
       disconnectUDP(res, fd);
