@@ -9,6 +9,8 @@
 // User Messages
 #define STARTING_SERVER "Starting server..."
 #define STARTING_SERVER_ERROR "[ERR]: Failed to set server parameters. Exiting..."
+#define VERBOSE_SUCCESS(host, service) "[INFO]: Message sent by [" << host << ":" << service << "]"
+#define VERBOSE_ERROR(error) "[ERR]: getnameinfo: " << gai_strerror(error)
 
 // RSG return codes
 #define CREATE_GAME_ERROR 1

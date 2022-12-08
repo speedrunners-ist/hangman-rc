@@ -157,6 +157,98 @@ int turnOffSocketTimer(int socketFd) {
   return 0;
 }
 
+/*** UDP message parsing/sending implementation ***/
+
+int disconnectUDP(struct addrinfo *res, int fd) {
+  freeaddrinfo(res);
+  if (close(fd) == -1) {
+    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int parseUDPMessage(std::string message, struct protocolMessage &response) {
+  const size_t pos1 = message.find(' ');
+  if (pos1 == std::string::npos) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+    return -1;
+  }
+
+  const std::string code = message.substr(0, pos1);
+  const size_t pos2 = message.find_first_of(" \n", pos1 + 1);
+  const char delimiter = message[pos2];
+  if ((delimiter == ' ' && pos2 == std::string::npos) || (delimiter == '\n' && pos2 != std::string::npos)) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+    return -1;
+  }
+
+  const std::string status = message.substr(pos1 + 1, pos2 - pos1 - 1);
+  std::cout << "[DEBUG]: Parsed message: -" << code << "-/" << status << "/" << std::endl;
+  response = {code, pos1, status, pos2, message};
+  return 0;
+}
+
+int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
+  if (res == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
+  std::cout << "[INFO]: Sending message: " << message;
+  if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
+    std::cerr << SENDTO_ERROR << std::endl;
+    return -1;
+  }
+  std::cout << "[INFO]: Message sent" << std::endl;
+  return 0;
+}
+
+int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd) {
+  if (res == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
+  int triesLeft = UDP_TRIES;
+  do {
+    if (sendUDPMessage(message, res, fd) == -1) {
+      return -1;
+    }
+
+    int ret = turnOnSocketTimer(fd);
+    if (ret == -1) {
+      disconnectUDP(res, fd);
+      exit(EXIT_FAILURE);
+    }
+    const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
+    std::cout << "[DEBUG]: Received " << bytesReceived << " bytes" << std::endl;
+    ret = turnOffSocketTimer(fd);
+    if (ret == -1) {
+      disconnectUDP(res, fd);
+      exit(EXIT_FAILURE);
+    }
+
+    if (bytesReceived == -1) {
+      if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
+        break;
+      }
+      continue;
+    }
+
+    if (response[bytesReceived - 1] != '\n') {
+      std::cerr << UDP_RESPONSE_ERROR << std::endl;
+      return -1;
+    }
+    response[bytesReceived - 1] = '\0';
+    return 0;
+
+  } while (--triesLeft >= 0);
+
+  std::cerr << RECVFROM_ERROR << std::endl;
+  return -1;
+}
+
 /*** Misc functions implementation ***/
 
 int initialAvailableMistakes(int wordLength) {
@@ -219,9 +311,7 @@ int validatePlayerID(std::string id) {
   return 0;
 }
 
-bool forceExit(GameState play, std::string command) {
-  return command == "exit" && !play.isActive();
-}
+bool forceExit(GameState play, std::string command) { return command == "exit" && !play.isActive(); }
 
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);

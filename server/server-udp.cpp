@@ -1,13 +1,13 @@
 #include "server-protocol.h"
 
-static struct addrinfo *resUDP;
-static struct addrinfo hintsUDP;
-static int socketFdUDP;
-static char responseUDP[UDP_RECV_SIZE];
-static socklen_t addrlen;
-static char buffer[UDP_RECV_SIZE];
-static bool verbose;
-static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
+struct addrinfo *resUDP;
+struct addrinfo hintsUDP;
+int socketFdUDP;
+char responseUDP[UDP_RECV_SIZE];
+socklen_t addrlen;
+char buffer[UDP_RECV_SIZE];
+bool verbose;
+char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
 
 // clang-format off
 static commandHandler handleUDPClientMessage = {
@@ -25,7 +25,6 @@ int setServerParameters(std::string filepath, bool vParam) {
 }
 
 void createSocketUDP(std::string addr, std::string port) {
-  int errcode;
   socketFdUDP = newSocket(SOCK_DGRAM, addr, port, &hintsUDP, &resUDP);
   if (socketFdUDP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
@@ -36,72 +35,86 @@ void createSocketUDP(std::string addr, std::string port) {
   while (true) {
     addrlen = sizeof(resUDP->ai_addr);
     if (recvfrom(socketFdUDP, buffer, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlen) == -1) {
-      exit(1);
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
-    std::cout << "[INFO]: Received message: " << buffer;
 
-    // TODO: put type of request
+    std::cout << "[INFO]: Received message: " << buffer;
+    int errcode = getnameinfo(resUDP->ai_addr, addrlen, host, sizeof host, service, sizeof service, 0);
     if (verbose) {
-      errcode =
-          getnameinfo(resUDP->ai_addr, addrlen, host, sizeof(host), service, sizeof(service), 0);
+      // TODO: put type of request
       if (errcode != 0) {
-        std::cerr << "[ERR]: getnameinfo: " << gai_strerror(errcode) << std::endl;
+        std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       } else {
-        std::cout << "[INFO]: Message sent by [" << host << ":" << service << "]" << std::endl;
+        std::cout << VERBOSE_SUCCESS(host, service) << std::endl;
       }
     }
 
-    parseUDPResponse(buffer);
+    generalUDPHandler(buffer);
     memset(buffer, 0, UDP_RECV_SIZE);
   }
 }
 
-int exchangeUDPMessage(std::string message, char *response) {
-  if (resUDP == NULL) {
-    std::cerr << GETADDRINFO_ERROR << std::endl;
-    return -1;
-  }
-
-  std::cout << "[INFO]: Sending message: " << message;
-  if (sendto(socketFdUDP, message.c_str(), message.length(), 0, resUDP->ai_addr, addrlen) == -1) {
-    std::cerr << SENDTO_ERROR << std::endl;
-    return -1;
-  }
-  return 0;
-}
-
-int parseUDPResponse(char *response) {
-  const std::string responseStr(response);
-  const size_t pos1 = responseStr.find(' ');
-
-  // TODO: remove ig
-  if (pos1 == std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  }
-  const std::string code = responseStr.substr(0, pos1);
-  // TODO: SEe this
-  const bool lookingForEndLine = (code == "RQT" || code == "RRV");
-  const char lookupStatusChar = '\n';
-  const size_t pos2 = responseStr.find(lookupStatusChar, pos1 + 1);
-  if (lookingForEndLine && pos2 != std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  } else if (!lookingForEndLine && pos2 == std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  }
-  const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
-  const struct protocolMessage serverResponse = {code, pos1, status, pos2, responseStr};
-  return handleUDPClientMessage[code](serverResponse);
-}
-
-// UDP handlers
 int generalUDPHandler(std::string message) {
-  memset(responseUDP, 0, UDP_RECV_SIZE);
-  const int ret = exchangeUDPMessage(message, responseUDP);
-  return ret;
-  // return parseUDPResponse(responseUDP);
+  struct protocolMessage response;
+  int ret = parseUDPMessage(message, response);
+  if (ret == -1) {
+    std::cerr << UDP_PARSE_ERROR << std::endl;
+    return -1;
+  }
+  return handleUDPClientMessage[response.code](response);
+}
+
+// Server message handlers
+int handleSNG(struct protocolMessage message) {
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string plid = body.substr(pos1 + 1);
+  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
+  return sendRSG(plid);
+}
+
+int handlePLG(struct protocolMessage message) {
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string arguments = body.substr(pos1 + 1);
+  arguments.erase(std::remove(arguments.begin(), arguments.end(), '\n'), arguments.end());
+  return sendRLG(arguments);
+}
+
+int handlePWG(struct protocolMessage message) {
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string arguments = body.substr(pos1 + 1);
+  arguments.erase(std::remove(arguments.begin(), arguments.end(), '\n'), arguments.end());
+  return sendRWG(arguments);
+}
+
+int handleQUT(struct protocolMessage message) {
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string plid = body.substr(pos1 + 1);
+  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
+
+  return sendRQT(plid);
+}
+
+int handleREV(struct protocolMessage message) {
+  std::string body = message.body;
+  // TODO: check if body is empty
+  const size_t pos1 = body.find(' ');
+
+  std::string plid = body.substr(pos1 + 1);
+  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
+
+  return sendRRV(plid);
 }
 
 // UDP server message Send
@@ -124,8 +137,9 @@ int sendRSG(std::string input) {
       std::cout << "Error in sendRSG" << std::endl;
       return -1;
   }
-  return generalUDPHandler(response);
+  return sendUDPMessage(response, resUDP, socketFdUDP);
 }
+
 int sendRLG(std::string input) {
   // TODO: fix this AND SEE CASE OF SYNTAX OF MESSAGE BEING WRONG
   size_t pos1 = input.find(' ');
@@ -168,8 +182,9 @@ int sendRLG(std::string input) {
       return -1;
   }
 
-  return generalUDPHandler(response);
+  return sendUDPMessage(response, resUDP, socketFdUDP);
 }
+
 int sendRWG(std::string input) {
   // TODO: fix this AND SEE CASE OF SYNTAX OF MESSAGE BEING WRONG
   size_t pos1 = input.find(' ');
@@ -206,10 +221,11 @@ int sendRWG(std::string input) {
       return -1;
   }
 
-  return generalUDPHandler(response);
+  return sendUDPMessage(response, resUDP, socketFdUDP);
 
   return 0;
 }
+
 int sendRQT(std::string input) {
   std::string plid = input;
 
@@ -228,8 +244,9 @@ int sendRQT(std::string input) {
       std::cout << "Error in sendRQT" << std::endl;
       return -1;
   }
-  return generalUDPHandler(response);
+  return sendUDPMessage(response, resUDP, socketFdUDP);
 }
+
 int sendRRV(std::string input) {
   std::string plid = input;
 
@@ -248,61 +265,5 @@ int sendRRV(std::string input) {
       std::cout << "Error in sendRRV" << std::endl;
       return -1;
   }
-  return generalUDPHandler(response);
-}
-
-// Server message handlers
-int handleSNG(struct protocolMessage message) {
-
-  std::string body = message.body;
-  // TODO: check if body is empty
-  const size_t pos1 = body.find(' ');
-
-  std::string plid = body.substr(pos1 + 1);
-  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
-
-  return sendRSG(plid);
-}
-int handlePLG(struct protocolMessage message) {
-
-  std::string body = message.body;
-  // TODO: check if body is empty
-  const size_t pos1 = body.find(' ');
-
-  std::string arguments = body.substr(pos1 + 1);
-  arguments.erase(std::remove(arguments.begin(), arguments.end(), '\n'), arguments.end());
-
-  sendRLG(arguments);
-  return 0;
-}
-int handlePWG(struct protocolMessage message) {
-  std::string body = message.body;
-  // TODO: check if body is empty
-  const size_t pos1 = body.find(' ');
-
-  std::string arguments = body.substr(pos1 + 1);
-  arguments.erase(std::remove(arguments.begin(), arguments.end(), '\n'), arguments.end());
-
-  sendRWG(arguments);
-  return 0;
-}
-int handleQUT(struct protocolMessage message) {
-  std::string body = message.body;
-  // TODO: check if body is empty
-  const size_t pos1 = body.find(' ');
-
-  std::string plid = body.substr(pos1 + 1);
-  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
-
-  return sendRQT(plid);
-}
-int handleREV(struct protocolMessage message) {
-  std::string body = message.body;
-  // TODO: check if body is empty
-  const size_t pos1 = body.find(' ');
-
-  std::string plid = body.substr(pos1 + 1);
-  plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
-
-  return sendRRV(plid);
+  return sendUDPMessage(response, resUDP, socketFdUDP);
 }

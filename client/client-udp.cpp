@@ -21,99 +21,24 @@ int createSocketUDP(struct peerInfo peer) {
   return socketFdUDP;
 }
 
-int disconnectUDP() {
-  freeaddrinfo(serverInfoUDP);
-  if (close(socketFdUDP) == -1) {
-    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
-    return -1;
-  }
-  return 0;
-}
+int disconnectPlayer() { return disconnectUDP(serverInfoUDP, socketFdUDP); }
 
-int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBytes) {
-  if (serverInfoUDP == NULL) {
-    std::cerr << GETADDRINFO_ERROR << std::endl;
-    return -1;
-  }
-
-  int triesLeft = UDP_TRIES;
-  do {
-    if (sendto(socketFdUDP, message.c_str(), message.length(), 0, serverInfoUDP->ai_addr,
-               serverInfoUDP->ai_addrlen) == -1) {
-      std::cerr << SENDTO_ERROR << std::endl;
-      return -1;
-    }
-
-    socklen_t addrLen = sizeof(serverInfoUDP->ai_addr);
-    int ret = turnOnSocketTimer(socketFdUDP);
-    if (ret == -1) {
-      disconnectUDP();
-      exit(EXIT_FAILURE);
-    }
-    const ssize_t bytesReceived =
-        recvfrom(socketFdUDP, response, maxExpectedBytes, 0, serverInfoUDP->ai_addr, &addrLen);
-    ret = turnOffSocketTimer(socketFdUDP);
-    if (ret == -1) {
-      disconnectUDP();
-      exit(EXIT_FAILURE);
-    }
-
-    if (bytesReceived == -1) {
-      if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
-        break;
-      }
-      continue;
-    }
-
-    if (response[bytesReceived - 1] != '\n') {
-      std::cerr << UDP_RESPONSE_ERROR << std::endl;
-      return -1;
-    }
-    response[bytesReceived - 1] = '\0';
-    return 0;
-
-  } while (--triesLeft >= 0);
-
-  std::cerr << RECVFROM_ERROR << std::endl;
-  return -1;
-}
-
-int parseUDPResponse(char *response) {
-  const std::string responseStr(response);
-  const size_t pos1 = responseStr.find(' ');
-  if (pos1 == std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  }
-  const std::string code = responseStr.substr(0, pos1);
-  const bool lookingForEndLine = (code == "RQT" || code == "RRV");
-  const char lookupStatusChar = lookingForEndLine ? '\n' : ' ';
-  const size_t pos2 = responseStr.find(lookupStatusChar, pos1 + 1);
-  if (lookingForEndLine && pos2 != std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  } else if (!lookingForEndLine && pos2 == std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  }
-  const std::string status = responseStr.substr(pos1 + 1, pos2 - pos1 - 1);
-  const struct protocolMessage serverResponse = {code, pos1, status, pos2, responseStr};
-  return handleUDPServerMessage[code](serverResponse);
-}
-
-// UDP handlers
-int generalUDPHandler(std::string message, size_t maxExpectedBytes) {
-  char responseUDP[maxExpectedBytes];
-  memset(responseUDP, 0, maxExpectedBytes);
-  const int ret = exchangeUDPMessage(message, responseUDP, maxExpectedBytes);
+int generalUDPHandler(std::string message, size_t maxBytes) {
+  char responseMessage[maxBytes + 1];
+  memset(responseMessage, 0, maxBytes + 1);
+  struct protocolMessage response;
+  std::cout << "[INFO]: Sending message: " << message << std::endl;
+  int ret = exchangeUDPMessages(message, responseMessage, maxBytes, serverInfoUDP, socketFdUDP);
+  std::cout << "[INFO]: Received message: " << responseMessage << std::endl;
+  ret = parseUDPMessage(responseMessage, response);
   if (ret == -1) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
-  return parseUDPResponse(responseUDP);
+  return handleUDPServerMessage[response.code](response);
 }
 
-// handlers: server responses
-// TODO: can't forget to check if the response is valid, ending with \n
+// Server response handlers
 int handleRSG(struct protocolMessage response) {
   if (response.status == "OK") {
     const size_t pos_n_letters = response.body.find(' ', response.statusPos + 1);
@@ -123,8 +48,8 @@ int handleRSG(struct protocolMessage response) {
       return -1;
     }
     // TODO: check if n_letters and n_max_errors are valid
-    const int n_letters = std::stoi(
-        response.body.substr(response.statusPos + 1, pos_n_letters - response.statusPos - 1));
+    const int n_letters =
+        std::stoi(response.body.substr(response.statusPos + 1, pos_n_letters - response.statusPos - 1));
     const int n_max_errors =
         std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_errors - pos_n_letters - 1));
     createGame(n_letters, n_max_errors);

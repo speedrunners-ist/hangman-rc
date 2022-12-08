@@ -75,6 +75,8 @@ public:
 #define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info."
 #define BIND_ERROR "[ERR]: Failed to bind socket."
+#define SENDTO_ERROR "[ERR]: Failed to send message."
+#define RECVFROM_ERROR "[ERR]: Failed to receive message."
 
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
@@ -82,6 +84,8 @@ public:
 #define TCP_FILE_ARGS_ERROR "[ERR]: Failed to receive file arguments."
 
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
+#define UDP_PARSE_ERROR "[ERR]: Found error while parsing the message."
+#define UDP_RESPONSE_ERROR "[ERR]: Message does not match the UDP protocol."
 
 #define INVALID_FILE_ARGS "[ERR]: Arguments for file transfer are invalid."
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."
@@ -93,6 +97,7 @@ public:
 
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 
+#define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
@@ -128,16 +133,16 @@ struct messageInfo {
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
               struct addrinfo **serverInfo);
-int disconnectUDP();
+int disconnectUDP(struct addrinfo *res, int fd);
 int disconnectTCP();
 
 int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
 
 // UDP utils functions
-int generalUDPHandler(std::string message, size_t maxExpectedBytes);
-int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBytes);
-int parseUDPResponse(char *response);
+int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd);
+int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
+int parseUDPMessage(std::string message, struct protocolMessage &response);
 
 // TCP utils functions
 int generalTCPHandler(std::string message, struct peerInfo peer);
