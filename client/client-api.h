@@ -3,11 +3,6 @@
 
 #include "common/common.h"
 #include <numeric>
-class ClientGameState : public GameState {
-public:
-  ClientGameState();
-  ClientGameState(int length, int mistakes);
-};
 
 void createGame(int length, int mistakes);
 int getAvailableMistakes();

@@ -4,15 +4,6 @@
 #include "common/common.h"
 #include "server/server-utils.h"
 
-class ServerGameState : public GameState {
-public:
-  ServerGameState();
-  ServerGameState(int length, int mistakes);
-  bool isLetterGuessed(char letter);
-  void setSpotsLeft(int spots);
-  int getSpotsLeft();
-};
-
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
 
@@ -37,16 +28,16 @@ public:
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
 
-ServerGameState createGame(int length, int mistakes);
-int getAvailableMistakes(ServerGameState play);
-std::string getWord(ServerGameState play);
-int playCorrectGuess(ServerGameState play, std::string positions, int n);
-void playIncorrectGuess(ServerGameState play);
-void playCorrectFinalGuess(ServerGameState play);
-void playCorrectFinalWordGuess(ServerGameState play);
-void setLastGuess(ServerGameState play, char guess);
-void setLastWordGuess(ServerGameState play, std::string guess);
-int getWordLength(ServerGameState play);
+GameState createGame(int length, int mistakes);
+int getAvailableMistakes(GameState play);
+std::string getWord(GameState play);
+int playCorrectGuess(GameState play, std::string positions, int n);
+void playIncorrectGuess(GameState play);
+void playCorrectFinalGuess(GameState play);
+void playCorrectFinalWordGuess(GameState play);
+void setLastGuess(GameState play, char guess);
+void setLastWordGuess(GameState play, std::string guess);
+int getWordLength(GameState play);
 void setPlayerID(std::string id);
 std::string getPlayerID();
 void incrementTrials();

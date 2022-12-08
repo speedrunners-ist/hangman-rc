@@ -53,6 +53,9 @@ public:
   int correctGuess(std::string positions, int n);
   void correctFinalGuess();
   void correctFinalWordGuess();
+  bool isLetterGuessed(char letter);
+  void setSpotsLeft(int spots);
+  int getSpotsLeft();
 };
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
