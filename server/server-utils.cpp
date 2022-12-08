@@ -1,5 +1,38 @@
 #include "server-utils.h"
 
+int findOccurringGame(char *PLID, char *fname) {
+
+  struct dirent **filelist;
+  int n_entries, found;
+  char dirname[20];
+  std::string auxStr;
+
+  n_entries = scandir("GAMES/", &filelist, 0, alphasort);
+
+  if (n_entries <= 0)
+    return 0;
+
+  found = 0;
+
+  // TODO: improve this
+  while (n_entries--) {
+    if (filelist[n_entries]->d_name[0] != '.') {
+      auxStr = filelist[n_entries]->d_name;
+      auxStr = auxStr.substr(5, 6);
+      if (strcmp(auxStr.c_str(), PLID) == 0) {
+        sprintf(fname, "GAMES/%s", filelist[n_entries]->d_name);
+        std::cout << "fname: " << fname << std::endl;
+        found = 1;
+      }
+      free(filelist[n_entries]);
+      if (found)
+        break;
+    }
+  }
+  free(filelist);
+  return found;
+}
+
 int FindLastGame(char *PLID, char *fname) {
   struct dirent **filelist;
   int n_entries, found;

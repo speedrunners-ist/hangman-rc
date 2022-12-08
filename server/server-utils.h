@@ -14,6 +14,7 @@ typedef struct {
   int n_scores;
 } SCORELIST;
 
+int findOccurringGame(char *PLID, char *fname);
 int FindLastGame(char *PLID, char *fname);
 int FindTopScores(SCORELIST *list);
 

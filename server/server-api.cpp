@@ -98,6 +98,11 @@ int setPath(std::string path) {
 }
 
 int isOngoingGame(std::string plid) {
+
+  if (findOccurringGame((char *)plid.c_str(), (char *)filepath.c_str()) == 0) {
+    return -1;
+  }
+
   if (GameSessions.find(plid) == GameSessions.end()) {
     // There is no game with this plid
     return 0;
