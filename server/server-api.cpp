@@ -6,7 +6,6 @@ std::string filepath;
 std::string fileName;
 std::vector<std::string> wordsList;
 int totalLines;
-std::map<std::string, GameState> GameSessions;
 
 /*** GameState implementation ***/
 
@@ -196,9 +195,6 @@ int getOccurrences(std::string word, char letter, std::string &positions) {
 }
 
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
-
-  GameState *play = &GameSessions[plid];
-  arguments = std::to_string(play->getTrials());
 
   if (validatePlayerID(plid) != 0) {
     return SYNTAX_ERROR;
