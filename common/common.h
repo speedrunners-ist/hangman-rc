@@ -63,6 +63,7 @@ public:
   std::string getHint();
   void addGuessedLetter(char letter);
   void addGuessedWord(std::string word);
+  void setMistakesLeft(int mistakes);
 };
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"

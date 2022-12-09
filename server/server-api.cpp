@@ -24,6 +24,8 @@ void GameState::addGuessedLetter(char letter) { guessedLetters[letter] = true; }
 
 void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWord] = true; }
 
+void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
+
 // Game state functions, useful for the client's protocol implementations
 GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
 int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
@@ -89,7 +91,7 @@ int createGameSession(std::string plid, std::string &arguments) {
     createGameState(gamestate);
 
     // if game has moves
-    if (gamestate.getTrials() != 0) {
+    if (gamestate.getTrials() != 1) {
       return CREATE_GAME_ERROR;
     }
 
@@ -110,18 +112,8 @@ int createGameSession(std::string plid, std::string &arguments) {
   // TODO: save file name in game state
   file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
 
-  const int wordLength = (int)word.length();
-  const int mistakes = initialAvailableMistakes(wordLength);
-
-  GameState newGame = createGame(wordLength, mistakes);
-  newGame.setWord(word);
-
-  newGame.setSpotsLeft(wordLength);
-
-  GameSessions.insert(std::pair<std::string, GameState>(plid, newGame));
-
-  arguments.append(std::to_string(wordLength)).append(" ").append(std::to_string(mistakes));
-
+  arguments = buildSplitString({std::to_string(word.length()),
+                                std::to_string(initialAvailableMistakes((int)word.length()))});
   createGameFile(plid, word, file);
 
   return CREATE_GAME_SUCCESS;
@@ -155,61 +147,53 @@ int isOngoingGame(std::string plid) {
   return findOccurringGame((char *)plid.c_str(), (char *)fileName.c_str()) == 0 ? 0 : 1;
 }
 
-// TODO: check better
-int checkHeader(std::string line) {
-  std::string word = "";
-  word = line.substr(0, line.find(' '));
-  if (word == "")
-    return -1;
-  line.erase(0, line.find(' ') + 1);
-  word = "";
-  word = line.substr(0, line.find('\n'));
-  if (word == "")
-    return -1;
-
-  // TODO: check file exists
-  return 0;
-}
-
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
   if (validatePlayerID(plid) != 0) {
     return SYNTAX_ERROR;
   }
 
   // see if file is empty
-  if (isOngoingGame(plid) == 1) {
-
-    // see if file has actions
-    // if (isGamePlayed() == -1) {
-    //  return SYNTAX_ERROR;
-    //}
+  if (isOngoingGame(plid) != 1) {
+    return SYNTAX_ERROR;
   }
 
-  GameState *play = &GameSessions[plid];
+  GameState gamestate;
+  createGameState(gamestate);
 
-  arguments = std::to_string(play->getTrials());
+  arguments = std::to_string(gamestate.getTrials());
 
-  if (std::stoi(trial) != play->getTrials()) {
-    return TRIAL_MISMATCH;
+  // if trial mismatch
+  if (std::stoi(trial) != gamestate.getTrials()) {
+    if (std::stoi(trial) != gamestate.getTrials() - 1)
+      return TRIAL_MISMATCH;
+
+    if (gamestate.getLastGuess() != letter[0]) {
+      return TRIAL_MISMATCH;
+    }
+
+      // todo: FIX THIS
+    // return ;
   }
 
-  if (play->isLetterGuessed(letter[0])) {
+  if (gamestate.isLetterGuessed(letter[0])) {
     return DUPLICATE_GUESS;
   }
 
-  int numberCorrect = getOccurrences(play->getWord(), letter[0], arguments);
+  int numberCorrect = getOccurrences(gamestate.getWord(), letter[0], arguments);
+
+  appendGameFile(plid, "T", letter);
 
   if (numberCorrect == 0) {
-    play->incorrectGuess();
-    if (play->getAvailableMistakes() == -1) {
+    gamestate.incorrectGuess();
+    if (gamestate.getAvailableMistakes() == -1) {
       return WRONG_FINAL_GUESS;
     }
     return WRONG_GUESS;
   }
 
-  play->correctGuess(arguments, numberCorrect);
+  gamestate.correctGuess(arguments, numberCorrect);
 
-  if (play->getSpotsLeft() == 0) {
+  if (gamestate.getSpotsLeft() == 0) {
     return SUCCESS_FINAL_GUESS;
   }
 
@@ -226,7 +210,8 @@ int getOccurrences(std::string word, char letter, std::string &positions) {
       numberCorrect++;
     }
   }
-  positions.append(" ").append(std::to_string(numberCorrect)).append(auxiliar);
+  if (numberCorrect > 0)
+    positions.append(" ").append(std::to_string(numberCorrect)).append(auxiliar);
 
   return numberCorrect;
 }
@@ -283,7 +268,10 @@ int createGameState(GameState &gamestate) {
   std::string hint = header;
 
   gamestate.setWord(word);
+  gamestate.setMistakesLeft(initialAvailableMistakes((int)word.length()));
   gamestate.setHint(hint);
+  // TODO: check if this is correct
+  gamestate.incrementTrials();
 
   for (size_t i = 1; i < lines.size(); i++) {
     std::string line = lines[i];

@@ -19,5 +19,6 @@ int FindLastGame(char *PLID, char *fname);
 int FindTopScores(SCORELIST *list);
 
 int createGameFile(std::string plid, std::string word, std::string hint);
+int appendGameFile(std::string plid, std::string code, std::string play);
 
 #endif

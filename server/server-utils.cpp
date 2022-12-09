@@ -111,3 +111,23 @@ int createGameFile(std::string plid, std::string word, std::string hint) {
 
   return 0;
 }
+
+int appendGameFile(std::string plid, std::string code, std::string play) {
+  std::fstream file;
+  std::string dir = "GAMES/GAME_" + plid + ".txt";
+  std::string content = buildSplitString({code, play});
+
+  // append to the file
+  file.open(dir, std::ios::app);
+
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << std::endl;
+    return -1;
+  }
+
+  file.write(content.c_str(), content.size());
+
+  file.close();
+
+  return 0;
+}
