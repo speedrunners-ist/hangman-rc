@@ -80,8 +80,8 @@ int createGameSession(std::string plid, std::string &arguments) {
     }
 
     std::string word = gamestate.getWord();
-    arguments = buildSplitString({std::to_string(word.length()),
-                                  std::to_string(initialAvailableMistakes((int)word.length()))});
+    arguments = buildSplitString(
+        {std::to_string(word.length()), std::to_string(initialAvailableMistakes((int)word.length()))});
 
     return CREATE_GAME_SUCCESS;
   }
@@ -94,8 +94,8 @@ int createGameSession(std::string plid, std::string &arguments) {
   std::string word = randomLine.substr(0, wordPos);
   std::string file = randomLine.substr(wordPos + 1);
 
-  arguments = buildSplitString({std::to_string(word.length()),
-                                std::to_string(initialAvailableMistakes((int)word.length()))});
+  arguments = buildSplitString(
+      {std::to_string(word.length()), std::to_string(initialAvailableMistakes((int)word.length()))});
   createGameFile(plid, word, file);
 
   return CREATE_GAME_SUCCESS;
@@ -165,7 +165,6 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   appendGameFile(plid, "T", letter);
 
-  int numberCorrect = getOccurrences(play->getWord(), letter[0], arguments);
   if (numberCorrect == 0) {
     gamestate.setMistakesLeft(gamestate.getAvailableMistakes() - 1);
     if (gamestate.getAvailableMistakes() == -1) {
@@ -324,10 +323,9 @@ int createGameState(GameState &gamestate) {
 int calculateScore(std::string plid, GameState gamestate) {
   int score;
 
-  int successfulGuesses = gamestate.getTrials() -
-                          (initialAvailableMistakes((int)gamestate.getWord().length()) -
-                           gamestate.getAvailableMistakes()) -
-                          1;
+  int successfulGuesses =
+      gamestate.getTrials() -
+      (initialAvailableMistakes((int)gamestate.getWord().length()) - gamestate.getAvailableMistakes()) - 1;
   int totalGuesses = gamestate.getTrials() - 1;
 
   std::cout << "Successful guesses: " << successfulGuesses << std::endl;
@@ -347,9 +345,8 @@ int calculateScore(std::string plid, GameState gamestate) {
   if (score == 100)
     scoreStr = std::to_string(score);
 
-  std::string arguments =
-      buildSplitString({scoreStr, plid, gamestate.getWord(), std::to_string(successfulGuesses),
-                        std::to_string(totalGuesses)});
+  std::string arguments = buildSplitString(
+      {scoreStr, plid, gamestate.getWord(), std::to_string(successfulGuesses), std::to_string(totalGuesses)});
 
   createScoreFile(plid, scoreStr, arguments);
 
