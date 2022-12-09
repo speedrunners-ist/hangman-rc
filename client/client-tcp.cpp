@@ -188,7 +188,6 @@ int handleRSB(struct protocolMessage response) {
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
-    std::cout << SB_HEADER << std::endl;
     ret = displayFile(info.fileName, SB_DIR);
     disconnectTCP();
     return ret;

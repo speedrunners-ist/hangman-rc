@@ -96,10 +96,6 @@ public:
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."
 #define FILE_RECV_SUCCESS "[INFO]: File received successfully."
 
-#define SB_DIR "scoreboard/"
-#define H_DIR "hints/"
-#define ST_DIR "state/"
-
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 
 #define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."

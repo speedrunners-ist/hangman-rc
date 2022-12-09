@@ -58,7 +58,6 @@
 #define RQT_ERR "Failed to quit game. Try again later."
 
 // TCP - client-side specific messages
-#define SB_HEADER "[RANK]: SCORE | PLID | WORD | CORRECT GUESSES | TOTAL GUESSES"
 #define SB_FAIL "[INFO]: The server hasn't held any games yet."
 #define H_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
 #define H_FAIL "[INFO]: The server could not send any hints at the moment."
@@ -66,6 +65,10 @@
 #define ST_FIN "[INFO]: Displaying information about the last finished game."
 #define ST_NOK "[INFO]: The server could not find any games (neither active nor finished)."
 #define ST_ERR "[ERR]: The server has encountered an error while processing your request."
+
+#define SB_DIR "client/scoreboard/"
+#define H_DIR "client/hints/"
+#define ST_DIR "client/state/"
 
 int createSocketUDP(struct peerInfo peer);
 int createSocketTCP(struct peerInfo peer);
