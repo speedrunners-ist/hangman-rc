@@ -48,7 +48,7 @@ int handleRSG(struct protocolMessage response) {
         std::stoi(response.body.substr(response.secondPos + 1, pos_n_letters - response.secondPos - 1));
     const int n_max_errors =
         std::stoi(response.body.substr(pos_n_letters + 1, pos_n_max_errors - pos_n_letters - 1));
-    createGame(n_letters, n_max_errors);
+    createGame(n_letters, n_max_errors, getPlayerID());
     const int availableMistakes = getAvailableMistakes();
     const std::string word = getWord();
     std::cout << RSG_OK(availableMistakes, word) << std::endl;
@@ -159,12 +159,12 @@ int sendSNG(struct messageInfo info) {
   const size_t pos1 = info.input.find(' ');
   std::string plid = info.input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
-  if (validatePlayerID(plid) == 0) {
-    setPlayerID(plid);
-    const std::string message = buildSplitString({"SNG", plid});
-    return generalUDPHandler(message, RSG_BYTES);
+  if (validatePlayerID(plid) != 0) {
+    return -1;
   }
-  return -1;
+  setPlayerID(plid);
+  const std::string message = buildSplitString({"SNG", plid});
+  return generalUDPHandler(message, RSG_BYTES);
 }
 
 int sendPLG(struct messageInfo info) {

@@ -3,9 +3,10 @@
 /*** GameState implementation ***/
 
 GameState::GameState() { active = false; }
-GameState::GameState(int length, int mistakes) {
+GameState::GameState(int length, int mistakes, std::string plid) {
   wordLength = length;
   mistakesLeft = mistakes;
+  playerID = plid;
   active = true;
   // word is a string with length equal to wordLength, filled with underscores
   word = std::string((size_t)length, '_');
@@ -95,6 +96,9 @@ void GameState::correctFinalWordGuess() {
 
 void GameState::incrementTrials() { trials++; }
 int GameState::getTrials() { return trials; }
+
+void GameState::setPlayerID(std::string id) { playerID = id; }
+std::string GameState::getPlayerID() { return playerID; }
 
 /*** Socket functions implementation ***/
 

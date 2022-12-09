@@ -14,7 +14,9 @@ void GameState::setSpotsLeft(int spots) { spotsLeft = spots; }
 int GameState::getSpotsLeft() { return spotsLeft; }
 
 // Game state functions, useful for the client's protocol implementations
-GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
+GameState createGame(int length, int mistakes, std::string playerID) {
+  return GameState(length, mistakes, playerID);
+}
 int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
 std::string getWord(GameState play) { return play.getWord(); }
 
@@ -42,10 +44,16 @@ void playCorrectFinalWordGuess(GameState play) {
 void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength(GameState play) { return play.getWordLength(); }
+void setPlayerID(GameState play, std::string id) { play.setPlayerID(id); }
+std::string getPlayerID(GameState play) { return play.getPlayerID(); }
+int getTrials(GameState play) {
+  // the user will always send the trial number related to the one he is playing, hence the +1
+  return play.getTrials() + 1;
+}
+void incrementTrials(GameState play) { play.incrementTrials(); }
 
 // Util functions
 int createGameSession(std::string plid, std::string &arguments) {
-
   if (validatePlayerID(plid) != 0 || isOngoingGame(plid) != 0) {
     return CREATE_GAME_ERROR;
   }
@@ -63,7 +71,7 @@ int createGameSession(std::string plid, std::string &arguments) {
   const int wordLength = (int)word.length();
   const int mistakes = initialAvailableMistakes(wordLength);
 
-  GameState newGame = createGame(wordLength, mistakes);
+  GameState newGame = createGame(wordLength, mistakes, plid);
   newGame.setWord(word);
 
   newGame.setSpotsLeft(wordLength);
@@ -112,9 +120,9 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   GameState *play = &GameSessions[plid];
 
-  arguments = std::to_string(play->getTrials());
+  arguments = std::to_string(getTrials(*play));
 
-  if (std::stoi(trial) != play->getTrials()) {
+  if (std::stoi(trial) != getTrials(*play)) {
     return TRIAL_MISMATCH;
   }
 
@@ -159,7 +167,7 @@ int getOccurrences(std::string word, char letter, std::string &positions) {
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
 
   GameState *play = &GameSessions[plid];
-  arguments = std::to_string(play->getTrials());
+  arguments = std::to_string(getTrials(*play));
 
   if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
     return SYNTAX_ERROR;
@@ -167,7 +175,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 
   arguments = trial;
 
-  if (std::stoi(trial) != play->getTrials() || word == play->getLastWordGuess()) {
+  if (std::stoi(trial) != getTrials(*play) || word == play->getLastWordGuess()) {
     return TRIAL_MISMATCH;
   }
 

@@ -81,6 +81,7 @@ int handleSNG(struct protocolMessage message) {
     return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
   }
   const std::string plid = message.second;
+  std::cout << "[INFO]: Player ID: " << plid << std::endl;
 
   std::string gameInfo;
   std::string response;

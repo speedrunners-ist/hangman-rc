@@ -28,17 +28,18 @@ protected:
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
-  int trials = 0; // TODO: STANDARDIZE THIS BETWEEN SERVER AND CLIENT
+  int trials = 0;
   int spotsLeft;
   char lastGuess;
   bool active = false;
+  std::string playerID;
   std::string lastWordGuess;
   Alphabet guessedLetters;
   std::string word;
 
 public:
   GameState();
-  GameState(int length, int mistakes);
+  GameState(int length, int mistakes, std::string plid);
   void incrementTrials();
   int getTrials();
   bool isActive();
@@ -55,6 +56,8 @@ public:
   int correctGuess(std::string positions, int n);
   void correctFinalGuess();
   void correctFinalWordGuess();
+  std::string getPlayerID();
+  void setPlayerID(std::string id);
   bool isLetterGuessed(char letter);
   void setSpotsLeft(int spots);
   int getSpotsLeft();
