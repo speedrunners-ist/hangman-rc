@@ -23,7 +23,9 @@ int FindTopScores(SCORELIST *list);
 int createGameFile(std::string plid, std::string word, std::string hint);
 int appendGameFile(std::string plid, std::string code, std::string play);
 int transferGameFile(std::string plid, std::string status);
+int createScoreFile(std::string plid, std::string score, std::string content);
 
-int parseTime(tm *time, std::string &filename);
+int parseTimeGame(tm *time, std::string &filename);
+int parseTimeScore(tm *time, std::string &filename);
 
 #endif

@@ -172,6 +172,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   if (gamestate.getSpotsLeft() == 0) {
     transferGameFile(plid, "W");
+    calculateScore(plid, gamestate);
     return SUCCESS_FINAL_GUESS;
   }
 
@@ -234,6 +235,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 
   if (gamestate.getWord() == word) {
     transferGameFile(plid, "W");
+    calculateScore(plid, gamestate);
     return SUCCESS_GUESS;
   }
 
@@ -313,4 +315,40 @@ int createGameState(GameState &gamestate) {
     }
   }
   return 0;
+}
+
+int calculateScore(std::string plid, GameState gamestate) {
+  int score;
+
+  int successfulGuesses = gamestate.getTrials() -
+                          (initialAvailableMistakes((int)gamestate.getWord().length()) -
+                           gamestate.getAvailableMistakes()) -
+                          1;
+  int totalGuesses = gamestate.getTrials() - 1;
+
+  std::cout << "Successful guesses: " << successfulGuesses << std::endl;
+  std::cout << "Total guesses: " << totalGuesses << std::endl;
+
+  score = (successfulGuesses * 100) / totalGuesses;
+
+  std::cout << "Score: " << score << std::endl;
+
+  std::string scoreStr = "";
+
+  if (score < 10)
+    scoreStr.append("00").append(std::to_string(score));
+  else
+    scoreStr.append("0").append(std::to_string(score));
+
+  if (score == 100)
+    scoreStr = std::to_string(score);
+
+  std::string arguments =
+      buildSplitString({scoreStr, plid, gamestate.getWord(), std::to_string(successfulGuesses),
+                        std::to_string(totalGuesses)});
+
+  createScoreFile(plid, scoreStr, arguments);
+
+  // without decimal points
+  return score;
 }

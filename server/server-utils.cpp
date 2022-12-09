@@ -141,7 +141,7 @@ int transferGameFile(std::string plid, std::string status) {
 
   tm *time = localtime(&now);
 
-  parseTime(time, filename);
+  parseTimeGame(time, filename);
 
   filename = filename.append("_" + status);
 
@@ -165,7 +165,7 @@ int transferGameFile(std::string plid, std::string status) {
   return 0;
 }
 
-int parseTime(tm *time, std::string &filename) {
+int parseTimeGame(tm *time, std::string &filename) {
 
   std::string year = std::to_string(1900 + time->tm_year);
   std::string month = std::to_string(1 + time->tm_mon);
@@ -178,6 +178,52 @@ int parseTime(tm *time, std::string &filename) {
   for (auto &t : timeVec) {
     filename = filename.append(t);
     if (t == day)
+      filename = filename.append("_");
+  }
+  return 0;
+}
+
+int createScoreFile(std::string plid, std::string score, std::string content) {
+  std::fstream file;
+
+  std::string date = "";
+
+  time_t now = time(0);
+
+  tm *time = localtime(&now);
+
+  parseTimeScore(time, date);
+
+  std::string dir = "SCORES/" + score + "_" + plid + "_" + date + ".txt";
+
+  std::cout << dir << std::endl;
+
+  file.open(dir, std::ios::in | std::ios::out | std::ios::trunc);
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << std::endl;
+    return -1;
+  }
+
+  file.write(content.c_str(), content.size());
+
+  file.close();
+
+  return 0;
+}
+
+int parseTimeScore(tm *time, std::string &filename) {
+
+  std::string year = std::to_string(1900 + time->tm_year);
+  std::string month = std::to_string(1 + time->tm_mon);
+  std::string day = std::to_string(time->tm_mday);
+  std::string hour = std::to_string(time->tm_hour);
+  std::string min = std::to_string(time->tm_min);
+  std::string sec = std::to_string(time->tm_sec);
+  std::vector<std::string> timeVec = {day, month, year, hour, min, sec};
+
+  for (auto &t : timeVec) {
+    filename = filename.append(t);
+    if (t == year)
       filename = filename.append("_");
   }
   return 0;
