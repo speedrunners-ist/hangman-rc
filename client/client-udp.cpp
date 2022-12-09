@@ -39,7 +39,7 @@ int handleRSG(struct protocolMessage response) {
   if (response.second == "OK") {
     const size_t pos_n_letters = response.body.find(' ', response.secondPos + 1);
     const size_t pos_n_max_errors = response.body.find('\n', pos_n_letters + 1);
-    if (pos_n_letters == std::string::npos || pos_n_max_errors != std::string::npos) {
+    if (pos_n_letters == std::string::npos || pos_n_max_errors != response.body.size() - 1) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
@@ -66,10 +66,11 @@ int handleRLG(struct protocolMessage response) {
   if (response.second == "OK") {
     const size_t pos_n = response.body.find(' ', pos_trial + 1);
     const size_t pos_correct_positions = response.body.find('\n', pos_n + 1);
-    if (pos_n == std::string::npos || pos_correct_positions != std::string::npos) {
+    if (pos_n == std::string::npos || pos_correct_positions != response.body.size() - 1) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
+    response.body.erase(std::remove(response.body.begin(), response.body.end(), '\n'), response.body.end());
     const int n = std::stoi(response.body.substr(pos_trial + 1, pos_n - pos_trial - 1));
     if (playCorrectGuess(response.body.substr(pos_n + 1), n) == 0) {
       return 0;
@@ -103,10 +104,11 @@ int handleRLG(struct protocolMessage response) {
 
 int handleRWG(struct protocolMessage response) {
   const size_t pos_trials = response.body.find('\n', response.secondPos + 1);
-  if (pos_trials != std::string::npos) {
+  if (pos_trials != response.body.size() - 1) {
     std::cerr << RWG_ERROR << std::endl;
     return -1;
   }
+  response.body.erase(std::remove(response.body.begin(), response.body.end(), '\n'), response.body.end());
   if (response.second == "WIN") {
     playCorrectFinalWordGuess();
     resetGame();

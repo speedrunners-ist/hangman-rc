@@ -22,16 +22,4 @@ int handleGSB(struct protocolMessage message);
 int handleGHL(struct protocolMessage message);
 int handleSTA(struct protocolMessage message);
 
-// UDP client message senders
-int sendRSG(std::string input);
-int sendRLG(std::string input);
-int sendRWG(std::string input);
-int sendRQT(std::string input);
-int sendRRV(std::string input);
-
-// TCP Client message senders
-int sendRSB(std::string input);
-int sendRHL(std::string input);
-int sendRST(std::string input);
-
 #endif /* SERVER_PROTOCOL_H */

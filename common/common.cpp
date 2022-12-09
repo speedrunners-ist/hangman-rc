@@ -169,6 +169,7 @@ int disconnectUDP(struct addrinfo *res, int fd) {
 }
 
 int parseUDPMessage(std::string message, struct protocolMessage &response) {
+  std::cout << "[DEBUG]: Parsing message: " << message;
   const size_t pos1 = message.find(' ');
   if (pos1 == std::string::npos) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
@@ -178,13 +179,14 @@ int parseUDPMessage(std::string message, struct protocolMessage &response) {
   const std::string code = message.substr(0, pos1);
   const size_t pos2 = message.find_first_of(" \n", pos1 + 1);
   const char delimiter = message[pos2];
-  if ((delimiter == ' ' && pos2 == std::string::npos) || (delimiter == '\n' && pos2 != std::string::npos)) {
+  if ((delimiter == ' ' && pos2 == std::string::npos) || (delimiter == '\n' && pos2 != message.size() - 1)) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
 
   const std::string status = message.substr(pos1 + 1, pos2 - pos1 - 1);
   response = {code, pos1, status, pos2, message};
+  std::cout << "[DEBUG]: Finished parsing message" << std::endl;
   return 0;
 }
 
@@ -237,7 +239,6 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
       std::cerr << UDP_RESPONSE_ERROR << std::endl;
       return -1;
     }
-    response[bytesReceived - 1] = '\0';
     return 0;
 
   } while (--triesLeft >= 0);
