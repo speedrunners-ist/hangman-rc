@@ -1,7 +1,7 @@
 #ifndef SERVER_API_H
 #define SERVER_API_H
 
-#include "common/common.h"
+#include "server/server-utils.h"
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
@@ -29,6 +29,10 @@
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
 
+int readFile(std::vector<std::string> &lines);
+int createGameState(GameState &gamestate);
+
+GameState createGame(int length, int mistakes);
 GameState createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
@@ -52,5 +56,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 int getOccurrences(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
+
+int calculateScore(std::string plid, GameState play);
 
 #endif /* SERVER_API_H */

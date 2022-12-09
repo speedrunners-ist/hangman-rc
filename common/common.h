@@ -20,6 +20,7 @@
 #include <vector>
 
 typedef std::map<char, bool> Alphabet;
+typedef std::map<std::string, bool> WordList;
 typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
 typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
@@ -35,7 +36,9 @@ protected:
   std::string playerID;
   std::string lastWordGuess;
   Alphabet guessedLetters;
+  WordList guessedWords;
   std::string word;
+  std::string hint;
 
 public:
   GameState();
@@ -61,6 +64,11 @@ public:
   bool isLetterGuessed(char letter);
   void setSpotsLeft(int spots);
   int getSpotsLeft();
+  void setHint(std::string newHint);
+  std::string getHint();
+  void addGuessedLetter(char letter);
+  void addGuessedWord(std::string word);
+  void setMistakesLeft(int mistakes);
 };
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
