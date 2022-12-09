@@ -4,7 +4,7 @@
 #include "common/common.h"
 #include <numeric>
 
-void createGame(int length, int mistakes);
+void createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes();
 std::string getWord();
 int playCorrectGuess(std::string positions, int n);
