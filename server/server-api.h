@@ -32,16 +32,16 @@
 GameState createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
-int playCorrectGuess(GameState play, std::string positions, int n);
-void playIncorrectGuess(GameState play);
-void playCorrectFinalGuess(GameState play);
-void playCorrectFinalWordGuess(GameState play);
-void setLastGuess(GameState play, char guess);
-void setLastWordGuess(GameState play, std::string guess);
+int playCorrectGuess(GameState &play, std::string positions, int n);
+void playIncorrectGuess(GameState &play);
+void playCorrectFinalGuess(GameState &play);
+void playCorrectFinalWordGuess(GameState &play);
+void setLastGuess(GameState &play, char guess);
+void setLastWordGuess(GameState &play, std::string guess);
 int getWordLength(GameState play);
-void setPlayerID(GameState play, std::string id);
+void setPlayerID(GameState &play, std::string id);
 std::string getPlayerID(GameState play);
-void incrementTrials(GameState play);
+void incrementTrials(GameState &play);
 int getTrials(GameState play);
 
 int setPath(std::string filepath);

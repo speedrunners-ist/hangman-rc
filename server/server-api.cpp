@@ -20,37 +20,37 @@ GameState createGame(int length, int mistakes, std::string playerID) {
 int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
 std::string getWord(GameState play) { return play.getWord(); }
 
-int playCorrectGuess(GameState play, std::string positions, int n) {
+int playCorrectGuess(GameState &play, std::string positions, int n) {
   int ret = play.correctGuess(positions, n);
   if (ret == 0) {
     play.incrementTrials();
   }
   return ret;
 }
-void playIncorrectGuess(GameState play) {
+void playIncorrectGuess(GameState &play) {
   play.incrementTrials();
   play.incorrectGuess();
 }
-void playCorrectFinalGuess(GameState play) {
+void playCorrectFinalGuess(GameState &play) {
   play.incrementTrials();
   play.correctFinalGuess();
 }
 
-void playCorrectFinalWordGuess(GameState play) {
+void playCorrectFinalWordGuess(GameState &play) {
   play.incrementTrials();
   play.correctFinalWordGuess();
 }
 
-void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
+void setLastGuess(GameState &play, char guess) { play.setLastGuess(guess); }
+void setLastWordGuess(GameState &play, std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength(GameState play) { return play.getWordLength(); }
-void setPlayerID(GameState play, std::string id) { play.setPlayerID(id); }
+void setPlayerID(GameState &play, std::string id) { play.setPlayerID(id); }
 std::string getPlayerID(GameState play) { return play.getPlayerID(); }
 int getTrials(GameState play) {
   // the user will always send the trial number related to the one he is playing, hence the +1
   return play.getTrials() + 1;
 }
-void incrementTrials(GameState play) { play.incrementTrials(); }
+void incrementTrials(GameState &play) { play.incrementTrials(); }
 
 // Util functions
 int createGameSession(std::string plid, std::string &arguments) {
@@ -122,6 +122,8 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   arguments = std::to_string(getTrials(*play));
 
+  std::cout << "Received trial " << trial << " and current trial is " << getTrials(*play) << std::endl;
+
   if (std::stoi(trial) != getTrials(*play)) {
     return TRIAL_MISMATCH;
   }
@@ -130,8 +132,10 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return DUPLICATE_GUESS;
   }
 
-  int numberCorrect = getOccurrences(play->getWord(), letter[0], arguments);
+  incrementTrials(*play);
+  std::cout << "Incremented trials to " << getTrials(*play) << std::endl;
 
+  int numberCorrect = getOccurrences(play->getWord(), letter[0], arguments);
   if (numberCorrect == 0) {
     play->incorrectGuess();
     if (play->getAvailableMistakes() == -1) {
@@ -179,6 +183,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
     return TRIAL_MISMATCH;
   }
 
+  incrementTrials(*play);
   play->setLastWordGuess(word);
 
   // TODO: see how to handle win game
