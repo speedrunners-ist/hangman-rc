@@ -9,6 +9,8 @@
 // User Messages
 #define STARTING_SERVER "Starting server..."
 #define STARTING_SERVER_ERROR "[ERR]: Failed to set server parameters. Exiting..."
+#define VERBOSE_SUCCESS(host, service) "[INFO]: Message sent by [" << host << ":" << service << "]"
+#define VERBOSE_ERROR(error) "[ERR]: getnameinfo: " << gai_strerror(error)
 
 // RSG return codes
 #define CREATE_GAME_ERROR 1
@@ -31,19 +33,20 @@ int readFile(std::vector<std::string> &lines);
 int createGameState(GameState &gamestate);
 
 GameState createGame(int length, int mistakes);
+GameState createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
-int playCorrectGuess(GameState play, std::string positions, int n);
-void playIncorrectGuess(GameState play);
-void playCorrectFinalGuess(GameState play);
-void playCorrectFinalWordGuess(GameState play);
-void setLastGuess(GameState play, char guess);
-void setLastWordGuess(GameState play, std::string guess);
+int playCorrectGuess(GameState &play, std::string positions, int n);
+void playIncorrectGuess(GameState &play);
+void playCorrectFinalGuess(GameState &play);
+void playCorrectFinalWordGuess(GameState &play);
+void setLastGuess(GameState &play, char guess);
+void setLastWordGuess(GameState &play, std::string guess);
 int getWordLength(GameState play);
-void setPlayerID(std::string id);
-std::string getPlayerID();
-void incrementTrials();
-int getTrials();
+void setPlayerID(GameState &play, std::string id);
+std::string getPlayerID(GameState play);
+void incrementTrials(GameState &play);
+int getTrials(GameState play);
 
 int setPath(std::string filepath);
 int createGameSession(std::string plid, std::string &arguments);

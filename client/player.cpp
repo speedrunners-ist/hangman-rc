@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << EXIT_PROGRAM << std::endl;
-  if (disconnectUDP() == -1) {
+  if (disconnectPlayer() == -1) {
     exit(EXIT_FAILURE);
   }
   exit(EXIT_SUCCESS);

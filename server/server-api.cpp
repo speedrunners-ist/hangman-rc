@@ -32,6 +32,13 @@ std::string getWord(GameState play) { return play.getWord(); }
 void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength(GameState play) { return play.getWordLength(); }
+void setPlayerID(GameState &play, std::string id) { play.setPlayerID(id); }
+std::string getPlayerID(GameState play) { return play.getPlayerID(); }
+int getTrials(GameState play) {
+  // the user will always send the trial number related to the one he is playing, hence the +1
+  return play.getTrials() + 1;
+}
+void incrementTrials(GameState &play) { play.incrementTrials(); }
 
 int readFile(std::vector<std::string> &lines) {
 
@@ -158,6 +165,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   appendGameFile(plid, "T", letter);
 
+  int numberCorrect = getOccurrences(play->getWord(), letter[0], arguments);
   if (numberCorrect == 0) {
     gamestate.setMistakesLeft(gamestate.getAvailableMistakes() - 1);
     if (gamestate.getAvailableMistakes() == -1) {

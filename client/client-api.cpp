@@ -3,10 +3,12 @@
 /*** ClientAPI methods implementation ***/
 
 GameState play;
-std::string playerID;
+std::string plid;
 
 // Game state functions, useful for the client's protocol implementations
-void createGame(int length, int mistakes) { play = GameState(length, mistakes); }
+void createGame(int length, int mistakes, std::string playerID) {
+  play = GameState(length, mistakes, playerID);
+}
 int getAvailableMistakes() { return play.getAvailableMistakes(); }
 std::string getWord() { return play.getWord(); }
 int playCorrectGuess(std::string positions, int n) {
@@ -27,8 +29,8 @@ void playCorrectFinalWordGuess() { play.correctFinalWordGuess(); }
 void setLastGuess(char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength() { return play.getWordLength(); }
-void setPlayerID(std::string id) { playerID = id; }
-std::string getPlayerID() { return playerID; }
+void setPlayerID(std::string id) { plid = id; }
+std::string getPlayerID() { return plid; }
 void resetGame() { play.setInactive(); }
 void incrementTrials() { play.incrementTrials(); }
 int getTrials() { return play.getTrials(); }
