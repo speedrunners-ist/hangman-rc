@@ -3,7 +3,9 @@
 
 #include "common/common.h"
 
+#include <ctime>
 #include <dirent.h>
+#include <filesystem>
 
 typedef struct {
   int score[10];
@@ -20,5 +22,8 @@ int FindTopScores(SCORELIST *list);
 
 int createGameFile(std::string plid, std::string word, std::string hint);
 int appendGameFile(std::string plid, std::string code, std::string play);
+int transferGameFile(std::string plid, std::string status);
+
+int parseTime(tm *time, std::string &filename);
 
 #endif

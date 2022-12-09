@@ -131,3 +131,54 @@ int appendGameFile(std::string plid, std::string code, std::string play) {
 
   return 0;
 }
+
+int transferGameFile(std::string plid, std::string status) {
+  std::fstream oldfile;
+  std::fstream newfile;
+  std::string filename;
+
+  time_t now = time(0);
+
+  tm *time = localtime(&now);
+
+  parseTime(time, filename);
+
+  filename = filename.append("_" + status);
+
+  std::string olddir = "GAMES/GAME_" + plid + ".txt";
+  std::string newdir = "GAMES/" + plid;
+
+  // create the directory
+
+  mkdir(newdir.c_str(), 0777);
+
+  newdir += "/" + filename + ".txt";
+
+  try {
+    std::filesystem::copy(olddir, newdir);
+    std::filesystem::remove(olddir);
+  } catch (std::filesystem::filesystem_error &e) {
+    std::cerr << e.what() << std::endl;
+    return -1;
+  }
+
+  return 0;
+}
+
+int parseTime(tm *time, std::string &filename) {
+
+  std::string year = std::to_string(1900 + time->tm_year);
+  std::string month = std::to_string(1 + time->tm_mon);
+  std::string day = std::to_string(time->tm_mday);
+  std::string hour = std::to_string(time->tm_hour);
+  std::string min = std::to_string(time->tm_min);
+  std::string sec = std::to_string(time->tm_sec);
+  std::vector<std::string> timeVec = {year, month, day, hour, min, sec};
+
+  for (auto &t : timeVec) {
+    filename = filename.append(t);
+    if (t == day)
+      filename = filename.append("_");
+  }
+  return 0;
+}

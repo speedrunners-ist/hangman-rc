@@ -171,7 +171,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
       return TRIAL_MISMATCH;
     }
 
-      // todo: FIX THIS
+    // todo: FIX THIS
     // return ;
   }
 
