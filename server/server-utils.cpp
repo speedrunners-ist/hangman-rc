@@ -196,8 +196,6 @@ int createScoreFile(std::string plid, std::string score, std::string content) {
 
   std::string dir = "SCORES/" + score + "_" + plid + "_" + date + ".txt";
 
-  std::cout << dir << std::endl;
-
   file.open(dir, std::ios::in | std::ios::out | std::ios::trunc);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
