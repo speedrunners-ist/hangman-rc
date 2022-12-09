@@ -27,30 +27,8 @@ void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWo
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
 // Game state functions, useful for the client's protocol implementations
-GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
 int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
 std::string getWord(GameState play) { return play.getWord(); }
-
-int playCorrectGuess(GameState play, std::string positions, int n) {
-  int ret = play.correctGuess(positions, n);
-  if (ret == 0) {
-    play.incrementTrials();
-  }
-  return ret;
-}
-void playIncorrectGuess(GameState play) {
-  play.incrementTrials();
-  play.incorrectGuess();
-}
-void playCorrectFinalGuess(GameState play) {
-  play.incrementTrials();
-  play.correctFinalGuess();
-}
-
-void playCorrectFinalWordGuess(GameState play) {
-  play.incrementTrials();
-  play.correctFinalWordGuess();
-}
 
 void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
@@ -184,16 +162,20 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   appendGameFile(plid, "T", letter);
 
   if (numberCorrect == 0) {
-    gamestate.incorrectGuess();
+    gamestate.setMistakesLeft(gamestate.getAvailableMistakes() - 1);
     if (gamestate.getAvailableMistakes() == -1) {
+      transferGameFile(plid, "L");
       return WRONG_FINAL_GUESS;
     }
     return WRONG_GUESS;
   }
 
-  gamestate.correctGuess(arguments, numberCorrect);
+  gamestate.setSpotsLeft(gamestate.getSpotsLeft() - numberCorrect);
+
+  std::cout << "Spots left: " << gamestate.getSpotsLeft() << std::endl;
 
   if (gamestate.getSpotsLeft() == 0) {
+    transferGameFile(plid, "W");
     return SUCCESS_FINAL_GUESS;
   }
 
@@ -272,6 +254,7 @@ int createGameState(GameState &gamestate) {
   gamestate.setHint(hint);
   // TODO: check if this is correct
   gamestate.incrementTrials();
+  gamestate.setSpotsLeft((int)word.length());
 
   for (size_t i = 1; i < lines.size(); i++) {
     std::string line = lines[i];
@@ -279,7 +262,17 @@ int createGameState(GameState &gamestate) {
     line.erase(0, line.find(' ') + 1);
     std::string play = line;
     // Trial
+
     if (code == "T") {
+      std::string arguments = "";
+      int numberCorrect = getOccurrences(gamestate.getWord(), play[0], arguments);
+
+      if (numberCorrect == 0) {
+        gamestate.setMistakesLeft(gamestate.getAvailableMistakes() - 1);
+      } else {
+        gamestate.setSpotsLeft(gamestate.getSpotsLeft() - numberCorrect);
+      }
+
       gamestate.addGuessedLetter(play[0]);
       gamestate.setLastGuess(play[0]);
       gamestate.incrementTrials();
