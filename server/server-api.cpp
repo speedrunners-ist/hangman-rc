@@ -4,7 +4,7 @@
 std::string filepath;
 // game state file
 std::string fileName;
-std::vector<std::string> lines;
+std::vector<std::string> wordsList;
 int totalLines;
 std::map<std::string, GameState> GameSessions;
 
@@ -15,6 +15,14 @@ bool GameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
 void GameState::setSpotsLeft(int spots) { spotsLeft = spots; }
 
 int GameState::getSpotsLeft() { return spotsLeft; }
+
+void GameState::setHint(std::string newHint) { hint = newHint; }
+
+std::string GameState::getHint() { return hint; }
+
+void GameState::addGuessedLetter(char letter) { guessedLetters[letter] = true; }
+
+void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWord] = true; }
 
 // Game state functions, useful for the client's protocol implementations
 GameState createGame(int length, int mistakes) { return GameState(length, mistakes); }
@@ -46,27 +54,21 @@ void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
 void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
 int getWordLength(GameState play) { return play.getWordLength(); }
 
-int getWordHints(std::string &arguments) {
+int readFile(std::vector<std::string> &lines) {
 
   std::fstream file;
   std::string line = "";
-  int wordLength = 0;
+  std::string word = "";
+  std::string hint = "";
 
   file.open(fileName, std::ios::in);
   if (!file) {
     return -1;
   }
 
-  std::getline(file, line);
-  if (line == "") {
-    return -1;
+  while (getline(file, line)) {
+    lines.push_back(line);
   }
-
-  line = line.substr(0, line.find(' '));
-  wordLength = (int)line.length();
-
-  arguments = buildSplitString(
-      {std::to_string(wordLength), std::to_string(initialAvailableMistakes(wordLength))});
 
   file.close();
 
@@ -82,20 +84,25 @@ int createGameSession(std::string plid, std::string &arguments) {
 
   // if game is already ongoing
   if (isOngoingGame(plid) == 1) {
+
+    GameState gamestate;
+    createGameState(gamestate);
+
     // if game has moves
-    if (isGamePlayed() == -1) {
+    if (gamestate.getTrials() != 0) {
       return CREATE_GAME_ERROR;
     }
-    // if game has no moves
 
-    getWordHints(arguments);
+    std::string word = gamestate.getWord();
+    arguments = buildSplitString({std::to_string(word.length()),
+                                  std::to_string(initialAvailableMistakes((int)word.length()))});
 
     return CREATE_GAME_SUCCESS;
   }
 
   // TODO: check this
   ulong randomLineNumber = (ulong)(rand() % totalLines);
-  std::string randomLine = lines.at(randomLineNumber);
+  std::string randomLine = wordsList.at(randomLineNumber);
 
   const size_t wordPos = randomLine.find(' ');
   std::string word = randomLine.substr(0, wordPos);
@@ -130,7 +137,7 @@ int setPath(std::string path) {
   totalLines = 0;
 
   while (std::getline(file, line)) {
-    lines.push_back(line);
+    wordsList.push_back(line);
     totalLines++;
   }
 
@@ -164,30 +171,6 @@ int checkHeader(std::string line) {
   return 0;
 }
 
-int isGamePlayed() {
-
-  std::fstream file;
-  std::string line;
-
-  file.open(fileName, std::ios::in);
-  if (!file) {
-    return -1;
-  }
-
-  // see first line
-  std::getline(file, line);
-  if (checkHeader(line) == -1) {
-    file.close();
-    return -1;
-  }
-
-  // see second line
-  line = "";
-  std::getline(file, line);
-  file.close();
-  return line == "" ? 0 : -1;
-}
-
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
   if (validatePlayerID(plid) != 0) {
     return SYNTAX_ERROR;
@@ -196,11 +179,10 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   // see if file is empty
   if (isOngoingGame(plid) == 1) {
 
-    fflush(stdout);
     // see if file has actions
-    if (isGamePlayed() == -1) {
-      return SYNTAX_ERROR;
-    }
+    // if (isGamePlayed() == -1) {
+    //  return SYNTAX_ERROR;
+    //}
   }
 
   GameState *play = &GameSessions[plid];
@@ -285,4 +267,47 @@ int closeGameSession(std::string plid) {
 
   GameSessions.erase(plid);
   return CLOSE_GAME_SUCCESS;
+}
+
+int createGameState(GameState &gamestate) {
+  std::vector<std::string> lines;
+
+  if (readFile(lines) == -1) {
+    return -1;
+  }
+
+  std::string header = lines[0];
+
+  std::string word = header.substr(0, header.find(' '));
+  header.erase(0, header.find(' ') + 1);
+  std::string hint = header;
+
+  gamestate.setWord(word);
+  gamestate.setHint(hint);
+
+  for (size_t i = 1; i < lines.size(); i++) {
+    std::string line = lines[i];
+    std::string code = line.substr(0, line.find(' '));
+    line.erase(0, line.find(' ') + 1);
+    std::string play = line;
+    // Trial
+    if (code == "T") {
+      gamestate.addGuessedLetter(play[0]);
+      gamestate.setLastGuess(play[0]);
+      gamestate.incrementTrials();
+
+    }
+    // Guess word
+    else if (code == "G") {
+      gamestate.addGuessedWord(play);
+      gamestate.setLastWordGuess(play);
+      gamestate.incrementTrials();
+    }
+
+    else {
+      std::cout << code << std::endl;
+      std::cout << "Error: invalid code." << std::endl;
+    }
+  }
+  return 0;
 }

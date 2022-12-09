@@ -20,6 +20,7 @@
 #include <vector>
 
 typedef std::map<char, bool> Alphabet;
+typedef std::map<std::string, bool> WordList;
 
 class GameState {
 protected:
@@ -32,7 +33,9 @@ protected:
   bool active = false;
   std::string lastWordGuess;
   Alphabet guessedLetters;
+  WordList guessedWords;
   std::string word;
+  std::string hint;
 
 public:
   GameState();
@@ -56,6 +59,10 @@ public:
   bool isLetterGuessed(char letter);
   void setSpotsLeft(int spots);
   int getSpotsLeft();
+  void setHint(std::string newHint);
+  std::string getHint();
+  void addGuessedLetter(char letter);
+  void addGuessedWord(std::string word);
 };
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"

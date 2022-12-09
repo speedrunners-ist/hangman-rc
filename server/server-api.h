@@ -28,6 +28,9 @@
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
 
+int readFile(std::vector<std::string> &lines);
+int createGameState(GameState &gamestate);
+
 GameState createGame(int length, int mistakes);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
@@ -51,6 +54,5 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 int getOccurrences(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
-int isGamePlayed();
 
 #endif /* SERVER_API_H */
