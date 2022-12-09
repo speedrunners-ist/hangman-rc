@@ -87,8 +87,6 @@ int createGameSession(std::string plid, std::string &arguments) {
   const size_t wordPos = randomLine.find(' ');
   std::string word = randomLine.substr(0, wordPos);
   std::string file = randomLine.substr(wordPos + 1);
-  // TODO: save file name in game state
-  file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
 
   arguments = buildSplitString({std::to_string(word.length()),
                                 std::to_string(initialAvailableMistakes((int)word.length()))});
@@ -164,15 +162,13 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   if (numberCorrect == 0) {
     gamestate.setMistakesLeft(gamestate.getAvailableMistakes() - 1);
     if (gamestate.getAvailableMistakes() == -1) {
-      transferGameFile(plid, "L");
+      transferGameFile(plid, "F");
       return WRONG_FINAL_GUESS;
     }
     return WRONG_GUESS;
   }
 
   gamestate.setSpotsLeft(gamestate.getSpotsLeft() - numberCorrect);
-
-  std::cout << "Spots left: " << gamestate.getSpotsLeft() << std::endl;
 
   if (gamestate.getSpotsLeft() == 0) {
     transferGameFile(plid, "W");
@@ -203,36 +199,62 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   GameState *play = &GameSessions[plid];
   arguments = std::to_string(play->getTrials());
 
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+  if (validatePlayerID(plid) != 0) {
     return SYNTAX_ERROR;
   }
 
-  arguments = trial;
-
-  if (std::stoi(trial) != play->getTrials() || word == play->getLastWordGuess()) {
-    return TRIAL_MISMATCH;
+  // see if file is empty
+  if (isOngoingGame(plid) != 1) {
+    return SYNTAX_ERROR;
   }
 
-  play->setLastWordGuess(word);
+  GameState gamestate;
+  createGameState(gamestate);
 
-  // TODO: see how to handle win game
-  if (play->getWord() == word) {
+  arguments = trial;
+
+  // if trial mismatch
+  if (std::stoi(trial) != gamestate.getTrials()) {
+    if (std::stoi(trial) != gamestate.getTrials() - 1)
+      return TRIAL_MISMATCH;
+
+    if (gamestate.getLastWordGuess() != word) {
+      return TRIAL_MISMATCH;
+    }
+
+    // todo: FIX THIS
+    return WRONG_GUESS;
+  }
+
+  gamestate.setLastWordGuess(word);
+  gamestate.addGuessedWord(word);
+  gamestate.incrementTrials();
+
+  appendGameFile(plid, "G", word);
+
+  if (gamestate.getWord() == word) {
+    transferGameFile(plid, "W");
     return SUCCESS_GUESS;
   }
 
-  play->incorrectGuess();
-  if (play->getAvailableMistakes() == -1) {
+  gamestate.setMistakesLeft(gamestate.getAvailableMistakes() - 1);
+  if (gamestate.getAvailableMistakes() == -1) {
+    transferGameFile(plid, "F");
     return WRONG_FINAL_GUESS;
   }
   return WRONG_GUESS;
 }
 
 int closeGameSession(std::string plid) {
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+  if (validatePlayerID(plid) != 0) {
     return CLOSE_GAME_ERROR;
   }
 
-  GameSessions.erase(plid);
+  if (isOngoingGame(plid) == 0) {
+    return CLOSE_GAME_ERROR;
+  }
+
+  transferGameFile(plid, "Q");
   return CLOSE_GAME_SUCCESS;
 }
 
