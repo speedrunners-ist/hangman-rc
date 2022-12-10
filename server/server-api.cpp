@@ -1,198 +1,259 @@
 #include "server-api.h"
 
-std::string filepath;
-std::vector<std::string> lines;
+std::map<std::string, std::string> wordsList;
 int totalLines;
-std::map<std::string, ServerGameState> GameSessions;
 
-/*** ServerGameState implementation ***/
+// TODO: either call everything GameState play or GameState state, but not both
 
-ServerGameState::ServerGameState() { GameState(); }
-ServerGameState::ServerGameState(int length, int mistakes) { GameState(length, mistakes); }
+/*** GameState implementation ***/
 
-bool ServerGameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
+bool GameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
 
-void ServerGameState::setSpotsLeft(int spots) { spotsLeft = spots; }
+void GameState::setSpotsLeft(int spots) { spotsLeft = spots; }
 
-int ServerGameState::getSpotsLeft() { return spotsLeft; }
+int GameState::getSpotsLeft() { return spotsLeft; }
 
-// Game state functions, useful for the client's protocol implementations
-ServerGameState createGame(int length, int mistakes) { return ServerGameState(length, mistakes); }
-int getAvailableMistakes(ServerGameState play) { return play.getAvailableMistakes(); }
-std::string getWord(ServerGameState play) { return play.getWord(); }
+void GameState::setHint(std::string newHint) { hint = newHint; }
 
-int playCorrectGuess(ServerGameState play, std::string positions, int n) {
-  int ret = play.correctGuess(positions, n);
-  if (ret == 0) {
-    play.incrementTrials();
+std::string GameState::getHint() { return hint; }
+
+void GameState::addGuessedLetter(char letter) { guessedLetters[letter] = true; }
+
+void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWord] = true; }
+
+void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
+
+/*** Util methods in order to let external server implementations use the GameState class ***/
+int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
+std::string getWord(GameState play) { return play.getWord(); }
+void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
+void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
+int getWordLength(GameState play) { return play.getWordLength(); }
+void setPlayerID(GameState &play, std::string id) { play.setPlayerID(id); }
+std::string getPlayerID(GameState play) { return play.getPlayerID(); }
+int getTrials(GameState play) {
+  // the user will always send the trial number related to the one he is playing, hence the +1
+  return play.getTrials() + 1;
+}
+void incrementTrials(GameState &play) { play.incrementTrials(); }
+
+/*** General util methods ***/
+int setupWordList(std::string filePath) {
+  std::vector<std::string> lines;
+  readFile(lines, filePath);
+  if (lines.size() == 0) {
+    std::cerr << "[ERR]: File " << filePath << " is empty." << std::endl;
+    return -1;
   }
-  return ret;
-}
-void playIncorrectGuess(ServerGameState play) {
-  play.incrementTrials();
-  play.incorrectGuess();
-}
-void playCorrectFinalGuess(ServerGameState play) {
-  play.incrementTrials();
-  play.correctFinalGuess();
+
+  for (auto line : lines) {
+    const size_t wordPos = line.find(' ');
+    std::string word = line.substr(0, wordPos);
+    std::string file = line.substr(wordPos + 1);
+    wordsList[word] = file;
+  }
+  return 0;
 }
 
-void playCorrectFinalWordGuess(ServerGameState play) {
-  play.incrementTrials();
-  play.correctFinalWordGuess();
+bool isOngoingGame(std::string plid) { return std::filesystem::exists(ONGOING_GAMES_PATH(plid)); }
+
+std::pair<std::string, std::string> getRandomLine() {
+  const int randomIndex = rand() % (int)wordsList.size();
+  auto it = wordsList.begin();
+  std::advance(it, randomIndex);
+  return *it;
 }
 
-void setLastGuess(ServerGameState play, char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(ServerGameState play, std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength(ServerGameState play) { return play.getWordLength(); }
+int getLetterOccurrences(std::string word, char letter, std::string &positions) {
+  int occurrences = 0;
 
-// Util functions
+  for (size_t i = 1; i <= word.length(); i++) {
+    if (word[i] == letter) {
+      positions.append(std::to_string(i) + " ");
+      occurrences++;
+    }
+  }
+  positions.insert(0, std::to_string(occurrences) + " ");
+  return occurrences;
+}
+
 int createGameSession(std::string plid, std::string &arguments) {
-
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) != 0) {
+  if (!validPlayerID(plid)) {
     return CREATE_GAME_ERROR;
   }
 
-  // TODO: check this
-  ulong randomLineNumber = (ulong)(rand() % totalLines);
-  std::string randomLine = lines.at(randomLineNumber);
+  // If there's already an ongoing game for the given player
+  if (isOngoingGame(plid)) {
+    GameState state;
+    if (retrieveGame(plid, state) != 0) {
+      return CREATE_GAME_ERROR;
+    }
 
-  const size_t wordPos = randomLine.find(' ');
-  std::string word = randomLine.substr(0, wordPos);
-  std::string file = randomLine.substr(wordPos + 1);
-  // TODO: save file name in game state
-  file.erase(std::remove(file.begin(), file.end(), '\n'), file.end());
+    // FIXME: what the duck is this? shouldn't we just let the player continue the game?
+    if (state.getTrials() != 1) {
+      return CREATE_GAME_ERROR;
+    }
 
+    const std::string word = state.getWord();
+    const int wordLength = (int)word.length();
+    const int availableMistakes = initialAvailableMistakes(wordLength);
+
+    arguments = buildSplitString({std::to_string(wordLength), std::to_string(availableMistakes)});
+    return CREATE_GAME_SUCCESS;
+  }
+
+  // Here, we must create a new game (since the player either never played a game
+  // or finished the last one)
+  // We pick a random line from the words list for the game
+  const std::pair<std::string, std::string> randomLine = getRandomLine();
+  const std::string word = randomLine.first;
+  const std::string hint = randomLine.second;
   const int wordLength = (int)word.length();
-  const int mistakes = initialAvailableMistakes(wordLength);
+  const int availableMistakes = initialAvailableMistakes(wordLength);
 
-  ServerGameState newGame = createGame(wordLength, mistakes);
-  newGame.setWord(word);
-
-  newGame.setSpotsLeft(wordLength);
-
-  GameSessions.insert(std::pair<std::string, ServerGameState>(plid, newGame));
-
-  arguments.append(std::to_string(wordLength)).append(" ").append(std::to_string(mistakes));
-
+  arguments = buildSplitString({std::to_string(wordLength), std::to_string(availableMistakes)});
+  if (createGameFile(plid, word, hint) != 0) {
+    return CREATE_GAME_ERROR;
+  }
+  GameState state = GameState(wordLength, availableMistakes, plid);
+  state.setWord(word);
+  state.setHint(hint);
   return CREATE_GAME_SUCCESS;
 }
 
-// TODO: could be better
-int setPath(std::string path) {
-
-  filepath = path;
-  std::ifstream file(filepath);
-  std::string line;
-
-  totalLines = 0;
-
-  while (std::getline(file, line)) {
-    lines.push_back(line);
-    totalLines++;
-  }
-
-  if (totalLines == 0) {
-    std::cout << "File is empty." << std::endl;
+int retrieveGame(std::string playerID, GameState &state) {
+  // Retrieve the content from its file
+  std::vector<std::string> lines;
+  const std::string stateFilePath = ONGOING_GAMES_PATH(playerID);
+  if (readFile(lines, stateFilePath) != 0) {
     return -1;
   }
+
+  // We parse the file content and create a GameState object from it
+  // TODO: parse file content
 
   return 0;
 }
 
-int isOngoingGame(std::string plid) {
-  if (GameSessions.find(plid) == GameSessions.end()) {
-    // There is no game with this plid
-    return 0;
-  }
-  return GameSessions[plid].isActive() ? -1 : 0;
-}
-
-int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+int playLetter(std::string plid, std::string letter, std::string trial, std::string &positions) {
+  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+    // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
   }
 
-  ServerGameState *play = &GameSessions[plid];
-
-  arguments = std::to_string(play->getTrials());
-
-  if (std::stoi(trial) != play->getTrials()) {
+  GameState state;
+  if (retrieveGame(plid, state) != 0) {
+    return SYNTAX_ERROR;
+  } else if (std::stoi(trial) != state.getTrials()) {
     return TRIAL_MISMATCH;
-  }
-
-  if (play->isLetterGuessed(letter[0])) {
+  } else if (state.isLetterGuessed(letter.front())) {
     return DUPLICATE_GUESS;
   }
 
-  int numberCorrect = getOccurrences(play->getWord(), letter[0], arguments);
+  const int occurrences = getLetterOccurrences(state.getWord(), letter.front(), positions);
+  appendGameFile(plid, "T", letter);
 
-  if (numberCorrect == 0) {
-    play->incorrectGuess();
-    if (play->getAvailableMistakes() == -1) {
+  if (occurrences == 0) {
+    state.setMistakesLeft(state.getAvailableMistakes() - 1);
+    if (state.getAvailableMistakes() == -1) {
+      appendGameFile(plid, "L", letter);
+      if (transferGameFile(plid) != 0) {
+        return -1; // TODO: specific macro for this
+      }
       return WRONG_FINAL_GUESS;
     }
     return WRONG_GUESS;
   }
 
-  play->correctGuess(arguments, numberCorrect);
+  state.setSpotsLeft(state.getSpotsLeft() - occurrences);
 
-  if (play->getSpotsLeft() == 0) {
+  if (state.getSpotsLeft() == 0) {
+    appendGameFile(plid, "W", letter);
+    if (transferGameFile(plid) != 0) {
+      return -1; // TODO: specific macro for this
+    }
+    insertScore(plid, state);
     return SUCCESS_FINAL_GUESS;
   }
 
   return SUCCESS_GUESS;
 }
 
-int getOccurrences(std::string word, char letter, std::string &positions) {
-  int numberCorrect = 0;
-  std::string auxiliar = "";
-
-  for (size_t i = 0; i < word.length(); i++) {
-    if (word[i] == letter) {
-      auxiliar.append(" ").append(std::to_string(i));
-      numberCorrect++;
-    }
-  }
-  positions.append(" ").append(std::to_string(numberCorrect)).append(auxiliar);
-
-  return numberCorrect;
-}
-
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
-
-  ServerGameState *play = &GameSessions[plid];
-  arguments = std::to_string(play->getTrials());
-
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     return SYNTAX_ERROR;
+  }
+
+  GameState state;
+  if (retrieveGame(plid, state) != 0) {
+    return SYNTAX_ERROR;
+  } else if (std::stoi(trial) != state.getTrials()) {
+    return TRIAL_MISMATCH;
   }
 
   arguments = trial;
 
-  if (std::stoi(trial) != play->getTrials() || word == play->getLastWordGuess()) {
-    return TRIAL_MISMATCH;
-  }
+  state.setLastWordGuess(word);
+  state.addGuessedWord(word);
+  state.incrementTrials();
 
-  play->setLastWordGuess(word);
+  appendGameFile(plid, "G", word);
 
-  // TODO: see how to handle win game
-  if (play->getWord() == word) {
+  if (state.getWord() == word) {
+    appendGameFile(plid, "W", word);
+    if (transferGameFile(plid) != 0) {
+      return -1; // TODO: specific macro for this
+    }
+    insertScore(plid, state);
     return SUCCESS_GUESS;
   }
 
-  play->incorrectGuess();
-  if (play->getAvailableMistakes() == -1) {
+  state.setMistakesLeft(state.getAvailableMistakes() - 1);
+  if (state.getAvailableMistakes() == -1) {
+    appendGameFile(plid, "L", word);
+    if (transferGameFile(plid) != 0) {
+      return -1; // TODO: specific macro for this
+    }
     return WRONG_FINAL_GUESS;
   }
   return WRONG_GUESS;
 }
 
 int closeGameSession(std::string plid) {
-  if (validatePlayerID(plid) != 0 || isOngoingGame(plid) == 0) {
+  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     return CLOSE_GAME_ERROR;
   }
 
-  GameSessions.erase(plid);
+  appendGameFile(plid, "Q", "");
+  transferGameFile(plid);
   return CLOSE_GAME_SUCCESS;
+}
+
+int insertScore(std::string plid, GameState state) {
+  const int initialMistakes = initialAvailableMistakes(getWordLength(state));
+  const int trialsMade = state.getTrials() - 1;
+  const int successfulGuesses = trialsMade - (initialMistakes - state.getAvailableMistakes());
+  const int score = GAME_SCORE(successfulGuesses, trialsMade);
+
+  std::cout << "Successful guesses: " << successfulGuesses << std::endl;
+  std::cout << "Total guesses: " << trialsMade << std::endl;
+  std::cout << "Score: " << score << std::endl;
+
+  // printedScore is the score with 3 digits (i.e, if it was 9, it's 009, etc)
+  std::stringstream scoreStream;
+  scoreStream << std::setw(3) << std::setfill('0') << score;
+  const std::string printedScore = scoreStream.str();
+
+  // clang-format off
+  std::string scoreline = buildSplitString({
+    printedScore,
+    plid,
+    state.getWord(),
+    std::to_string(successfulGuesses),
+    std::to_string(trialsMade)
+  });
+  // clang-format on
+
+  appendScoreFile(score, scoreline);
+  return score;
 }

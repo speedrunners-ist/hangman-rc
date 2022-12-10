@@ -20,23 +20,29 @@
 #include <vector>
 
 typedef std::map<char, bool> Alphabet;
+typedef std::map<std::string, bool> WordList;
+typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
+typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
 
 class GameState {
 protected:
   int wordLength;
   int mistakesLeft;
   int guessesMade = 0;
-  int trials = 0; // TODO: STANDARDIZE THIS BETWEEN SERVER AND CLIENT
+  int trials = 0;
   int spotsLeft;
   char lastGuess;
   bool active = false;
+  std::string playerID;
   std::string lastWordGuess;
   Alphabet guessedLetters;
+  WordList guessedWords;
   std::string word;
+  std::string hint;
 
 public:
   GameState();
-  GameState(int length, int mistakes);
+  GameState(int length, int mistakes, std::string plid);
   void incrementTrials();
   int getTrials();
   bool isActive();
@@ -53,6 +59,16 @@ public:
   int correctGuess(std::string positions, int n);
   void correctFinalGuess();
   void correctFinalWordGuess();
+  std::string getPlayerID();
+  void setPlayerID(std::string id);
+  bool isLetterGuessed(char letter);
+  void setSpotsLeft(int spots);
+  int getSpotsLeft();
+  void setHint(std::string newHint);
+  std::string getHint();
+  void addGuessedLetter(char letter);
+  void addGuessedWord(std::string word);
+  void setMistakesLeft(int mistakes);
 };
 
 #define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
@@ -72,6 +88,8 @@ public:
 #define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info."
 #define BIND_ERROR "[ERR]: Failed to bind socket."
+#define SENDTO_ERROR "[ERR]: Failed to send message."
+#define RECVFROM_ERROR "[ERR]: Failed to receive message."
 
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
@@ -79,17 +97,16 @@ public:
 #define TCP_FILE_ARGS_ERROR "[ERR]: Failed to receive file arguments."
 
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
+#define UDP_PARSE_ERROR "[ERR]: Found error while parsing the message."
+#define UDP_RESPONSE_ERROR "[ERR]: Message does not match the UDP protocol."
 
 #define INVALID_FILE_ARGS "[ERR]: Arguments for file transfer are invalid."
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."
 #define FILE_RECV_SUCCESS "[INFO]: File received successfully."
 
-#define SB_DIR "scoreboard/"
-#define H_DIR "hints/"
-#define ST_DIR "state/"
-
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 
+#define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."
 #define INVALID_PLID_LEN_ERROR "[ERR]: Invalid PLID. Expected 6 characters."
 #define INVALID_PLID_CHAR_ERROR "[ERR]: Invalid PLID. Expected 6 digits."
 #define DIFF_ARGS_ERROR "[ERR]: Invalid input. Expected different number of arguments."
@@ -100,10 +117,10 @@ public:
 #define CORRECT_GUESS(word) "[INFO]: Correct guess. Word is now: " << word
 
 struct protocolMessage {
-  std::string code;
-  size_t codePos;
-  std::string status;
-  size_t statusPos;
+  std::string first;
+  size_t firstPos;
+  std::string second;
+  size_t secondPos;
   std::string body;
 };
 
@@ -125,16 +142,16 @@ struct messageInfo {
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
               struct addrinfo **serverInfo);
-int disconnectUDP();
+int disconnectUDP(struct addrinfo *res, int fd);
 int disconnectTCP();
 
 int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
 
 // UDP utils functions
-int generalUDPHandler(std::string message, size_t maxExpectedBytes);
-int exchangeUDPMessage(std::string message, char *response, size_t maxExpectedBytes);
-int parseUDPResponse(char *response);
+int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd);
+int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
+int parseUDPMessage(std::string message, struct protocolMessage &response);
 
 // TCP utils functions
 int generalTCPHandler(std::string message, struct peerInfo peer);
@@ -155,9 +172,10 @@ int parseFileArgs(struct fileInfo &info);
  */
 int initialAvailableMistakes(int wordLength);
 std::string buildSplitString(std::vector<std::string> args);
-int displayFile(std::string fileName, std::string dir);
+int readFile(std::vector<std::string> &lines, std::string filePath);
+int displayFile(std::string filePath, std::string dir);
 int validateArgsAmount(std::string input, int n);
-int validatePlayerID(std::string id);
+bool validPlayerID(std::string id);
 bool forceExit(GameState play, std::string command);
 void continueReading(char *buffer);
 

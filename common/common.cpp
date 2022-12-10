@@ -3,9 +3,10 @@
 /*** GameState implementation ***/
 
 GameState::GameState() { active = false; }
-GameState::GameState(int length, int mistakes) {
+GameState::GameState(int length, int mistakes, std::string plid) {
   wordLength = length;
   mistakesLeft = mistakes;
+  playerID = plid;
   active = true;
   // word is a string with length equal to wordLength, filled with underscores
   word = std::string((size_t)length, '_');
@@ -96,6 +97,9 @@ void GameState::correctFinalWordGuess() {
 void GameState::incrementTrials() { trials++; }
 int GameState::getTrials() { return trials; }
 
+void GameState::setPlayerID(std::string id) { playerID = id; }
+std::string GameState::getPlayerID() { return playerID; }
+
 /*** Socket functions implementation ***/
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
@@ -157,6 +161,96 @@ int turnOffSocketTimer(int socketFd) {
   return 0;
 }
 
+/*** UDP message parsing/sending implementation ***/
+
+int disconnectUDP(struct addrinfo *res, int fd) {
+  freeaddrinfo(res);
+  if (close(fd) == -1) {
+    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int parseUDPMessage(std::string message, struct protocolMessage &response) {
+  std::cout << "[DEBUG]: Parsing message: " << message;
+  const size_t pos1 = message.find(' ');
+  if (pos1 == std::string::npos) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+    return -1;
+  }
+
+  const std::string code = message.substr(0, pos1);
+  const size_t pos2 = message.find_first_of(" \n", pos1 + 1);
+  const char delimiter = message[pos2];
+  if ((delimiter == ' ' && pos2 == std::string::npos) || (delimiter == '\n' && pos2 != message.size() - 1)) {
+    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+    return -1;
+  }
+
+  const std::string status = message.substr(pos1 + 1, pos2 - pos1 - 1);
+  response = {code, pos1, status, pos2, message};
+  std::cout << "[DEBUG]: Finished parsing message" << std::endl;
+  return 0;
+}
+
+int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
+  if (res == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
+  std::cout << "[INFO]: Sending message: " << message;
+  if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
+    std::cerr << SENDTO_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd) {
+  if (res == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
+  int triesLeft = UDP_TRIES;
+  do {
+    if (sendUDPMessage(message, res, fd) == -1) {
+      return -1;
+    }
+
+    int ret = turnOnSocketTimer(fd);
+    if (ret == -1) {
+      disconnectUDP(res, fd);
+      exit(EXIT_FAILURE);
+    }
+    const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
+    ret = turnOffSocketTimer(fd);
+    if (ret == -1) {
+      disconnectUDP(res, fd);
+      exit(EXIT_FAILURE);
+    }
+
+    if (bytesReceived == -1) {
+      if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
+        break;
+      }
+      continue;
+    }
+
+    if (response[bytesReceived - 1] != '\n') {
+      std::cerr << UDP_RESPONSE_ERROR << std::endl;
+      return -1;
+    }
+    return 0;
+
+  } while (--triesLeft >= 0);
+
+  std::cerr << RECVFROM_ERROR << std::endl;
+  return -1;
+}
+
 /*** Misc functions implementation ***/
 
 int initialAvailableMistakes(int wordLength) {
@@ -179,11 +273,25 @@ std::string buildSplitString(std::vector<std::string> args) {
   // clang-format on
 }
 
-int displayFile(std::string fileName, std::string dir) {
-  std::ifstream file;
-  file.open(dir + "/" + fileName);
+int readFile(std::vector<std::string> &lines, std::string filePath) {
+  std::ifstream file(filePath); // TODO: do we need a flag here?
   if (!file.is_open()) {
-    std::cout << FILE_OPEN_ERROR << fileName << std::endl;
+    std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
+    return -1;
+  }
+
+  std::string line;
+  while (std::getline(file, line)) {
+    lines.push_back(line);
+  }
+  file.close();
+  return 0;
+}
+
+int displayFile(std::string filePath, std::string dir) {
+  std::ifstream file(dir + "/" + filePath);
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
     return -1;
   }
   std::string line;
@@ -204,24 +312,22 @@ int validateArgsAmount(std::string input, int n) {
   return 0;
 }
 
-int validatePlayerID(std::string id) {
+bool validPlayerID(std::string id) {
   if (id.length() != 6) {
     std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
-    return -1;
+    return false;
   }
 
   for (size_t i = 0; i < id.length(); i++) {
     if (!isdigit(id[i])) {
       std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
-      return -1;
+      return false;
     }
   }
-  return 0;
+  return true;
 }
 
-bool forceExit(GameState play, std::string command) {
-  return command == "exit" && !play.isActive();
-}
+bool forceExit(GameState play, std::string command) { return command == "exit" && !play.isActive(); }
 
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);

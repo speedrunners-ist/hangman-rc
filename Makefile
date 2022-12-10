@@ -39,4 +39,4 @@ depend : $(SOURCES)
 
 
 client/player: client/client-api.o client/client-tcp.o client/client-udp.o common/common.o
-server/GS: server/server-api.o server/server-tcp.o server/server-udp.o common/common.o
+server/GS: server/server-utils.o server/server-api.o server/server-tcp.o server/server-udp.o common/common.o
