@@ -1,7 +1,16 @@
 #include "server-api.h"
 
 std::map<std::string, std::string> wordsList;
-int totalLines;
+
+// clang-format off
+// Note that there's no need to handle correct guesses, since in that case
+// the game would not be ongoing anymore
+std::map<std::string, std::function<void(GameState &state, std::string value)>> handleLineRetrieval = {
+  {CORRECT_LETTER, playCorrectLetterGuess},
+  {WRONG_LETTER, playIncorrectLetterGuess},
+  {WRONG_WORD, playIncorrectWordGuess}
+};
+// clang-format on
 
 // TODO: either call everything GameState play or GameState state, but not both
 
@@ -37,6 +46,22 @@ int getTrials(GameState play) {
 }
 void incrementTrials(GameState &play) { play.incrementTrials(); }
 
+/*** Methods utilized in state file retrieval ***/
+void playCorrectLetterGuess(GameState &state, std::string letter) {
+  const int occurrences = getLetterOccurrences(state.getWord(), letter.front());
+  state.setSpotsLeft(state.getSpotsLeft() - occurrences);
+}
+
+void playIncorrectLetterGuess(GameState &state, std::string letter) {
+  state.setMistakesLeft(state.getAvailableMistakes() - 1);
+  state.addGuessedLetter(letter.front());
+}
+
+void playIncorrectWordGuess(GameState &state, std::string word) {
+  state.setMistakesLeft(state.getAvailableMistakes() - 1);
+  state.addGuessedWord(word);
+}
+
 /*** General util methods ***/
 int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
@@ -64,7 +89,11 @@ std::pair<std::string, std::string> getRandomLine() {
   return *it;
 }
 
-int getLetterOccurrences(std::string word, char letter, std::string &positions) {
+int getLetterOccurrences(std::string word, char letter) {
+  return (int)std::count(word.begin(), word.end(), letter);
+}
+
+int getLetterOccurrencesPositions(std::string word, char letter, std::string &positions) {
   int occurrences = 0;
 
   for (size_t i = 1; i <= word.length(); i++) {
@@ -118,6 +147,7 @@ int createGameSession(std::string plid, std::string &arguments) {
   GameState state = GameState(wordLength, availableMistakes, plid);
   state.setWord(word);
   state.setHint(hint);
+  state.setSpotsLeft(wordLength);
   return CREATE_GAME_SUCCESS;
 }
 
@@ -130,8 +160,31 @@ int retrieveGame(std::string playerID, GameState &state) {
   }
 
   // We parse the file content and create a GameState object from it
-  // TODO: parse file content
+  std::string word, hint;
+  const std::string firstLine = lines[0];
+  const size_t wordPos = firstLine.find(' ');
+  word = firstLine.substr(0, wordPos);
+  hint = firstLine.substr(wordPos + 1);
+  hint.erase(hint.length() - 1); // erases newline at the end
 
+  const int wordLength = (int)word.length();
+  const int availableMistakes = initialAvailableMistakes(wordLength);
+  state = GameState(wordLength, availableMistakes, playerID);
+  state.setWord(word);
+  state.setHint(hint);
+  state.setSpotsLeft(wordLength);
+
+  for (auto l : lines) {
+    const std::string key = l.substr(0, l.find(':') + 1);
+    l = l.substr(l.find(':') + 2); // skip the ": " part
+    const std::string value = l.substr(0, l.find('\n'));
+    try {
+      handleLineRetrieval[key](state, value);
+    } catch (const std::out_of_range &e) {
+      std::cerr << "[ERR]: Unexpected line in game state file: " << key << std::endl;
+      return -1;
+    }
+  }
   return 0;
 }
 
@@ -150,25 +203,26 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return DUPLICATE_GUESS;
   }
 
-  const int occurrences = getLetterOccurrences(state.getWord(), letter.front(), positions);
-  appendGameFile(plid, "T", letter);
+  const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
+  state.addGuessedLetter(letter.front());
 
   if (occurrences == 0) {
     state.setMistakesLeft(state.getAvailableMistakes() - 1);
     if (state.getAvailableMistakes() == -1) {
-      appendGameFile(plid, "L", letter);
+      appendGameFile(plid, WRONG_FINAL_LETTER, letter);
       if (transferGameFile(plid) != 0) {
         return -1; // TODO: specific macro for this
       }
       return WRONG_FINAL_GUESS;
     }
+    appendGameFile(plid, WRONG_LETTER, letter);
     return WRONG_GUESS;
   }
 
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
 
   if (state.getSpotsLeft() == 0) {
-    appendGameFile(plid, "W", letter);
+    appendGameFile(plid, CORRECT_FINAL_LETTER, letter);
     if (transferGameFile(plid) != 0) {
       return -1; // TODO: specific macro for this
     }
@@ -176,6 +230,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return SUCCESS_FINAL_GUESS;
   }
 
+  appendGameFile(plid, CORRECT_LETTER, letter);
   return SUCCESS_GUESS;
 }
 
@@ -197,10 +252,8 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   state.addGuessedWord(word);
   state.incrementTrials();
 
-  appendGameFile(plid, "G", word);
-
   if (state.getWord() == word) {
-    appendGameFile(plid, "W", word);
+    appendGameFile(plid, CORRECT_FINAL_WORD, word);
     if (transferGameFile(plid) != 0) {
       return -1; // TODO: specific macro for this
     }
@@ -210,12 +263,14 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 
   state.setMistakesLeft(state.getAvailableMistakes() - 1);
   if (state.getAvailableMistakes() == -1) {
-    appendGameFile(plid, "L", word);
+    appendGameFile(plid, WRONG_FINAL_WORD, word);
     if (transferGameFile(plid) != 0) {
       return -1; // TODO: specific macro for this
     }
     return WRONG_FINAL_GUESS;
   }
+
+  appendGameFile(plid, WRONG_WORD, word);
   return WRONG_GUESS;
 }
 

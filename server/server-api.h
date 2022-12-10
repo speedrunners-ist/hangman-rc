@@ -29,17 +29,24 @@
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
 
+// File storing utilities
 #define GAME_SCORE(correct, total) (correct * 100 / total)
+
+#define CORRECT_LETTER "Correct guess (letter):"
+#define CORRECT_FINAL_LETTER "Correct final guess (letter):"
+#define CORRECT_FINAL_WORD "Correct final guess (word):"
+
+#define WRONG_LETTER "Wrong guess (letter):"
+#define WRONG_WORD "Wrong guess (word):"
+#define WRONG_FINAL_LETTER "Wrong final guess (letter):"
+#define WRONG_FINAL_WORD "Wrong final guess (word):"
 
 GameState createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
-int playCorrectGuess(GameState &play, std::string positions, int n);
-void playIncorrectGuess(GameState &play);
-void playCorrectFinalGuess(GameState &play);
-void playCorrectFinalWordGuess(GameState &play);
-void setLastGuess(GameState &play, char guess);
-void setLastWordGuess(GameState &play, std::string guess);
+void playCorrectLetterGuess(GameState &play, std::string letter);
+void playIncorrectLetterGuess(GameState &play, std::string letter);
+void playIncorrectWordGuess(GameState &play, std::string word);
 int getWordLength(GameState play);
 void setPlayerID(GameState &play, std::string id);
 std::string getPlayerID(GameState play);
@@ -53,7 +60,8 @@ std::pair<std::string, std::string> getRandomLine();
 int createGameSession(std::string plid, std::string &arguments);
 int retrieveGame(std::string playerID, GameState &state);
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &positions);
-int getLetterOccurrences(std::string word, char letter, std::string &positions);
+int getLetterOccurrences(std::string word, char letter);
+int getLetterOccurrencesPositions(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
 int insertScore(std::string plid, GameState state);

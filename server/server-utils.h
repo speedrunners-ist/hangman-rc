@@ -14,15 +14,6 @@
 #define SCORES_HEADER "SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS"
 #define MAX_CACHE_SIZE 128
 
-typedef struct {
-  int score[10];
-  char PLID[10][20];
-  char name[10][20];
-  int n_succ[10];
-  int n_tot[10];
-  int n_scores;
-} SCORELIST;
-
 int createGameFile(std::string plid, std::string word, std::string hint);
 int appendGameFile(std::string plid, std::string code, std::string play);
 int transferGameFile(std::string plid);
