@@ -5,7 +5,8 @@
 
 #define INTERNAL_ERROR "[ERR]: Internal error while processing request."
 
-int setServerParameters(std::string filepath, bool vParam);
+int setServerUDPParameters(std::string filepath, bool vParam);
+int setServerTCPParameters(bool vParam);
 
 void createSocketUDP(std::string addr, std::string port);
 void createSocketTCP(std::string addr, std::string port);

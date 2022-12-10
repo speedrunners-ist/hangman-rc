@@ -257,3 +257,32 @@ int insertScore(std::string plid, GameState state) {
   appendScoreFile(score, scoreline);
   return score;
 }
+
+int getScoreboard(std::string &scoreboard) {
+  std::vector<std::string> lines;
+  if (readFile(lines, SCORES_PATH) != 0) {
+    return -1;
+  }
+
+  if (lines.empty()) {
+    scoreboard = "EMPTY";
+    return SCOREBOARD_EMPTY;
+  }
+
+  // iterate over the lines
+
+  size_t fileSize = 0;
+
+  for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
+    fileSize += it->size();
+  }
+
+  scoreboard.append("scoreboard.txt");
+  scoreboard.append(std::to_string(fileSize));
+
+  for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
+    scoreboard.append(*it);
+  }
+
+  return SCOREBOARD_SUCCESS;
+}

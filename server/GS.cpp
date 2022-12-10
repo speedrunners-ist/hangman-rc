@@ -27,10 +27,12 @@ int main(int argc, char *argv[]) {
 
   filePath = argv[optind];
   std::cout << STARTING_SERVER << std::endl;
-  if (setServerParameters(filePath, verbose) == -1) {
+  if (setServerUDPParameters(filePath, verbose) == -1) {
     std::cerr << STARTING_SERVER_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  setServerTCPParameters(verbose);
 
   pid = fork();
 

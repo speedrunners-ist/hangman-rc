@@ -1,7 +1,7 @@
 #ifndef SERVER_API_H
 #define SERVER_API_H
 
-#include "server/server-utils.h"
+#include "server-utils.h"
 
 // Error Messages
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
@@ -28,6 +28,9 @@
 // RQT return codes
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
+
+#define SCOREBOARD_EMPTY 1
+#define SCOREBOARD_SUCCESS 2
 
 #define GAME_SCORE(correct, total) (correct * 100 / total)
 
@@ -57,5 +60,7 @@ int getLetterOccurrences(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
 int insertScore(std::string plid, GameState state);
+
+int getScoreboard(std::string &scoreboard);
 
 #endif /* SERVER_API_H */

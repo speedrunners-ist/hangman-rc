@@ -95,6 +95,9 @@ public:
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
 #define TCP_RECV_MESSAGE_ERROR "[ERR]: Failed to receive message via TCP."
 #define TCP_FILE_ARGS_ERROR "[ERR]: Failed to receive file arguments."
+#define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
+#define TCP_PARSE_ERROR "[ERR]: Found error while parsing the message."
+#define TCP_RESPONSE_ERROR "[ERR]: Message does not match the TCP protocol."
 
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
 #define UDP_PARSE_ERROR "[ERR]: Found error while parsing the message."

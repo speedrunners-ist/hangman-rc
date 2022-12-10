@@ -19,7 +19,7 @@ static responseHandler handleUDPClientMessage = {
 };
 // clang-format on
 
-int setServerParameters(std::string filepath, bool vParam) {
+int setServerUDPParameters(std::string filepath, bool vParam) {
   verbose = vParam;
   return setupWordList(filepath);
 }
