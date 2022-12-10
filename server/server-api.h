@@ -29,10 +29,8 @@
 #define CLOSE_GAME_ERROR 1
 #define CLOSE_GAME_SUCCESS 2
 
-int readFile(std::vector<std::string> &lines);
-int createGameState(GameState &gamestate);
+#define GAME_SCORE(correct, total) (correct * 100 / total)
 
-GameState createGame(int length, int mistakes);
 GameState createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes(GameState play);
 std::string getWord(GameState play);
@@ -48,15 +46,16 @@ std::string getPlayerID(GameState play);
 void incrementTrials(GameState &play);
 int getTrials(GameState play);
 
-int setPath(std::string filepath);
-int createGameSession(std::string plid, std::string &arguments);
-int isOngoingGame(std::string plid);
+int setupWordList(std::string filePath);
+bool isOngoingGame(std::string plid);
+std::pair<std::string, std::string> getRandomLine();
 
-int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
-int getOccurrences(std::string word, char letter, std::string &positions);
+int createGameSession(std::string plid, std::string &arguments);
+int retrieveGame(std::string playerID, GameState &state);
+int playLetter(std::string plid, std::string letter, std::string trial, std::string &positions);
+int getLetterOccurrences(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
-
-int calculateScore(std::string plid, GameState play);
+int insertScore(std::string plid, GameState state);
 
 #endif /* SERVER_API_H */

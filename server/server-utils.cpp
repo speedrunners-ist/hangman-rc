@@ -1,228 +1,120 @@
 #include "server-utils.h"
 
-int findOccurringGame(char *PLID, char *fname) {
-
-  struct dirent **filelist;
-  int n_entries, found;
-  char dirname[20];
-  std::string auxStr;
-
-  n_entries = scandir("GAMES/", &filelist, 0, alphasort);
-
-  if (n_entries <= 0)
-    return 0;
-
-  found = 0;
-
-  // TODO: improve this
-  while (n_entries--) {
-    if (filelist[n_entries]->d_name[0] != '.') {
-      auxStr = filelist[n_entries]->d_name;
-      auxStr = auxStr.substr(5, 6);
-      if (strcmp(auxStr.c_str(), PLID) == 0) {
-        sprintf(fname, "GAMES/%s", filelist[n_entries]->d_name);
-        found = 1;
-      }
-      free(filelist[n_entries]);
-      if (found)
-        break;
-    }
-  }
-  free(filelist);
-  return found;
-}
-
-int FindLastGame(char *PLID, char *fname) {
-  struct dirent **filelist;
-  int n_entries, found;
-  char dirname[20];
-
-  sprintf(dirname, "GAMES/%s/", PLID);
-
-  n_entries = scandir(dirname, &filelist, 0, alphasort);
-
-  found = 0;
-
-  if (n_entries <= 0)
-    return 0;
-
-  while (n_entries--) {
-    if (filelist[n_entries]->d_name[0] != '.') {
-      sprintf(fname, "GAMES/%s/%s", PLID, filelist[n_entries]->d_name);
-      found = 1;
-    }
-    free(filelist[n_entries]);
-    if (found)
-      break;
-  }
-  free(filelist);
-  return found;
-}
-
-int FindTopScores(SCORELIST *list) {
-  struct dirent **filelist;
-  int n_entries, i_file;
-  char fname[50];
-  FILE *fp;
-
-  n_entries = scandir("SCORES/", &filelist, 0, alphasort);
-
-  i_file = 0;
-
-  if (n_entries < 0)
-    return 0;
-
-  while (n_entries--) {
-    if (filelist[n_entries]->d_name[0] != '.') {
-      sprintf(fname, "SCORES/%s", filelist[n_entries]->d_name);
-      fp = fopen(fname, "r");
-      if (fp != NULL) {
-        fscanf(fp, "%d %s %s %d %d", &list->score[i_file], list->PLID[i_file], list->name[i_file],
-               &list->n_succ[i_file], &list->n_tot[i_file]);
-        fclose(fp);
-        ++i_file;
-      }
-    }
-    free(filelist[n_entries]);
-    if (i_file == 10)
-      break;
-  }
-  free(filelist);
-  list->n_scores = i_file;
-  return i_file;
-}
-
 int createGameFile(std::string plid, std::string word, std::string hint) {
-
-  std::fstream file;
-
-  std::string dir = "GAMES/GAME_" + plid + ".txt";
-  std::string content = buildSplitString({word, hint});
-  // TODO: create these folders in the client directory
-  file.open(dir, std::ios::out | std::ios::in | std::ios::trunc);
+  std::ofstream file(ONGOING_GAMES_PATH(plid), std::ios::trunc);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
   }
-
-  file.write(content.c_str(), content.size());
-
+  const std::string content = buildSplitString({word, hint});
+  file.write(content.c_str(), (ssize_t)content.size());
   file.close();
-
   return 0;
 }
 
 int appendGameFile(std::string plid, std::string code, std::string play) {
-  std::fstream file;
-  std::string dir = "GAMES/GAME_" + plid + ".txt";
-  std::string content = buildSplitString({code, play});
-
-  // append to the file
-  file.open(dir, std::ios::app);
-
+  std::ofstream file(ONGOING_GAMES_PATH(plid), std::ios::app);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
   }
-
-  file.write(content.c_str(), content.size());
-
+  std::string content = buildSplitString({code, play});
+  file.write(content.c_str(), (ssize_t)content.size());
   file.close();
-
   return 0;
 }
 
-int transferGameFile(std::string plid, std::string status) {
-  std::fstream oldfile;
-  std::fstream newfile;
+int transferGameFile(std::string plid) {
+  time_t rawtime;
+  struct tm *timeinfo;
+  char buffer[80]; // TODO: macro this
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+  strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", timeinfo);
+  std::string time(buffer);
+
   std::string filename;
+  std::string oldFile = ONGOING_GAMES_PATH(plid);
+  std::string newFile = FINISHED_GAMES_PATH(plid, time);
 
-  time_t now = time(0);
-
-  tm *time = localtime(&now);
-
-  parseTimeGame(time, filename);
-
-  filename = filename.append("_" + status);
-
-  std::string olddir = "GAMES/GAME_" + plid + ".txt";
-  std::string newdir = "GAMES/" + plid;
-
-  // create the directory
-
-  mkdir(newdir.c_str(), 0777);
-
-  newdir += "/" + filename + ".txt";
+  // create the player's directory if it doesn't exist
+  std::filesystem::path dir(PLID_GAMES_PATH(plid));
+  if (!std::filesystem::exists(dir)) {
+    std::filesystem::create_directory(dir);
+  }
 
   try {
-    std::filesystem::copy(olddir, newdir);
-    std::filesystem::remove(olddir);
+    std::filesystem::copy(oldFile, newFile);
+    std::filesystem::remove(oldFile);
   } catch (std::filesystem::filesystem_error &e) {
-    std::cerr << e.what() << std::endl;
+    std::cerr << e.what() << std::endl; // something went wrong, macro this
     return -1;
   }
 
   return 0;
 }
 
-int parseTimeGame(tm *time, std::string &filename) {
-
-  std::string year = std::to_string(1900 + time->tm_year);
-  std::string month = std::to_string(1 + time->tm_mon);
-  std::string day = std::to_string(time->tm_mday);
-  std::string hour = std::to_string(time->tm_hour);
-  std::string min = std::to_string(time->tm_min);
-  std::string sec = std::to_string(time->tm_sec);
-  std::vector<std::string> timeVec = {year, month, day, hour, min, sec};
-
-  for (auto &t : timeVec) {
-    filename = filename.append(t);
-    if (t == day)
-      filename = filename.append("_");
-  }
-  return 0;
-}
-
-int createScoreFile(std::string plid, std::string score, std::string content) {
-  std::fstream file;
-
-  std::string date = "";
-
-  time_t now = time(0);
-
-  tm *time = localtime(&now);
-
-  parseTimeScore(time, date);
-
-  std::string dir = "SCORES/" + score + "_" + plid + "_" + date + ".txt";
-
-  file.open(dir, std::ios::in | std::ios::out | std::ios::trunc);
+int appendScoreFile(int score, std::string scoreline) {
+  std::fstream file(SCORES_PATH, std::ios::in | std::ios::out);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
   }
 
-  file.write(content.c_str(), content.size());
+  // If the file is empty, we need to write the header and add the scoreline
+  if (file.peek() == std::ifstream::traits_type::eof()) {
+    writeScoreFileHeader(file, {scoreline});
+    file.close();
+    return 0;
+  }
 
+  /*
+   * Otherwise, we need to find if the current score fits in the top 10
+   * For that, we check the score field for each line in the file - if it's
+   * lower than the current score, we insert the scoreline in that position,
+   * and shift the rest of the lines down
+   * At the end, if there are more than 10 scores, we remove the last one
+   */
+  std::string line;
+  std::vector<std::string> lines;
+  int i = 0;
+  while (std::getline(file, line)) {
+    if (i >= 3) {
+      // We do this to avoid the header and the separators
+      lines.push_back(line);
+    }
+    ++i;
+  }
+
+  // Otherwise, we need to find the position where the score fits
+  int pos = 0;
+  for (auto &l : lines) {
+    std::string lineScore = l.substr(0, l.find(' '));
+    if (score > std::stoi(lineScore)) {
+      break;
+    }
+    ++pos;
+  }
+
+  // Insert the scoreline in the correct position
+  lines.insert(lines.begin() + pos, scoreline);
+  if (lines.size() > 10) {
+    // If there are more than 10 scores, we must remove the last one
+    lines.pop_back();
+  }
+
+  writeScoreFileHeader(file, lines);
   file.close();
-
   return 0;
 }
 
-int parseTimeScore(tm *time, std::string &filename) {
-
-  std::string year = std::to_string(1900 + time->tm_year);
-  std::string month = std::to_string(1 + time->tm_mon);
-  std::string day = std::to_string(time->tm_mday);
-  std::string hour = std::to_string(time->tm_hour);
-  std::string min = std::to_string(time->tm_min);
-  std::string sec = std::to_string(time->tm_sec);
-  std::vector<std::string> timeVec = {day, month, year, hour, min, sec};
-
-  for (auto &t : timeVec) {
-    filename = filename.append(t);
-    if (t == year)
-      filename = filename.append("_");
+void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
+  file.clear();
+  file.seekp(0, std::ios::beg);
+  file << "TOP 10 SCORES" << std::endl;
+  file << std::string(std::string(SCORES_HEADER).size(), '-') << std::endl;
+  file << SCORES_HEADER << std::endl;
+  for (auto &l : lines) {
+    file << l << std::endl;
   }
-  return 0;
 }

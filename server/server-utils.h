@@ -7,6 +7,13 @@
 #include <dirent.h>
 #include <filesystem>
 
+#define PLID_GAMES_PATH(plid) "games/" + plid
+#define ONGOING_GAMES_PATH(plid) "games/GAME_" + plid + ".txt"
+#define FINISHED_GAMES_PATH(plid, time) PLID_GAMES_PATH(plid) + "/GAME_" + time + ".txt"
+#define SCORES_PATH "scores/scoreboard.txt"
+#define SCORES_HEADER "SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS"
+#define MAX_CACHE_SIZE 128
+
 typedef struct {
   int score[10];
   char PLID[10][20];
@@ -16,16 +23,10 @@ typedef struct {
   int n_scores;
 } SCORELIST;
 
-int findOccurringGame(char *PLID, char *fname);
-int FindLastGame(char *PLID, char *fname);
-int FindTopScores(SCORELIST *list);
-
 int createGameFile(std::string plid, std::string word, std::string hint);
 int appendGameFile(std::string plid, std::string code, std::string play);
-int transferGameFile(std::string plid, std::string status);
-int createScoreFile(std::string plid, std::string score, std::string content);
-
-int parseTimeGame(tm *time, std::string &filename);
-int parseTimeScore(tm *time, std::string &filename);
+int transferGameFile(std::string plid);
+int appendScoreFile(int score, std::string scoreline);
+void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines);
 
 #endif

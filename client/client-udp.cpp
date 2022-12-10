@@ -159,7 +159,7 @@ int sendSNG(struct messageInfo info) {
   const size_t pos1 = info.input.find(' ');
   std::string plid = info.input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
-  if (validatePlayerID(plid) != 0) {
+  if (!validPlayerID(plid)) {
     return -1;
   }
   setPlayerID(plid);

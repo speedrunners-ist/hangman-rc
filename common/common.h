@@ -172,9 +172,10 @@ int parseFileArgs(struct fileInfo &info);
  */
 int initialAvailableMistakes(int wordLength);
 std::string buildSplitString(std::vector<std::string> args);
-int displayFile(std::string fileName, std::string dir);
+int readFile(std::vector<std::string> &lines, std::string filePath);
+int displayFile(std::string filePath, std::string dir);
 int validateArgsAmount(std::string input, int n);
-int validatePlayerID(std::string id);
+bool validPlayerID(std::string id);
 bool forceExit(GameState play, std::string command);
 void continueReading(char *buffer);
 

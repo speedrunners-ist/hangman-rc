@@ -273,11 +273,25 @@ std::string buildSplitString(std::vector<std::string> args) {
   // clang-format on
 }
 
-int displayFile(std::string fileName, std::string dir) {
-  std::ifstream file;
-  file.open(dir + "/" + fileName);
+int readFile(std::vector<std::string> &lines, std::string filePath) {
+  std::ifstream file(filePath); // TODO: do we need a flag here?
   if (!file.is_open()) {
-    std::cout << FILE_OPEN_ERROR << fileName << std::endl;
+    std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
+    return -1;
+  }
+
+  std::string line;
+  while (std::getline(file, line)) {
+    lines.push_back(line);
+  }
+  file.close();
+  return 0;
+}
+
+int displayFile(std::string filePath, std::string dir) {
+  std::ifstream file(dir + "/" + filePath);
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
     return -1;
   }
   std::string line;
@@ -298,19 +312,19 @@ int validateArgsAmount(std::string input, int n) {
   return 0;
 }
 
-int validatePlayerID(std::string id) {
+bool validPlayerID(std::string id) {
   if (id.length() != 6) {
     std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
-    return -1;
+    return false;
   }
 
   for (size_t i = 0; i < id.length(); i++) {
     if (!isdigit(id[i])) {
       std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
-      return -1;
+      return false;
     }
   }
-  return 0;
+  return true;
 }
 
 bool forceExit(GameState play, std::string command) { return command == "exit" && !play.isActive(); }

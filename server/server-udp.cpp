@@ -21,7 +21,7 @@ static responseHandler handleUDPClientMessage = {
 
 int setServerParameters(std::string filepath, bool vParam) {
   verbose = vParam;
-  return setPath(filepath);
+  return setupWordList(filepath);
 }
 
 void createSocketUDP(std::string addr, std::string port) {
