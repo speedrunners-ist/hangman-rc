@@ -3,11 +3,11 @@
 static struct addrinfo hintsTCP, *resTCP;
 static int socketFdTCP, newfd;
 static socklen_t addrlen;
-static ssize_t n, nw;
-static char *ptr, buffer[128];
+static ssize_t n;
 static bool verbose;
 static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
 static peerInfo dummy_peer;
+static char buffer[TCP_CHUNK_SIZE];
 
 // clang-format off
 static responseHandler handleTCPClientMessage = {
@@ -22,17 +22,47 @@ int setServerTCPParameters(bool vParam) {
   return 0;
 }
 
-int serverSENDTCPMesage(std::string message, std::string filePath) { return 0; }
+int serverSENDTCPMesage(std::string message, std::string filePath) {
+  if (write(newfd, message.c_str(), message.size()) == -1) {
+    std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
+    return -1;
+  }
+
+  if (filePath == "")
+    return 0;
+
+  std::ifstream file(filePath, std::ios::binary);
+
+  if (!file.is_open()) {
+    std::cerr << TCP_FILE_SEND_ERROR << std::endl;
+    return -1;
+  }
+
+  while (file.read(buffer, TCP_CHUNK_SIZE)) {
+    if (write(newfd, buffer, TCP_CHUNK_SIZE) == -1) {
+      std::cerr << TCP_FILE_SEND_ERROR << std::endl;
+      return -1;
+    }
+  }
+  return 0;
+}
 
 void createSocketTCP(std::string addr, std::string port) {
   socketFdTCP = newSocket(SOCK_STREAM, addr, port, &hintsTCP, &resTCP);
+
+  std::cout << socketFdTCP << std::endl;
+
   if (socketFdTCP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
 
+  std::cout << "[INFO]: Socket created" << std::endl;
+
   if (listen(socketFdTCP, 5) == -1) /*error*/
     exit(1);
+
+  std::cout << "[INFO]: Listened" << std::endl;
 
   // TODO: fix loop
   while (true) {
@@ -41,6 +71,8 @@ void createSocketTCP(std::string addr, std::string port) {
     // TODO: fix accept
     if ((newfd = accept(socketFdTCP, (struct sockaddr *)&addr, &addrlen)) == -1)
       /*error*/ exit(1);
+
+    std::cout << "[INFO]: Accepted" << std::endl;
 
     n = read(newfd, buffer, 128);
     if (n == -1)
@@ -75,7 +107,7 @@ int handleGSB(struct protocolMessage message) {
       response = buildSplitStringNewline({"RSG", "EMPTY"});
       break;
     case SCOREBOARD_SUCCESS:
-      response = buildSplitStringNewline({"RSG", "OK", response});
+      response = buildSplitString({"RSG", "OK", response});
       file = SCORES_PATH;
       break;
     default:
@@ -105,7 +137,7 @@ int handleGHL(struct protocolMessage message) {
       response = buildSplitStringNewline({"RHL", "NOK"});
       break;
     case HINT_SUCCESS:
-      response = buildSplitStringNewline({"RHL", "OK", response});
+      response = buildSplitString({"RHL", "OK", response});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
@@ -133,10 +165,10 @@ int handleSTA(struct protocolMessage message) {
       response = buildSplitStringNewline({"RST", "NOK"});
       break;
     case STATE_ONGOING:
-      response = buildSplitStringNewline({"RST", "ACT", response});
+      response = buildSplitString({"RST", "ACT", response});
       break;
     case STATE_FINISHED:
-      response = buildSplitStringNewline({"RST", "FIN", response});
+      response = buildSplitString({"RST", "FIN", response});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
