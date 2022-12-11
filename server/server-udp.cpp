@@ -3,7 +3,6 @@
 static struct addrinfo *resUDP;
 static struct addrinfo hintsUDP;
 static int socketFdUDP;
-static char responseUDP[UDP_RECV_SIZE];
 static socklen_t addrlen;
 static char buffer[UDP_RECV_SIZE];
 static bool verbose;
