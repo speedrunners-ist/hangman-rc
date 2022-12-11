@@ -101,10 +101,11 @@ int receiveTCPFile(struct fileInfo &info, std::string dir) {
   size_t bytesRead = 0;
   size_t bytesLeft = (size_t)info.fileSize;
   // create directory if it doesn't exist
-  if (mkdir(dir.c_str(), 0700) == -1 && errno != EEXIST) {
-    std::cerr << MKDIR_ERROR(dir) << std::endl;
-    exit(EXIT_FAILURE);
+  std::filesystem::path dirPath(dir);
+  if (!std::filesystem::exists(dirPath)) {
+    std::filesystem::create_directory(dirPath);
   }
+
   std::fstream file;
   // TODO: create these folders in the client directory
   file.open(dir + "/" + info.fileName, std::ios::out | std::ios::in | std::ios::trunc);
@@ -268,7 +269,7 @@ int sendGSB(struct messageInfo info) {
   if (validateArgsAmount(info.input, SCOREBOARD_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildSplitString({"GSB"});
+  const std::string message = buildSplitStringNewline({"GSB"});
   return generalTCPHandler(message, info.peer);
 }
 
@@ -276,7 +277,7 @@ int sendGHL(struct messageInfo info) {
   if (validateArgsAmount(info.input, HINT_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildSplitString({"GHL", getPlayerID()});
+  const std::string message = buildSplitStringNewline({"GHL", getPlayerID()});
   return generalTCPHandler(message, info.peer);
 }
 
@@ -284,6 +285,6 @@ int sendSTA(struct messageInfo info) {
   if (validateArgsAmount(info.input, STATE_ARGS) == -1) {
     return -1;
   }
-  const std::string message = buildSplitString({"STA", getPlayerID()});
+  const std::string message = buildSplitStringNewline({"STA", getPlayerID()});
   return generalTCPHandler(message, info.peer);
 }

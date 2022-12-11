@@ -175,6 +175,7 @@ int parseFileArgs(struct fileInfo &info);
  */
 int initialAvailableMistakes(int wordLength);
 std::string buildSplitString(std::vector<std::string> args);
+std::string buildSplitStringNewline(std::vector<std::string> args);
 int readFile(std::vector<std::string> &lines, std::string filePath);
 int displayFile(std::string filePath, std::string dir);
 int validateArgsAmount(std::string input, int n);

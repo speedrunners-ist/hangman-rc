@@ -68,7 +68,7 @@ int generalUDPHandler(std::string message) {
     ret = handleUDPClientMessage[response.first](response);
   } catch (const std::out_of_range &oor) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
   return ret;
 }
@@ -78,24 +78,23 @@ int handleSNG(struct protocolMessage message) {
   std::cout << "[INFO]: Received SNG message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
   const std::string plid = message.second;
-  std::cout << "[INFO]: Player ID: " << plid << std::endl;
 
   std::string gameInfo;
   std::string response;
   int ret = createGameSession(plid, gameInfo);
   switch (ret) {
     case CREATE_GAME_ERROR:
-      response = buildSplitString({"RSG", "NOK"});
+      response = buildSplitStringNewline({"RSG", "NOK"});
       break;
     case CREATE_GAME_SUCCESS:
-      response = buildSplitString({"RSG", "OK", gameInfo});
+      response = buildSplitStringNewline({"RSG", "OK", gameInfo});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitString({"RSG", "ERR"});
+      response = buildSplitStringNewline({"RSG", "ERR"});
   }
   std::cout << "[INFO]: Sending RSG message" << std::endl;
   return sendUDPMessage(response, resUDP, socketFdUDP);
@@ -105,7 +104,7 @@ int handlePLG(struct protocolMessage message) {
   std::cout << "[INFO]: Received PLG message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
 
@@ -115,39 +114,35 @@ int handlePLG(struct protocolMessage message) {
   args = args.substr(2); // skip both the space and the letter
   const std::string trial = args;
 
-  std::cout << "[INFO]: Received letter: " << letter << std::endl;
-  std::cout << "[INFO]: Received trial: " << trial << std::endl;
-  std::cout << "[INFO]: Received plid: " << plid << std::endl;
-
   std::string guessInfo;
   std::string response;
   const int ret = playLetter(plid, letter, trial, guessInfo);
 
   switch (ret) {
     case SUCCESS_GUESS:
-      response = buildSplitString({"RLG", "OK", guessInfo});
+      response = buildSplitStringNewline({"RLG", "OK", guessInfo});
       break;
     case SUCCESS_FINAL_GUESS:
-      response = buildSplitString({"RLG", "WIN", guessInfo});
+      response = buildSplitStringNewline({"RLG", "WIN", guessInfo});
       break;
     case DUPLICATE_GUESS:
-      response = buildSplitString({"RLG", "DUP", guessInfo});
+      response = buildSplitStringNewline({"RLG", "DUP", guessInfo});
       break;
     case WRONG_GUESS:
-      response = buildSplitString({"RLG", "NOK", guessInfo});
+      response = buildSplitStringNewline({"RLG", "NOK", guessInfo});
       break;
     case WRONG_FINAL_GUESS:
-      response = buildSplitString({"RLG", "OVR", guessInfo});
+      response = buildSplitStringNewline({"RLG", "OVR", guessInfo});
       break;
     case TRIAL_MISMATCH:
-      response = buildSplitString({"RLG", "INV", guessInfo});
+      response = buildSplitStringNewline({"RLG", "INV", guessInfo});
       break;
     case SYNTAX_ERROR:
-      response = buildSplitString({"RLG", "ERR"});
+      response = buildSplitStringNewline({"RLG", "ERR"});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitString({"RLG", "ERR"});
+      response = buildSplitStringNewline({"RLG", "ERR"});
   }
 
   return sendUDPMessage(response, resUDP, socketFdUDP);
@@ -157,7 +152,7 @@ int handlePWG(struct protocolMessage message) {
   std::cout << "[INFO]: Received PWG message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
 
@@ -165,7 +160,7 @@ int handlePWG(struct protocolMessage message) {
   std::string args = message.body.substr(message.secondPos + 1);
   if (args.find(' ') == std::string::npos) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
   const std::string word = args.substr(0, args.find(' '));
   args = args.substr(args.find(' ') + 1);
@@ -177,23 +172,23 @@ int handlePWG(struct protocolMessage message) {
 
   switch (ret) {
     case SUCCESS_GUESS:
-      response = buildSplitString({"RWG", "WIN", guessInfo});
+      response = buildSplitStringNewline({"RWG", "WIN", guessInfo});
       break;
     case WRONG_GUESS:
-      response = buildSplitString({"RWG", "NOK", guessInfo});
+      response = buildSplitStringNewline({"RWG", "NOK", guessInfo});
       break;
     case WRONG_FINAL_GUESS:
-      response = buildSplitString({"RWG", "OVR", guessInfo});
+      response = buildSplitStringNewline({"RWG", "OVR", guessInfo});
       break;
     case TRIAL_MISMATCH:
-      response = buildSplitString({"RWG", "INV", guessInfo});
+      response = buildSplitStringNewline({"RWG", "INV", guessInfo});
       break;
     case SYNTAX_ERROR:
-      response = buildSplitString({"RWG", "ERR"});
+      response = buildSplitStringNewline({"RWG", "ERR"});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitString({"RWG", "ERR"});
+      response = buildSplitStringNewline({"RWG", "ERR"});
   }
 
   return sendUDPMessage(response, resUDP, socketFdUDP);
@@ -203,7 +198,7 @@ int handleQUT(struct protocolMessage message) {
   std::cout << "[INFO]: Received QUT message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
   const std::string plid = message.second;
@@ -212,14 +207,14 @@ int handleQUT(struct protocolMessage message) {
 
   switch (ret) {
     case CLOSE_GAME_SUCCESS:
-      response = buildSplitString({"RQT", "OK"});
+      response = buildSplitStringNewline({"RQT", "OK"});
       break;
     case CLOSE_GAME_ERROR:
-      response = buildSplitString({"RQT", "ERR"});
+      response = buildSplitStringNewline({"RQT", "ERR"});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitString({"RQT", "ERR"});
+      response = buildSplitStringNewline({"RQT", "ERR"});
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
@@ -228,7 +223,7 @@ int handleREV(struct protocolMessage message) {
   std::cout << "[INFO]: Received REV message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitString({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
   const std::string plid = message.second;
@@ -237,14 +232,14 @@ int handleREV(struct protocolMessage message) {
 
   switch (ret) {
     case CLOSE_GAME_SUCCESS:
-      response = buildSplitString({"RRV", "OK"});
+      response = buildSplitStringNewline({"RRV", "OK"});
       break;
     case CLOSE_GAME_ERROR:
-      response = buildSplitString({"RRV", "ERR"});
+      response = buildSplitStringNewline({"RRV", "ERR"});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitString({"RRV", "ERR"});
+      response = buildSplitStringNewline({"RRV", "ERR"});
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
