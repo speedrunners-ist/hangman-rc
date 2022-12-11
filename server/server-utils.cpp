@@ -1,12 +1,17 @@
 #include "server-utils.h"
 
 int createGameFile(std::string plid, std::string word, std::string hint) {
+  // create games directory if it doesn't exist
+  std::filesystem::path dir(GAMES_PATH);
+  if (!std::filesystem::exists(dir)) {
+    std::filesystem::create_directory(dir);
+  }
   std::ofstream file(ONGOING_GAMES_PATH(plid), std::ios::trunc);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
   }
-  const std::string content = buildSplitString({word, hint});
+  const std::string content = buildSplitStringNewline({word, hint});
   file.write(content.c_str(), (ssize_t)content.size());
   file.close();
   return 0;
@@ -18,7 +23,7 @@ int appendGameFile(std::string plid, std::string code, std::string play) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
   }
-  std::string content = buildSplitString({code, play});
+  std::string content = buildSplitStringNewline({code, play});
   file.write(content.c_str(), (ssize_t)content.size());
   file.close();
   return 0;
@@ -30,7 +35,7 @@ int transferGameFile(std::string plid) {
   char buffer[80]; // TODO: macro this
   time(&rawtime);
   timeinfo = localtime(&rawtime);
-  strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", timeinfo);
+  strftime(buffer, sizeof(buffer), TIME_FORMAT, timeinfo);
   std::string time(buffer);
 
   std::string filename;
@@ -111,7 +116,7 @@ int appendScoreFile(int score, std::string scoreline) {
 void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
   file.clear();
   file.seekp(0, std::ios::beg);
-  file << "TOP 10 SCORES" << std::endl;
+  file << TOP_10_HEADER << std::endl;
   file << std::string(std::string(SCORES_HEADER).size(), '-') << std::endl;
   file << SCORES_HEADER << std::endl;
   for (auto &l : lines) {

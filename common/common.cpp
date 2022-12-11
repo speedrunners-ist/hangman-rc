@@ -269,12 +269,23 @@ std::string buildSplitString(std::vector<std::string> args) {
     [](std::string a, std::string b) { 
       return a + " " + b;
     }
+  );
+  // clang-format on
+}
+
+std::string buildSplitStringNewline(std::vector<std::string> args) {
+  // clang-format off
+  return std::accumulate(
+    ++args.begin(), args.end(), std::string(args[0]),
+    [](std::string a, std::string b) { 
+      return a + " " + b;
+    }
   ).append("\n");
   // clang-format on
 }
 
 int readFile(std::vector<std::string> &lines, std::string filePath) {
-  std::ifstream file(filePath); // TODO: do we need a flag here?
+  std::ifstream file(filePath);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
     return -1;

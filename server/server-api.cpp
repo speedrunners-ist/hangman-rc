@@ -50,16 +50,19 @@ void incrementTrials(GameState &play) { play.incrementTrials(); }
 void playCorrectLetterGuess(GameState &state, std::string letter) {
   const int occurrences = getLetterOccurrences(state.getWord(), letter.front());
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
+  state.incrementTrials();
 }
 
 void playIncorrectLetterGuess(GameState &state, std::string letter) {
   state.setMistakesLeft(state.getAvailableMistakes() - 1);
   state.addGuessedLetter(letter.front());
+  state.incrementTrials();
 }
 
 void playIncorrectWordGuess(GameState &state, std::string word) {
   state.setMistakesLeft(state.getAvailableMistakes() - 1);
   state.addGuessedWord(word);
+  state.incrementTrials();
 }
 
 /*** General util methods ***/
@@ -67,7 +70,7 @@ int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
   readFile(lines, filePath);
   if (lines.size() == 0) {
-    std::cerr << "[ERR]: File " << filePath << " is empty." << std::endl;
+    std::cerr << EMPTY_FILE(filePath) << std::endl;
     return -1;
   }
 
@@ -95,15 +98,52 @@ int getLetterOccurrences(std::string word, char letter) {
 
 int getLetterOccurrencesPositions(std::string word, char letter, std::string &positions) {
   int occurrences = 0;
-
-  for (size_t i = 1; i <= word.length(); i++) {
+  const std::string space = " ";
+  for (size_t i = 0; i < word.length(); i++) {
     if (word[i] == letter) {
-      positions.append(std::to_string(i) + " ");
+      positions.append(space + std::to_string(i + 1));
       occurrences++;
     }
   }
-  positions.insert(0, std::to_string(occurrences) + " ");
+  positions.insert(0, std::to_string(occurrences));
   return occurrences;
+}
+
+int retrieveGame(std::string playerID, GameState &state) {
+  // Retrieve the content from its file
+  std::vector<std::string> lines;
+  const std::string stateFilePath = ONGOING_GAMES_PATH(playerID);
+  if (readFile(lines, stateFilePath) != 0) {
+    return -1;
+  }
+
+  // We parse the file content and create a GameState object from it
+  std::string word, hint;
+  const std::string firstLine = lines[0];
+  const size_t wordPos = firstLine.find(' ');
+  word = firstLine.substr(0, wordPos);
+  hint = firstLine.substr(wordPos + 1);
+  hint.erase(hint.length() - 1); // erases newline at the end
+
+  const int wordLength = (int)word.length();
+  const int availableMistakes = initialAvailableMistakes(wordLength);
+  state = GameState(wordLength, availableMistakes, playerID);
+  state.setWord(word);
+  state.setHint(hint);
+  state.setSpotsLeft(wordLength);
+
+  lines.erase(lines.begin()); // drop the first line, as it was already parsed
+  for (auto l : lines) {
+    const std::string key = l.substr(0, l.find(':') + 1);
+    const std::string value = l.substr(l.find(':') + 2, l.find('\n'));
+    try {
+      handleLineRetrieval[key](state, value);
+    } catch (const std::out_of_range &e) {
+      std::cerr << UNEXPECTED_GAME_LINE(l) << std::endl;
+      return -1;
+    }
+  }
+  return 0;
 }
 
 int createGameSession(std::string plid, std::string &arguments) {
@@ -118,11 +158,11 @@ int createGameSession(std::string plid, std::string &arguments) {
       return CREATE_GAME_ERROR;
     }
 
-    // FIXME: what the duck is this? shouldn't we just let the player continue the game?
-    if (state.getTrials() != 1) {
-      return CREATE_GAME_ERROR;
-    }
-
+    // FIXME: I think we should just allow the player to continue playing the
+    // game, even if they have already made a play, hence this being commented out
+    // if (state.getTrials() != 1) {
+    //   return CREATE_GAME_ERROR;
+    // }
     const std::string word = state.getWord();
     const int wordLength = (int)word.length();
     const int availableMistakes = initialAvailableMistakes(wordLength);
@@ -151,44 +191,7 @@ int createGameSession(std::string plid, std::string &arguments) {
   return CREATE_GAME_SUCCESS;
 }
 
-int retrieveGame(std::string playerID, GameState &state) {
-  // Retrieve the content from its file
-  std::vector<std::string> lines;
-  const std::string stateFilePath = ONGOING_GAMES_PATH(playerID);
-  if (readFile(lines, stateFilePath) != 0) {
-    return -1;
-  }
-
-  // We parse the file content and create a GameState object from it
-  std::string word, hint;
-  const std::string firstLine = lines[0];
-  const size_t wordPos = firstLine.find(' ');
-  word = firstLine.substr(0, wordPos);
-  hint = firstLine.substr(wordPos + 1);
-  hint.erase(hint.length() - 1); // erases newline at the end
-
-  const int wordLength = (int)word.length();
-  const int availableMistakes = initialAvailableMistakes(wordLength);
-  state = GameState(wordLength, availableMistakes, playerID);
-  state.setWord(word);
-  state.setHint(hint);
-  state.setSpotsLeft(wordLength);
-
-  for (auto l : lines) {
-    const std::string key = l.substr(0, l.find(':') + 1);
-    l = l.substr(l.find(':') + 2); // skip the ": " part
-    const std::string value = l.substr(0, l.find('\n'));
-    try {
-      handleLineRetrieval[key](state, value);
-    } catch (const std::out_of_range &e) {
-      std::cerr << "[ERR]: Unexpected line in game state file: " << key << std::endl;
-      return -1;
-    }
-  }
-  return 0;
-}
-
-int playLetter(std::string plid, std::string letter, std::string trial, std::string &positions) {
+int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
   if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
@@ -196,15 +199,22 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   GameState state;
   if (retrieveGame(plid, state) != 0) {
+    arguments = buildSplitString({std::to_string(getTrials(state))});
     return SYNTAX_ERROR;
-  } else if (std::stoi(trial) != state.getTrials()) {
+  }
+
+  arguments = buildSplitString({std::to_string(getTrials(state))});
+  if (std::stoi(trial) != getTrials(state)) {
     return TRIAL_MISMATCH;
   } else if (state.isLetterGuessed(letter.front())) {
     return DUPLICATE_GUESS;
   }
 
+  std::string positions;
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
+  state.incrementTrials();
+  arguments = buildSplitString({arguments, positions});
 
   if (occurrences == 0) {
     state.setMistakesLeft(state.getAvailableMistakes() - 1);
@@ -242,7 +252,11 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   GameState state;
   if (retrieveGame(plid, state) != 0) {
     return SYNTAX_ERROR;
-  } else if (std::stoi(trial) != state.getTrials()) {
+    arguments = buildSplitString({std::to_string(getTrials(state))});
+  }
+
+  arguments = buildSplitString({std::to_string(getTrials(state))});
+  if (std::stoi(trial) != getTrials(state)) {
     return TRIAL_MISMATCH;
   }
 
@@ -279,7 +293,7 @@ int closeGameSession(std::string plid) {
     return CLOSE_GAME_ERROR;
   }
 
-  appendGameFile(plid, "Q", "");
+  appendGameFile(plid, QUIT_GAME, "");
   transferGameFile(plid);
   return CLOSE_GAME_SUCCESS;
 }
@@ -290,17 +304,13 @@ int insertScore(std::string plid, GameState state) {
   const int successfulGuesses = trialsMade - (initialMistakes - state.getAvailableMistakes());
   const int score = GAME_SCORE(successfulGuesses, trialsMade);
 
-  std::cout << "Successful guesses: " << successfulGuesses << std::endl;
-  std::cout << "Total guesses: " << trialsMade << std::endl;
-  std::cout << "Score: " << score << std::endl;
-
   // printedScore is the score with 3 digits (i.e, if it was 9, it's 009, etc)
   std::stringstream scoreStream;
   scoreStream << std::setw(3) << std::setfill('0') << score;
   const std::string printedScore = scoreStream.str();
 
   // clang-format off
-  std::string scoreline = buildSplitString({
+  std::string scoreline = buildSplitStringNewline({
     printedScore,
     plid,
     state.getWord(),

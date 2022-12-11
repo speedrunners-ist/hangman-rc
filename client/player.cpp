@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
-      const std::string allCommands = buildSplitString(getKeys(handlePlayerMessage));
+      const std::string allCommands = buildSplitStringNewline(getKeys(handlePlayerMessage));
       std::cerr << UNEXPECTED_COMMAND_ERROR(allCommands);
       continueReading(buffer);
       continue;

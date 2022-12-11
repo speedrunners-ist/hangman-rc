@@ -2,6 +2,7 @@
 #define CLIENT_PROTOCOL_H
 
 #include "client-api.h"
+#include <filesystem>
 
 // Expected amount of arguments for each protocol (client-side)
 #define START_ARGS 2
@@ -28,7 +29,6 @@
 #define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
 
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
-#define MKDIR_ERROR(dir) "[ERR]: Failed to create directory " + dir + ". Exiting."
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                                  \
   "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
