@@ -23,4 +23,6 @@ int transferGameFile(std::string plid);
 int appendScoreFile(int score, std::string scoreline);
 void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines);
 
+void getLastFinishedGame(std::string plid, std::string &filepath);
+
 #endif

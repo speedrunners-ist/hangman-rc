@@ -123,3 +123,25 @@ void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
     file << l << std::endl;
   }
 }
+
+// TODO: Fix this (copilot)
+void getLastFinishedGame(std::string plid, std::string &filepath) {
+
+  std::filesystem::path dir(PLID_GAMES_PATH(plid));
+  if (!std::filesystem::exists(dir)) {
+    std::filesystem::create_directory(dir);
+  }
+
+  std::vector<std::string> files;
+  for (const auto &entry : std::filesystem::directory_iterator(dir)) {
+    files.push_back(entry.path());
+  }
+
+  if (files.size() == 0) {
+    filepath = "";
+    return;
+  }
+
+  std::sort(files.begin(), files.end());
+  filepath = files.back();
+}

@@ -323,14 +323,14 @@ int insertScore(std::string plid, GameState state) {
   return score;
 }
 
-int getScoreboard(std::string &scoreboard) {
+int getScoreboard(std::string &response) {
   std::vector<std::string> lines;
   if (readFile(lines, SCORES_PATH) != 0) {
     return -1;
   }
 
   if (lines.empty()) {
-    scoreboard = "EMPTY";
+    response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }
 
@@ -342,12 +342,75 @@ int getScoreboard(std::string &scoreboard) {
     fileSize += it->size();
   }
 
-  scoreboard.append("scoreboard.txt");
-  scoreboard.append(std::to_string(fileSize));
-
-  for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
-    scoreboard.append(*it);
-  }
+  response.append("scoreboard.txt");
+  response.append(std::to_string(fileSize));
 
   return SCOREBOARD_SUCCESS;
+}
+
+int getHint(std::string plid, std::string &response, std::string &filepath) {
+  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+    return HINT_ERROR;
+  }
+
+  GameState state;
+  if (retrieveGame(plid, state) != 0) {
+    return HINT_ERROR;
+  }
+
+  filepath = state.getHint();
+
+  std::vector<std::string> lines;
+  if (readFile(lines, filepath) != 0) {
+    return -1;
+  }
+
+  size_t fileSize = 0;
+
+  // iterate over the lines
+  for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
+    fileSize += it->size();
+  }
+
+  response.append(filepath);
+  response.append(std::to_string(fileSize));
+
+  return HINT_SUCCESS;
+}
+
+int getState(std::string plid, std::string &response, std::string &filepath) {
+  if (!validPlayerID(plid)) {
+    return STATE_ERROR;
+  }
+
+  bool isFinished = false;
+
+  if (!isOngoingGame(plid)) {
+    getLastFinishedGame(plid, filepath);
+    isFinished = true;
+  } else {
+    filepath = ONGOING_GAMES_PATH(plid);
+  }
+  std::vector<std::string> lines;
+  if (readFile(lines, filepath) != 0) {
+    return STATE_ERROR;
+  }
+
+  size_t fileSize = 0;
+
+  auto it_value = lines.rbegin();
+
+  if (isFinished) {
+    // iterate over the lines, ignoring the first one
+    it_value++;
+  }
+
+  for (auto it = it_value; it != lines.rend(); ++it) {
+    fileSize += it->size();
+  }
+
+  response.append(filepath);
+  response.append(std::to_string(fileSize));
+
+  return isFinished ? STATE_FINISHED : STATE_ONGOING;
 }

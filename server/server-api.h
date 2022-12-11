@@ -32,6 +32,13 @@
 #define SCOREBOARD_EMPTY 1
 #define SCOREBOARD_SUCCESS 2
 
+#define HINT_ERROR 1
+#define HINT_SUCCESS 2
+
+#define STATE_ONGOING 1
+#define STATE_FINISHED 2
+#define STATE_ERROR 3
+
 // File storing utilities + messages
 #define EMPTY_FILE(file) "[ERR]: File " + file + " is empty."
 #define UNEXPECTED_GAME_LINE(line) "[ERR]: Unexpected line in game file: " + line
@@ -70,6 +77,8 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 int closeGameSession(std::string plid);
 int insertScore(std::string plid, GameState state);
 
-int getScoreboard(std::string &scoreboard);
+int getScoreboard(std::string &response);
+int getHint(std::string plid, std::string &response, std::string &filepath);
+int getState(std::string plid, std::string &response, std::string &filepath);
 
 #endif /* SERVER_API_H */

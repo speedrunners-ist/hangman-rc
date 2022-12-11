@@ -12,6 +12,8 @@ void createSocketUDP(std::string addr, std::string port);
 void createSocketTCP(std::string addr, std::string port);
 int generalUDPHandler(std::string message);
 
+int serverSENDTCPMesage(std::string message, std::string filePath);
+
 // UDP Server message handlers
 int handleSNG(struct protocolMessage message);
 int handlePLG(struct protocolMessage message);

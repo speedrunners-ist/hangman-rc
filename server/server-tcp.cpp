@@ -22,7 +22,7 @@ int setServerTCPParameters(bool vParam) {
   return 0;
 }
 
-int serverSENDTCPMesage(std::string message) { return 0; }
+int serverSENDTCPMesage(std::string message, std::string filePath) { return 0; }
 
 void createSocketTCP(std::string addr, std::string port) {
   socketFdTCP = newSocket(SOCK_STREAM, addr, port, &hintsTCP, &resTCP);
@@ -63,46 +63,86 @@ int handleGSB(struct protocolMessage message) {
   std::cout << "[INFO]: Received GSB message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return serverSENDTCPMesage(buildSplitString({"ERR"}));
+    return serverSENDTCPMesage(buildSplitStringNewline({"ERR"}), "");
   }
 
-  std::string file;
+  std::string file = "";
   std::string response;
 
-  int ret = getScoreboard(file);
+  int ret = getScoreboard(response);
   switch (ret) {
     case SCOREBOARD_EMPTY:
-      response = buildSplitString({"RSG", "EMPTY"});
+      response = buildSplitStringNewline({"RSG", "EMPTY"});
       break;
     case SCOREBOARD_SUCCESS:
-      response = buildSplitString({"RSG", "OK", file});
+      response = buildSplitStringNewline({"RSG", "OK", response});
+      file = SCORES_PATH;
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitString({"RSG", "ERR"});
+      response = buildSplitStringNewline({"RSG", "ERR"});
       break;
   }
 
-  return serverSENDTCPMesage(response);
+  return serverSENDTCPMesage(response, file);
 }
+
 int handleGHL(struct protocolMessage message) {
   std::cout << "[INFO]: Received GHL message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitString({"ERR"});
-    return serverSENDTCPMesage(response);
+    std::string response = buildSplitStringNewline({"ERR"});
+    return serverSENDTCPMesage(response, "");
   }
 
-  // GET HINT
+  const std::string plid = message.second;
+  std::string file = "";
+  std::string response;
 
-  return 0;
+  int ret = getHint(plid, response, file);
+  switch (ret) {
+    case HINT_ERROR:
+      response = buildSplitStringNewline({"RHL", "NOK"});
+      break;
+    case HINT_SUCCESS:
+      response = buildSplitStringNewline({"RHL", "OK", response});
+      break;
+    default:
+      std::cerr << INTERNAL_ERROR << std::endl;
+      response = buildSplitStringNewline({"RHL", "ERR"});
+      break;
+  }
+
+  return serverSENDTCPMesage(response, file);
 }
+
 int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Received STA message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return serverSENDTCPMesage(buildSplitString({"ERR"}));
+    return serverSENDTCPMesage(buildSplitStringNewline({"ERR"}), "");
   }
 
-  return 0;
+  const std::string plid = message.second;
+  std::string file = "";
+  std::string response;
+
+  int ret = getState(plid, response, file);
+  switch (ret) {
+    case STATE_ERROR:
+      response = buildSplitStringNewline({"RST", "NOK"});
+      break;
+    case STATE_ONGOING:
+      response = buildSplitStringNewline({"RST", "ACT", response});
+      break;
+    case STATE_FINISHED:
+      response = buildSplitStringNewline({"RST", "FIN", response});
+      break;
+    default:
+      std::cerr << INTERNAL_ERROR << std::endl;
+      response = buildSplitStringNewline({"RST", "ERR"});
+      break;
+  }
+
+  return serverSENDTCPMesage(response, file);
 }
