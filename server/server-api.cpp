@@ -123,7 +123,7 @@ int retrieveGame(std::string playerID, GameState &state) {
   const size_t wordPos = firstLine.find(' ');
   word = firstLine.substr(0, wordPos);
   hint = firstLine.substr(wordPos + 1);
-  hint.erase(hint.length() - 1); // erases newline at the end
+  hint.erase(hint.length());
 
   const int wordLength = (int)word.length();
   const int availableMistakes = initialAvailableMistakes(wordLength);
@@ -340,6 +340,7 @@ int getScoreboard(std::string &response) {
 
   for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
     fileSize += it->size();
+    fileSize += 1; // for the newline
   }
 
   response.append("scoreboard.txt ");
@@ -360,8 +361,10 @@ int getHint(std::string plid, std::string &response, std::string &filepath) {
 
   filepath = state.getHint();
 
+  std::cout << "filepath: " << filepath << std::endl;
+
   std::vector<std::string> lines;
-  if (readFile(lines, filepath) != 0) {
+  if (readFile(lines, FILE_PATH(filepath)) != 0) {
     return -1;
   }
 
@@ -372,8 +375,13 @@ int getHint(std::string plid, std::string &response, std::string &filepath) {
     fileSize += it->size();
   }
 
+  fileSize++;
+
   response.append(filepath);
+  response.append(" ");
   response.append(std::to_string(fileSize));
+
+  filepath = FILE_PATH(filepath);
 
   return HINT_SUCCESS;
 }

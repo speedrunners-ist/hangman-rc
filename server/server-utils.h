@@ -16,6 +16,7 @@
 #define SCORES_HEADER "SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS"
 #define MAX_CACHE_SIZE 128
 #define TIME_FORMAT "%Y-%m-%d_%H-%M-%S"
+#define FILE_PATH(filename) "server/hints/" + filename
 
 int createGameFile(std::string plid, std::string word, std::string hint);
 int appendGameFile(std::string plid, std::string code, std::string play);

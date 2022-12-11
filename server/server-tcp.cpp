@@ -42,15 +42,19 @@ int serverSENDTCPMesage(std::string message, std::string filePath) {
 
   write(newfd, " ", 1);
 
-  file.read(buffer, TCP_CHUNK_SIZE);
-  // this is so bad
-  while (buffer[0] != '\0') {
+  while (file) {
+    file.read(buffer, TCP_CHUNK_SIZE);
+
+    ssize_t bytes_read = file.gcount();
+    if (bytes_read == 0)
+      break;
+
     if (write(newfd, buffer, TCP_CHUNK_SIZE) == -1) {
       std::cerr << TCP_FILE_SEND_ERROR << std::endl;
       return -1;
     }
+
     memset(buffer, 0, TCP_CHUNK_SIZE);
-    file.read(buffer, TCP_CHUNK_SIZE);
   }
 
   return 0;
