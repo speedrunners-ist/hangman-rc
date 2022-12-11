@@ -342,7 +342,7 @@ int getScoreboard(std::string &response) {
     fileSize += it->size();
   }
 
-  response.append("scoreboard.txt");
+  response.append("scoreboard.txt ");
   response.append(std::to_string(fileSize));
 
   return SCOREBOARD_SUCCESS;
@@ -410,7 +410,7 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
   }
 
   response.append(filepath);
-  response.append(std::to_string(fileSize));
+  response.append(" " + std::to_string(fileSize));
 
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
 }

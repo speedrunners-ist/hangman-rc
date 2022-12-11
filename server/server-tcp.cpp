@@ -27,7 +27,9 @@ int serverSENDTCPMesage(std::string message, std::string filePath) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;
   }
+  std::cout << "[INFO]: Sent message: " << message << "|" << std::endl;
 
+  std::cout << "[INFO]: Sending file: " << filePath << std::endl;
   if (filePath == "")
     return 0;
 
@@ -38,13 +40,32 @@ int serverSENDTCPMesage(std::string message, std::string filePath) {
     return -1;
   }
 
-  while (file.read(buffer, TCP_CHUNK_SIZE)) {
+  write(newfd, " ", 1);
+
+  file.read(buffer, TCP_CHUNK_SIZE);
+  // this is so bad
+  while (buffer[0] != '\0') {
     if (write(newfd, buffer, TCP_CHUNK_SIZE) == -1) {
       std::cerr << TCP_FILE_SEND_ERROR << std::endl;
       return -1;
     }
+    memset(buffer, 0, TCP_CHUNK_SIZE);
+    file.read(buffer, TCP_CHUNK_SIZE);
   }
+
   return 0;
+}
+
+int generalTCPHandler(std::string request) {
+  std::string responseBegin = request;
+  struct protocolMessage serverMessage;
+  const std::string command = responseBegin.substr(0, 3);
+  responseBegin.erase(0, 4);
+  const std::string plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  serverMessage.first = command;
+  serverMessage.second = plid;
+  serverMessage.body = request;
+  return handleTCPClientMessage[command](serverMessage);
 }
 
 void createSocketTCP(std::string addr, std::string port) {
@@ -57,12 +78,8 @@ void createSocketTCP(std::string addr, std::string port) {
     exit(EXIT_FAILURE);
   }
 
-  std::cout << "[INFO]: Socket created" << std::endl;
-
   if (listen(socketFdTCP, 5) == -1) /*error*/
     exit(1);
-
-  std::cout << "[INFO]: Listened" << std::endl;
 
   // TODO: fix loop
   while (true) {
@@ -72,27 +89,26 @@ void createSocketTCP(std::string addr, std::string port) {
     if ((newfd = accept(socketFdTCP, (struct sockaddr *)&addr, &addrlen)) == -1)
       /*error*/ exit(1);
 
-    std::cout << "[INFO]: Accepted" << std::endl;
-
     n = read(newfd, buffer, 128);
     if (n == -1)
       /*error*/ exit(1);
     std::cout << "[INFO]: Received message: " << buffer;
-    int errcode = getnameinfo(resTCP->ai_addr, addrlen, host, sizeof host, service, sizeof service, 0);
+    int errcode =
+        getnameinfo((struct sockaddr *)&addr, addrlen, host, sizeof host, service, sizeof service, 0);
     if (verbose) {
-      std::cerr << VERBOSE_ERROR(errcode) << std::endl;
-    } else {
-      std::cout << VERBOSE_SUCCESS(host, service) << std::endl;
+      if (errcode != 0)
+        std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+      else {
+        std::cout << VERBOSE_SUCCESS(host, service) << std::endl;
+      }
     }
 
-    // generalTCPHandler(std::string(buffer), dummy_peer);
+    generalTCPHandler(std::string(buffer));
     memset(buffer, 0, 128);
-    close(newfd);
   }
 }
 // Server message handlers
 int handleGSB(struct protocolMessage message) {
-  std::cout << "[INFO]: Received GSB message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     return serverSENDTCPMesage(buildSplitStringNewline({"ERR"}), "");
@@ -104,18 +120,17 @@ int handleGSB(struct protocolMessage message) {
   int ret = getScoreboard(response);
   switch (ret) {
     case SCOREBOARD_EMPTY:
-      response = buildSplitStringNewline({"RSG", "EMPTY"});
+      response = buildSplitStringNewline({"RSB", "EMPTY"});
       break;
     case SCOREBOARD_SUCCESS:
-      response = buildSplitString({"RSG", "OK", response});
+      response = buildSplitString({"RSB", "OK", response});
       file = SCORES_PATH;
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RSG", "ERR"});
+      response = buildSplitStringNewline({"RSB", "ERR"});
       break;
   }
-
   return serverSENDTCPMesage(response, file);
 }
 
@@ -175,6 +190,9 @@ int handleSTA(struct protocolMessage message) {
       response = buildSplitStringNewline({"RST", "ERR"});
       break;
   }
+
+  std::cout << "[INFO]: Sending response: " << response << std::endl;
+  std::cout << "[INFO]: Sending file: " << file << std::endl;
 
   return serverSENDTCPMesage(response, file);
 }

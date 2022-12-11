@@ -30,8 +30,6 @@ void createSocketUDP(std::string addr, std::string port) {
     exit(EXIT_FAILURE);
   }
 
-  std::cout << " udp " << socketFdUDP << std::endl;
-
   // Listen for incoming connections
   while (true) {
     addrlen = sizeof(resUDP->ai_addr);
