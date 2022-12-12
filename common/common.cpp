@@ -263,19 +263,11 @@ int disconnectTCP(struct addrinfo *res, int fd) {
 }
 
 int sendTCPMessage(std::string message, int fd) {
-  size_t bytesSent = 0;
-  size_t bytesLeft = message.length();
-  size_t msgLen = bytesLeft;
-  while (bytesSent < msgLen) {
-    ssize_t bytes = send(fd, message.c_str() + bytesSent, bytesLeft, 0);
-    if (bytes < 0) {
-      std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
-      return -1;
-    }
-    bytesSent += (size_t)bytes;
-    bytesLeft -= (size_t)bytes;
+  if (write(fd, message.c_str(), message.length()) == -1) {
+    std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
+    return -1;
   }
-  return (int)bytesSent;
+  return 0;
 }
 
 int sendTCPFile(std::string message, int fd, std::string filePath) {

@@ -95,7 +95,7 @@ int generalTCPHandler(struct peerInfo peer) {
 int handleGSB(struct protocolMessage message) {
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"ERR"}), socketFdTCP);
+    return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
   }
 
   std::string response;
@@ -106,13 +106,13 @@ int handleGSB(struct protocolMessage message) {
       break;
     case SCOREBOARD_SUCCESS:
       response = buildSplitString({"RSB", "OK", response});
-      return sendTCPFile(response, socketFdTCP, SCORES_PATH);
+      return sendTCPFile(response, newConnectionFd, SCORES_PATH);
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RSB", "ERR"});
       break;
   }
-  return sendTCPMessage(response, socketFdTCP);
+  return sendTCPMessage(response, newConnectionFd);
 }
 
 int handleGHL(struct protocolMessage message) {
@@ -120,7 +120,7 @@ int handleGHL(struct protocolMessage message) {
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
-    return sendTCPMessage(response, socketFdTCP);
+    return sendTCPMessage(response, newConnectionFd);
   }
 
   const std::string plid = message.second;
@@ -134,7 +134,7 @@ int handleGHL(struct protocolMessage message) {
       break;
     case HINT_SUCCESS:
       response = buildSplitString({"RHL", "OK"});
-      return sendTCPFile(response, socketFdTCP, file);
+      return sendTCPFile(response, newConnectionFd, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
@@ -142,7 +142,7 @@ int handleGHL(struct protocolMessage message) {
       break;
   }
 
-  return sendTCPMessage(response, socketFdTCP);
+  return sendTCPMessage(response, newConnectionFd);
 }
 
 int handleSTA(struct protocolMessage message) {
@@ -150,7 +150,7 @@ int handleSTA(struct protocolMessage message) {
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
-    return sendTCPMessage(response, socketFdTCP);
+    return sendTCPMessage(response, newConnectionFd);
   }
 
   const std::string plid = message.second;
@@ -164,10 +164,10 @@ int handleSTA(struct protocolMessage message) {
       break;
     case STATE_ONGOING:
       response = buildSplitString({"RST", "ACT"});
-      return sendTCPFile(response, socketFdTCP, file);
+      return sendTCPFile(response, newConnectionFd, file);
     case STATE_FINISHED:
       response = buildSplitString({"RST", "FIN"});
-      return sendTCPFile(response, socketFdTCP, file);
+      return sendTCPFile(response, newConnectionFd, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
@@ -175,5 +175,5 @@ int handleSTA(struct protocolMessage message) {
       break;
   }
 
-  return sendTCPMessage(response, socketFdTCP);
+  return sendTCPMessage(response, newConnectionFd);
 }
