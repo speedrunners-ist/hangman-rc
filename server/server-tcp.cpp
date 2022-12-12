@@ -106,7 +106,7 @@ int handleGSB(struct protocolMessage message) {
       break;
     case SCOREBOARD_SUCCESS:
       response = buildSplitString({"RSB", "OK", response});
-      return sendTCPFile(response, newConnectionFd, SCORES_PATH);
+      return sendTCPFile(response.append(" "), newConnectionFd, SCORES_PATH);
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RSB", "ERR"});
@@ -133,8 +133,8 @@ int handleGHL(struct protocolMessage message) {
       response = buildSplitStringNewline({"RHL", "NOK"});
       break;
     case HINT_SUCCESS:
-      response = buildSplitString({"RHL", "OK"});
-      return sendTCPFile(response, newConnectionFd, file);
+      response = buildSplitString({"RHL", "OK", response});
+      return sendTCPFile(response.append(" "), newConnectionFd, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
@@ -163,11 +163,11 @@ int handleSTA(struct protocolMessage message) {
       response = buildSplitStringNewline({"RST", "NOK"});
       break;
     case STATE_ONGOING:
-      response = buildSplitString({"RST", "ACT"});
-      return sendTCPFile(response, newConnectionFd, file);
+      response = buildSplitString({"RST", "ACT", response});
+      return sendTCPFile(response.append(" "), newConnectionFd, file);
     case STATE_FINISHED:
-      response = buildSplitString({"RST", "FIN"});
-      return sendTCPFile(response, newConnectionFd, file);
+      response = buildSplitString({"RST", "FIN", response});
+      return sendTCPFile(response.append(" "), newConnectionFd, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;

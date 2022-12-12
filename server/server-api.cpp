@@ -349,7 +349,7 @@ int getScoreboard(std::string &response) {
   return SCOREBOARD_SUCCESS;
 }
 
-int getHint(std::string plid, std::string &response, std::string &filepath) {
+int getHint(std::string plid, std::string &response, std::string &filePath) {
   if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     return HINT_ERROR;
   }
@@ -359,30 +359,17 @@ int getHint(std::string plid, std::string &response, std::string &filepath) {
     return HINT_ERROR;
   }
 
-  filepath = state.getHint();
-
-  std::cout << "filepath: " << filepath << std::endl;
-
+  const std::string fileName = state.getHint();
+  filePath = FILE_PATH(fileName);
+  std::cout << "fileName: " << fileName << std::endl;
+  std::cout << "filePath: " << filePath << std::endl;
   std::vector<std::string> lines;
-  if (readFile(lines, FILE_PATH(filepath)) != 0) {
+  if (readFile(lines, filePath) != 0) {
     return -1;
   }
 
-  size_t fileSize = 0;
-
-  // iterate over the lines
-  for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
-    fileSize += it->size();
-  }
-
-  fileSize++;
-
-  response.append(filepath);
-  response.append(" ");
-  response.append(std::to_string(fileSize));
-
-  filepath = FILE_PATH(filepath);
-
+  long fileSize = (long)std::filesystem::file_size(filePath);
+  response = buildSplitString({std::string(fileName), std::to_string(fileSize)});
   return HINT_SUCCESS;
 }
 

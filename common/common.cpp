@@ -291,24 +291,26 @@ int sendTCPFile(std::string message, int fd, std::string filePath) {
   }
 
   long fileSize = (long)std::filesystem::file_size(filePath);
-  if (sendFileInfo({filePath, (int)fileSize, ' '}, fd) == -1) {
-    file.close();
-    return -1;
-  }
-
   long bytesLeft = fileSize;
+  long bytesSent;
   char buffer[TCP_CHUNK_SIZE];
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
-    file.read(buffer, (TCP_CHUNK_SIZE < bytesLeft) ? TCP_CHUNK_SIZE : bytesLeft);
-    if (sendTCPMessage(buffer, fd) == -1) {
+    bytesSent = (TCP_CHUNK_SIZE < bytesLeft) ? TCP_CHUNK_SIZE : bytesLeft;
+    file.read(buffer, bytesSent);
+    if (write(fd, buffer, (size_t)bytesSent) == -1) {
       file.close();
       return -1;
     }
-    bytesLeft -= file.gcount();
+    bytesLeft -= bytesSent;
   } while (bytesLeft > 0);
 
   file.close();
+
+  // in the end, we must send the final delimiter, \n
+  // if (sendTCPMessage("\n", fd) == -1) {
+  //   return -1;
+  // }
   return 0;
 }
 
@@ -368,6 +370,7 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
   } while (bytesReceived != 0 && bytesLeft > 0);
 
   // TODO: should we check if the message ends in a newline?
+  // TODO: we should remove the newline from the file (it's currently there)
   file.close();
   return (int)bytesRead;
 }

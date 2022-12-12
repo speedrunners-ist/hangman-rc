@@ -78,9 +78,9 @@ int closeGameSession(std::string plid);
 int insertScore(std::string plid, GameState &state);
 
 int getScoreboard(std::string &response);
-int getHint(std::string plid, std::string &response, std::string &filepath);
-int getState(std::string plid, std::string &response, std::string &filepath);
+int getHint(std::string plid, std::string &response, std::string &filePath);
+int getState(std::string plid, std::string &response, std::string &filePath);
 
-int createStateFile(std::string plid, std::string filepath);
+int createStateFile(std::string plid, std::string filePath);
 
 #endif /* SERVER_API_H */
