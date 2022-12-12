@@ -27,8 +27,8 @@ int createSocketTCP(struct peerInfo peer) {
 }
 
 int disconnectTCP() {
-  close(socketFdTCP);
   freeaddrinfo(serverInfoTCP);
+  close(socketFdTCP);
   return 0;
 }
 

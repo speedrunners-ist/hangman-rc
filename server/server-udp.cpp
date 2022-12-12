@@ -37,8 +37,8 @@ int createSocketUDP(struct peerInfo peer) {
 }
 
 int disconnectUDP() {
-  close(socketFdUDP);
   freeaddrinfo(resUDP);
+  close(socketFdUDP);
   return 0;
 }
 

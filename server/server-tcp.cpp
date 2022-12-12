@@ -40,9 +40,9 @@ int createSocketTCP(struct peerInfo peer) {
 }
 
 int disconnectTCP() {
+  freeaddrinfo(resTCP);
   close(newConnectionFd);
   close(socketFdTCP);
-  freeaddrinfo(resTCP);
   return 0;
 }
 
