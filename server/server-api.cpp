@@ -298,9 +298,9 @@ int closeGameSession(std::string plid) {
   return CLOSE_GAME_SUCCESS;
 }
 
-int insertScore(std::string plid, GameState state) {
-  const int initialMistakes = initialAvailableMistakes(getWordLength(state));
-  const int trialsMade = state.getTrials() - 1;
+int insertScore(std::string plid, GameState &state) {
+  const int initialMistakes = initialAvailableMistakes(getWordLength(state)) + 1;
+  const int trialsMade = state.getTrials();
   const int successfulGuesses = trialsMade - (initialMistakes - state.getAvailableMistakes());
   const int score = GAME_SCORE(successfulGuesses, trialsMade);
 
@@ -391,10 +391,13 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
     return STATE_ERROR;
   }
 
+  std::string auxfilepath = "";
   bool isFinished = false;
 
   if (!isOngoingGame(plid)) {
-    getLastFinishedGame(plid, filepath);
+    getLastFinishedGame(plid, auxfilepath);
+    filepath = PLID_GAMES_PATH(plid).append("/" + auxfilepath);
+    createStateFile(plid, filepath);
     isFinished = true;
   } else {
     filepath = ONGOING_GAMES_PATH(plid);
@@ -406,19 +409,45 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
 
   size_t fileSize = 0;
 
-  auto it_value = lines.rbegin();
-
-  if (isFinished) {
-    // iterate over the lines, ignoring the first one
-    it_value++;
+  for (auto it = lines.begin(); it != lines.end(); ++it) {
+    fileSize += it->size() + 1;
   }
 
-  for (auto it = it_value; it != lines.rend(); ++it) {
-    fileSize += it->size();
+  if (!isFinished) {
+    fileSize -= lines.begin()->size();
   }
 
-  response.append(filepath);
+  response.append(auxfilepath);
   response.append(" " + std::to_string(fileSize));
 
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
+}
+
+int createStateFile(std::string plid, std::string filepath) {
+  std::filesystem::path dir("server/state");
+  if (!std::filesystem::exists(dir)) {
+    std::filesystem::create_directory(dir);
+  }
+
+  std::fstream newfile(STATE_PATH(plid), std::ios::out);
+  if (!newfile.is_open()) {
+    return -1;
+  }
+
+  std::fstream oldfile(filepath, std::ios::in);
+
+  if (!oldfile.is_open()) {
+    return -1;
+  }
+
+  std::string line;
+
+  std::getline(oldfile, line);
+  while (std::getline(oldfile, line)) {
+    newfile << line << std::endl;
+  }
+
+  newfile.close();
+  oldfile.close();
+  return 0;
 }

@@ -75,10 +75,12 @@ int getLetterOccurrences(std::string word, char letter);
 int getLetterOccurrencesPositions(std::string word, char letter, std::string &positions);
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
 int closeGameSession(std::string plid);
-int insertScore(std::string plid, GameState state);
+int insertScore(std::string plid, GameState &state);
 
 int getScoreboard(std::string &response);
 int getHint(std::string plid, std::string &response, std::string &filepath);
 int getState(std::string plid, std::string &response, std::string &filepath);
+
+int createStateFile(std::string plid, std::string filepath);
 
 #endif /* SERVER_API_H */
