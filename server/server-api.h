@@ -81,4 +81,6 @@ int getScoreboard(std::string &response);
 int getHint(std::string plid, std::string &response, std::string &filepath);
 int getState(std::string plid, std::string &response, std::string &filepath);
 
+int createStateFile(std::string plid, std::string filepath);
+
 #endif /* SERVER_API_H */

@@ -198,5 +198,8 @@ int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Sending response: " << response << std::endl;
   std::cout << "[INFO]: Sending file: " << file << std::endl;
 
-  return serverSENDTCPMesage(response, file);
+  serverSENDTCPMesage(response, file);
+  clearTmpFile(file);
+
+  return 0;
 }

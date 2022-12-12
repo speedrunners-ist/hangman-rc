@@ -145,3 +145,12 @@ void getLastFinishedGame(std::string plid, std::string &filepath) {
   std::sort(files.begin(), files.end());
   filepath = files.back();
 }
+
+void clearTmpFile(std::string filepath) {
+  // delete file
+
+  std::filesystem::path file(filepath);
+  if (std::filesystem::exists(file)) {
+    std::filesystem::remove(file);
+  }
+}

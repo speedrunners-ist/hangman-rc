@@ -395,6 +395,9 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
 
   if (!isOngoingGame(plid)) {
     getLastFinishedGame(plid, filepath);
+    std::cout << filepath << std::endl;
+    createStateFile(plid, filepath);
+    std::cout << filepath << std::endl;
     isFinished = true;
   } else {
     filepath = ONGOING_GAMES_PATH(plid);
@@ -406,19 +409,45 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
 
   size_t fileSize = 0;
 
-  auto it_value = lines.rbegin();
-
-  if (isFinished) {
-    // iterate over the lines, ignoring the first one
-    it_value++;
+  for (auto it = lines.begin(); it != lines.end(); ++it) {
+    fileSize += it->size();
   }
 
-  for (auto it = it_value; it != lines.rend(); ++it) {
-    fileSize += it->size();
+  if (!isFinished) {
+    fileSize -= lines.begin()->size();
   }
 
   response.append(filepath);
   response.append(" " + std::to_string(fileSize));
 
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
+}
+
+int createStateFile(std::string plid, std::string filepath) {
+  std::filesystem::path dir("server/state");
+  if (!std::filesystem::exists(dir)) {
+    std::filesystem::create_directory(dir);
+  }
+
+  std::fstream newfile(STATE_PATH(plid), std::ios::out);
+  if (!newfile.is_open()) {
+    return -1;
+  }
+
+  std::fstream oldfile(filepath, std::ios::in);
+
+  if (!oldfile.is_open()) {
+    return -1;
+  }
+
+  std::string line;
+
+  std::getline(oldfile, line);
+  while (std::getline(oldfile, line)) {
+    newfile << line << std::endl;
+  }
+
+  newfile.close();
+  oldfile.close();
+  return 0;
 }
