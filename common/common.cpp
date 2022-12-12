@@ -270,6 +270,15 @@ int sendTCPMessage(std::string message, int fd) {
   return 0;
 }
 
+int sendFileInfo(struct fileInfo info, int fd) {
+  std::string message =
+      buildSplitString({info.fileName, std::to_string(info.fileSize), std::string(1, info.delimiter)});
+  if (sendTCPMessage(message, fd) == -1) {
+    return -1;
+  }
+  return 0;
+}
+
 int sendTCPFile(std::string message, int fd, std::string filePath) {
   if (sendTCPMessage(message, fd) == -1) {
     return -1;
@@ -282,6 +291,11 @@ int sendTCPFile(std::string message, int fd, std::string filePath) {
   }
 
   long fileSize = (long)std::filesystem::file_size(filePath);
+  if (sendFileInfo({filePath, (int)fileSize, ' '}, fd) == -1) {
+    file.close();
+    return -1;
+  }
+
   long bytesLeft = fileSize;
   char buffer[TCP_CHUNK_SIZE];
   do {
@@ -394,7 +408,7 @@ std::string buildSplitStringNewline(std::vector<std::string> args) {
 int readFile(std::vector<std::string> &lines, std::string filePath) {
   std::ifstream file(filePath);
   if (!file.is_open()) {
-    std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
+    std::cerr << FILE_OPEN_ERROR << "File: " << filePath << std::endl;
     return -1;
   }
 
@@ -409,7 +423,7 @@ int readFile(std::vector<std::string> &lines, std::string filePath) {
 int displayFile(std::string filePath, std::string dir) {
   std::ifstream file(dir + "/" + filePath);
   if (!file.is_open()) {
-    std::cerr << FILE_OPEN_ERROR << filePath << std::endl;
+    std::cerr << FILE_OPEN_ERROR << "File: " << filePath << std::endl;
     return -1;
   }
   std::string line;

@@ -1,3 +1,0 @@
-island maldives.jpg
-Correct guess (letter): a
-Correct final guess (word): island

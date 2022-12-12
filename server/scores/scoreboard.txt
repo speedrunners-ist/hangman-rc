@@ -1,9 +1,5 @@
 TOP 10 SCORES
 --------------------------------------------------------------------
 SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS
-050 099207 island 1 2
-
-040 099211 island 2 5
-
-000 099341 island 0 1
-
+050 099208 lighthouse 2 4
+000 099209 island 0 1
