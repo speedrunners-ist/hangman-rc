@@ -59,6 +59,7 @@ server/GS
 scoreboard/
 client/hints/
 state/
+server/games/
 
 
 .vscode

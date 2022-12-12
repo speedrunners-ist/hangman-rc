@@ -411,7 +411,7 @@ std::string buildSplitStringNewline(std::vector<std::string> args) {
 int readFile(std::vector<std::string> &lines, std::string filePath) {
   std::ifstream file(filePath);
   if (!file.is_open()) {
-    std::cerr << FILE_OPEN_ERROR << "File: " << filePath << std::endl;
+    std::cerr << FILE_OPEN_ERROR << " File: " << filePath << std::endl;
     return -1;
   }
 
@@ -426,7 +426,7 @@ int readFile(std::vector<std::string> &lines, std::string filePath) {
 int displayFile(std::string filePath, std::string dir) {
   std::ifstream file(dir + "/" + filePath);
   if (!file.is_open()) {
-    std::cerr << FILE_OPEN_ERROR << "File: " << filePath << std::endl;
+    std::cerr << FILE_OPEN_ERROR << " File: " << filePath << std::endl;
     return -1;
   }
   std::string line;

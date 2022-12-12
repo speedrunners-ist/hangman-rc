@@ -1,13 +1,16 @@
 TOP 10 SCORES
 --------------------------------------------------------------------
 SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS
+075 099241 island 3 4
+066 099207 island 2 3
+066 099207 island 2 3
+066 099207 island 2 3
+066 099207 island 2 3
+066 099207 island 2 3
+066 099207 island 2 3
+066 099207 island 2 3
+066 099207 island 2 3
+066 099208 island 2 3
+066 099208 island 2 3
+066 099208 island 2 3
 050 099208 lighthouse 2 4
-000 099209 island 0 1
-000 099207 island 0 1
-000 099209 lighthouse 0 1
-000 099207 island 0 1
-000 099212 lighthouse 0 1
-000 099207 island 0 1
-000 099207 island 0 1
-000 029134 lighthouse 0 1
-000 029021 island 0 1

@@ -161,19 +161,24 @@ int handleSTA(struct protocolMessage message) {
   switch (ret) {
     case STATE_ERROR:
       response = buildSplitStringNewline({"RST", "NOK"});
-      break;
+      return sendTCPMessage(response, newConnectionFd);
     case STATE_ONGOING:
       response = buildSplitString({"RST", "ACT", response});
-      return sendTCPFile(response.append(" "), newConnectionFd, file);
+      break;
     case STATE_FINISHED:
       response = buildSplitString({"RST", "FIN", response});
-      return sendTCPFile(response.append(" "), newConnectionFd, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RST", "ERR"});
-      break;
+      return sendTCPMessage(response, newConnectionFd);
   }
 
-  return sendTCPMessage(response, newConnectionFd);
+  ret = sendTCPFile(response.append(" "), newConnectionFd, file);
+  // remove tmp file
+  // std::string tmpFile = TMP_PATH(plid);
+  // if (remove(tmpFile.c_str()) != 0) {
+  //   std::cerr << "[ERR]: Error deleting file" << std::endl;
+  // }
+  return ret;
 }

@@ -124,12 +124,12 @@ void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
   }
 }
 
-void getLastFinishedGame(std::string plid, std::string &filepath) {
+void getLastFinishedGame(std::string plid, std::string &filePath) {
 
   std::filesystem::path dir(PLID_GAMES_PATH(plid));
   if (!std::filesystem::exists(dir)) {
     std::filesystem::create_directory(dir);
-    filepath = "";
+    filePath = "";
     return;
   }
 
@@ -139,20 +139,42 @@ void getLastFinishedGame(std::string plid, std::string &filepath) {
   }
 
   if (files.size() == 0) {
-    filepath = "";
+    filePath = "";
     return;
   }
 
   std::sort(files.begin(), files.end());
   // return name
-  filepath = files.back().erase(0, files.back().find_last_of('/') + 1);
+  filePath = files.back().erase(0, files.back().find_last_of('/') + 1);
 }
 
-void clearTmpFile(std::string filepath) {
-  // delete file
-
-  std::filesystem::path file(filepath);
-  if (std::filesystem::exists(file)) {
-    std::filesystem::remove(file);
+int createPlaceholderState(std::string plid, std::string filePath) {
+  std::filesystem::path dir(TMP_DIR);
+  if (!std::filesystem::exists(dir)) {
+    std::filesystem::create_directory(dir);
   }
+
+  std::fstream newFile(TMP_PATH(plid), std::ios::out);
+  if (!newFile.is_open()) {
+    return -1;
+  }
+
+  std::fstream oldFile(filePath, std::ios::in);
+  if (!oldFile.is_open()) {
+    return -1;
+  }
+
+  /*
+   * We'll need to copy the file line by line, trimming the first, since the first
+   * line has the word and hint (which should be hidden from the player until completion)
+   */
+  std::string line;
+  std::getline(oldFile, line); // skip the first line
+  while (std::getline(oldFile, line)) {
+    newFile << line << std::endl;
+  }
+
+  newFile.close();
+  oldFile.close();
+  return 0;
 }
