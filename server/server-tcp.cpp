@@ -199,7 +199,7 @@ int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Sending file: " << file << std::endl;
 
   serverSENDTCPMesage(response, file);
-  clearTmpFile(file);
+  // clearTmpFile(file);
 
   return 0;
 }

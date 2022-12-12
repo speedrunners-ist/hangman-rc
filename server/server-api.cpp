@@ -298,9 +298,9 @@ int closeGameSession(std::string plid) {
   return CLOSE_GAME_SUCCESS;
 }
 
-int insertScore(std::string plid, GameState state) {
-  const int initialMistakes = initialAvailableMistakes(getWordLength(state));
-  const int trialsMade = state.getTrials() - 1;
+int insertScore(std::string plid, GameState &state) {
+  const int initialMistakes = initialAvailableMistakes(getWordLength(state)) + 1;
+  const int trialsMade = state.getTrials();
   const int successfulGuesses = trialsMade - (initialMistakes - state.getAvailableMistakes());
   const int score = GAME_SCORE(successfulGuesses, trialsMade);
 
@@ -391,13 +391,13 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
     return STATE_ERROR;
   }
 
+  std::string auxfilepath = "";
   bool isFinished = false;
 
   if (!isOngoingGame(plid)) {
-    getLastFinishedGame(plid, filepath);
-    std::cout << filepath << std::endl;
+    getLastFinishedGame(plid, auxfilepath);
+    filepath = PLID_GAMES_PATH(plid).append("/" + auxfilepath);
     createStateFile(plid, filepath);
-    std::cout << filepath << std::endl;
     isFinished = true;
   } else {
     filepath = ONGOING_GAMES_PATH(plid);
@@ -410,14 +410,14 @@ int getState(std::string plid, std::string &response, std::string &filepath) {
   size_t fileSize = 0;
 
   for (auto it = lines.begin(); it != lines.end(); ++it) {
-    fileSize += it->size();
+    fileSize += it->size() + 1;
   }
 
   if (!isFinished) {
     fileSize -= lines.begin()->size();
   }
 
-  response.append(filepath);
+  response.append(auxfilepath);
   response.append(" " + std::to_string(fileSize));
 
   return isFinished ? STATE_FINISHED : STATE_ONGOING;

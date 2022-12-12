@@ -124,12 +124,13 @@ void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
   }
 }
 
-// TODO: Fix this (copilot)
 void getLastFinishedGame(std::string plid, std::string &filepath) {
 
   std::filesystem::path dir(PLID_GAMES_PATH(plid));
   if (!std::filesystem::exists(dir)) {
     std::filesystem::create_directory(dir);
+    filepath = "";
+    return;
   }
 
   std::vector<std::string> files;
@@ -143,7 +144,8 @@ void getLastFinishedGame(std::string plid, std::string &filepath) {
   }
 
   std::sort(files.begin(), files.end());
-  filepath = files.back();
+  // return name
+  filepath = files.back().erase(0, files.back().find_last_of('/') + 1);
 }
 
 void clearTmpFile(std::string filepath) {
