@@ -1,5 +1,6 @@
 #include "server-protocol.h"
 
+// UDP related socket variables
 struct addrinfo hintsUDP, *resUDP;
 int socketFdUDP;
 socklen_t addrlenUDP;
@@ -29,7 +30,16 @@ int createSocketUDP(struct peerInfo peer) {
     exit(EXIT_FAILURE);
   }
 
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
   return socketFdUDP;
+}
+
+int disconnectUDP() {
+  close(socketFdUDP);
+  freeaddrinfo(resUDP);
+  return 0;
 }
 
 int generalUDPHandler(struct peerInfo peer) {
@@ -46,7 +56,8 @@ int generalUDPHandler(struct peerInfo peer) {
     }
 
     std::cout << "[INFO]: Received message: " << bufferUDP;
-    int errcode = getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
+    int errcode =
+        getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
     if (verboseUDP) {
       // TODO: put type of request
       if (errcode != 0) {

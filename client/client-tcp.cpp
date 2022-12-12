@@ -1,5 +1,6 @@
 #include "client-protocol.h"
 
+// TCP related socket variables
 struct addrinfo *serverInfoTCP;
 struct addrinfo hintsTCP;
 int socketFdTCP;
@@ -18,7 +19,17 @@ int createSocketTCP(struct peerInfo peer) {
     std::cerr << TCP_SERVER_ERROR << std::endl;
     return -1;
   }
+
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
   return socketFdTCP;
+}
+
+int disconnectTCP() {
+  close(socketFdTCP);
+  freeaddrinfo(serverInfoTCP);
+  return 0;
 }
 
 int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessage, int args) {

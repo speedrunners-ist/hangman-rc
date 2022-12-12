@@ -2,7 +2,6 @@
 #define CLIENT_API_H
 
 #include "common/common.h"
-#include <numeric>
 
 void createGame(int length, int mistakes, std::string playerID);
 int getAvailableMistakes();

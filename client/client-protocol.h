@@ -72,7 +72,8 @@
 int createSocketUDP(struct peerInfo peer);
 int createSocketTCP(struct peerInfo peer);
 int generalUDPHandler(std::string message, size_t maxBytes);
-int disconnectPlayer();
+int disconnectUDP();
+int disconnectTCP();
 
 // UDP Server message servers
 int handleRSG(struct protocolMessage response);

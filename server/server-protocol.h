@@ -14,6 +14,8 @@ int setServerTCPParameters(bool vParam);
 
 int createSocketUDP(struct peerInfo peer);
 int createSocketTCP(struct peerInfo peer);
+int disconnectUDP();
+int disconnectTCP();
 int generalUDPHandler(struct peerInfo peer);
 int parseTCPMessage(std::string request);
 int generalTCPHandler(struct peerInfo peer);

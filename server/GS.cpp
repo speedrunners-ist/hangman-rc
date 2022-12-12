@@ -1,15 +1,19 @@
 #include "server-protocol.h"
 
-int main(int argc, char *argv[]) {
+/*** Signal Handler in order to exit gracefully ***/
+void signalHandler(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectUDP();
+  disconnectTCP();
+  exit(signum);
+}
 
+int main(int argc, char *argv[]) {
   std::string GSIP = DEFAULT_GSIP;
   std::string GSport = DEFAULT_GSPORT;
   std::string filePath;
   bool verbose = false;
-  int pid;
-
   int opt;
-  std::string GSPort = DEFAULT_GSPORT;
 
   while ((opt = getopt(argc, argv, "p:v")) != -1) {
     switch (opt) {
@@ -35,7 +39,7 @@ int main(int argc, char *argv[]) {
   setServerTCPParameters(verbose);
 
   const struct peerInfo peer = {"", GSport};
-  pid = fork();
+  pid_t pid = fork();
 
   if (pid == 0) {
     generalTCPHandler(peer);

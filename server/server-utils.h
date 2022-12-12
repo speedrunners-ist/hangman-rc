@@ -3,10 +3,6 @@
 
 #include "common/common.h"
 
-#include <ctime>
-#include <dirent.h>
-#include <filesystem>
-
 #define GAMES_PATH "server/games/"
 #define PLID_GAMES_PATH(plid) "server/games/" + plid
 #define ONGOING_GAMES_PATH(plid) "server/games/GAME_" + plid + ".txt"

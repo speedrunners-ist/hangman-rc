@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -11,6 +12,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <numeric>
+#include <signal.h>
 #include <stdlib.h>
 #include <string>
 #include <sys/socket.h>
@@ -18,7 +20,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
-#include <filesystem>
 
 typedef std::map<char, bool> Alphabet;
 typedef std::map<std::string, bool> WordList;
@@ -182,5 +183,6 @@ int validateArgsAmount(std::string input, int n);
 bool validPlayerID(std::string id);
 bool forceExit(GameState play, std::string command);
 void continueReading(char *buffer);
+void signalHandler(int signum);
 
 #endif /* COMMON_H */

@@ -1,5 +1,6 @@
 #include "client-protocol.h"
 
+// UDP related socket variables
 struct addrinfo *serverInfoUDP;
 struct addrinfo hintsUDP;
 int socketFdUDP;
@@ -16,10 +17,22 @@ responseHandler handleUDPServerMessage = {
 
 int createSocketUDP(struct peerInfo peer) {
   socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &hintsUDP, &serverInfoUDP);
+  if (socketFdUDP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
   return socketFdUDP;
 }
 
-int disconnectPlayer() { return disconnectUDP(serverInfoUDP, socketFdUDP); }
+int disconnectUDP() {
+  close(socketFdUDP);
+  freeaddrinfo(serverInfoUDP);
+  return 0;
+}
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
@@ -43,7 +56,6 @@ int handleRSG(struct protocolMessage response) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
-    // TODO: check if n_letters and n_max_errors are valid
     const int n_letters =
         std::stoi(response.body.substr(response.secondPos + 1, pos_n_letters - response.secondPos - 1));
     const int n_max_errors =

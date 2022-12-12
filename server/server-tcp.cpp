@@ -1,5 +1,6 @@
 #include "server-protocol.h"
 
+// TCP related socket variables
 struct addrinfo hintsTCP, *resTCP;
 int socketFdTCP, newConnectionFd;
 socklen_t addrlenTCP;
@@ -32,7 +33,17 @@ int createSocketTCP(struct peerInfo peer) {
     exit(EXIT_FAILURE); // TODO: exit gracefully here
   }
 
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
   return socketFdTCP;
+}
+
+int disconnectTCP() {
+  close(newConnectionFd);
+  close(socketFdTCP);
+  freeaddrinfo(resTCP);
+  return 0;
 }
 
 int parseTCPMessage(std::string request) {
@@ -63,10 +74,10 @@ int generalTCPHandler(struct peerInfo peer) {
       std::cerr << TCP_READ_ERROR << std::endl;
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
-    
+
     std::cout << "[INFO]: Received message: " << bufferTCP;
-    int errcode =
-        getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP, sizeof serviceTCP, 0);
+    int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP,
+                              sizeof serviceTCP, 0);
     if (verboseTCP) {
       if (errcode != 0)
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
