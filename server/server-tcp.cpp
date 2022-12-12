@@ -1,16 +1,14 @@
 #include "server-protocol.h"
 
-static struct addrinfo hintsTCP, *resTCP;
-static int socketFdTCP, newfd;
-static socklen_t addrlen;
-static ssize_t n;
-static bool verbose;
-static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
-static peerInfo dummy_peer;
-static char buffer[TCP_CHUNK_SIZE];
+struct addrinfo hintsTCP, *resTCP;
+int socketFdTCP, newConnectionFd;
+socklen_t addrlenTCP;
+bool verboseTCP;
+char hostTCP[NI_MAXHOST], serviceTCP[NI_MAXSERV]; // consts in <netdb.h>
+char bufferTCP[TCP_CHUNK_SIZE];
 
 // clang-format off
-static responseHandler handleTCPClientMessage = {
+responseHandler handleTCPClientMessage = {
   {"GSB", handleGSB},
   {"GHL", handleGHL},
   {"STA", handleSTA}
@@ -18,49 +16,26 @@ static responseHandler handleTCPClientMessage = {
 // clang-format on
 
 int setServerTCPParameters(bool vParam) {
-  verbose = vParam;
+  verboseTCP = vParam;
   return 0;
 }
 
-int serverSENDTCPMesage(std::string message, std::string filePath) {
-  if (write(newfd, message.c_str(), message.size()) == -1) {
-    std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
-    return -1;
-  }
-  std::cout << "[INFO]: Sent message: " << message << "|" << std::endl;
-
-  std::cout << "[INFO]: Sending file: " << filePath << std::endl;
-  if (filePath == "")
-    return 0;
-
-  std::ifstream file(filePath, std::ios::binary);
-
-  if (!file.is_open()) {
-    std::cerr << TCP_FILE_SEND_ERROR << std::endl;
-    return -1;
+int createSocketTCP(struct peerInfo peer) {
+  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &hintsTCP, &resTCP);
+  if (socketFdTCP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
   }
 
-  write(newfd, " ", 1);
-
-  while (file) {
-    file.read(buffer, TCP_CHUNK_SIZE);
-
-    ssize_t bytes_read = file.gcount();
-    if (bytes_read == 0)
-      break;
-
-    if (write(newfd, buffer, TCP_CHUNK_SIZE) == -1) {
-      std::cerr << TCP_FILE_SEND_ERROR << std::endl;
-      return -1;
-    }
-
-    memset(buffer, 0, TCP_CHUNK_SIZE);
+  if (listen(socketFdTCP, MAX_TCP_CONNECTION_REQUESTS) == -1) {
+    std::cerr << TCP_LISTEN_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
   }
 
-  return 0;
+  return socketFdTCP;
 }
 
-int generalTCPHandler(std::string request) {
+int parseTCPMessage(std::string request) {
   std::string responseBegin = request;
   struct protocolMessage serverMessage;
   const std::string command = responseBegin.substr(0, 3);
@@ -72,55 +47,47 @@ int generalTCPHandler(std::string request) {
   return handleTCPClientMessage[command](serverMessage);
 }
 
-void createSocketTCP(std::string addr, std::string port) {
-  socketFdTCP = newSocket(SOCK_STREAM, addr, port, &hintsTCP, &resTCP);
-
-  std::cout << socketFdTCP << std::endl;
-
-  if (socketFdTCP == -1) {
-    std::cerr << SOCKET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
+int generalTCPHandler(struct peerInfo peer) {
+  struct protocolMessage response;
+  if (createSocketTCP(peer) == -1) {
+    return -1;
   }
-
-  if (listen(socketFdTCP, 5) == -1) /*error*/
-    exit(1);
-
-  // TODO: fix loop
   while (true) {
-    addrlen = sizeof(addr);
+    addrlenTCP = sizeof(peer.addr);
+    if ((newConnectionFd = accept(socketFdTCP, (struct sockaddr *)&peer.addr, &addrlenTCP)) == -1) {
+      std::cerr << TCP_ACCEPT_ERROR << std::endl;
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
+    }
 
-    // TODO: fix accept
-    if ((newfd = accept(socketFdTCP, (struct sockaddr *)&addr, &addrlen)) == -1)
-      /*error*/ exit(1);
-
-    n = read(newfd, buffer, 128);
-    if (n == -1)
-      /*error*/ exit(1);
-    std::cout << "[INFO]: Received message: " << buffer;
+    if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
+      std::cerr << TCP_READ_ERROR << std::endl;
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
+    }
+    
+    std::cout << "[INFO]: Received message: " << bufferTCP;
     int errcode =
-        getnameinfo((struct sockaddr *)&addr, addrlen, host, sizeof host, service, sizeof service, 0);
-    if (verbose) {
+        getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP, sizeof serviceTCP, 0);
+    if (verboseTCP) {
       if (errcode != 0)
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       else {
-        std::cout << VERBOSE_SUCCESS(host, service) << std::endl;
+        std::cout << VERBOSE_SUCCESS(hostTCP, serviceTCP) << std::endl;
       }
     }
 
-    generalTCPHandler(std::string(buffer));
-    memset(buffer, 0, 128);
+    parseTCPMessage(std::string(bufferTCP));
+    memset(bufferTCP, 0, TCP_CHUNK_SIZE);
   }
 }
+
 // Server message handlers
 int handleGSB(struct protocolMessage message) {
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return serverSENDTCPMesage(buildSplitStringNewline({"ERR"}), "");
+    return sendTCPMessage(buildSplitStringNewline({"ERR"}), socketFdTCP);
   }
 
-  std::string file = "";
   std::string response;
-
   int ret = getScoreboard(response);
   switch (ret) {
     case SCOREBOARD_EMPTY:
@@ -128,14 +95,13 @@ int handleGSB(struct protocolMessage message) {
       break;
     case SCOREBOARD_SUCCESS:
       response = buildSplitString({"RSB", "OK", response});
-      file = SCORES_PATH;
-      break;
+      return sendTCPFile(response, socketFdTCP, SCORES_PATH);
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RSB", "ERR"});
       break;
   }
-  return serverSENDTCPMesage(response, file);
+  return sendTCPMessage(response, socketFdTCP);
 }
 
 int handleGHL(struct protocolMessage message) {
@@ -143,11 +109,11 @@ int handleGHL(struct protocolMessage message) {
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
-    return serverSENDTCPMesage(response, "");
+    return sendTCPMessage(response, socketFdTCP);
   }
 
   const std::string plid = message.second;
-  std::string file = "";
+  std::string file;
   std::string response;
 
   int ret = getHint(plid, response, file);
@@ -156,7 +122,8 @@ int handleGHL(struct protocolMessage message) {
       response = buildSplitStringNewline({"RHL", "NOK"});
       break;
     case HINT_SUCCESS:
-      response = buildSplitString({"RHL", "OK", response});
+      response = buildSplitString({"RHL", "OK"});
+      return sendTCPFile(response, socketFdTCP, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
@@ -164,18 +131,19 @@ int handleGHL(struct protocolMessage message) {
       break;
   }
 
-  return serverSENDTCPMesage(response, file);
+  return sendTCPMessage(response, socketFdTCP);
 }
 
 int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Received STA message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return serverSENDTCPMesage(buildSplitStringNewline({"ERR"}), "");
+    std::string response = buildSplitStringNewline({"ERR"});
+    return sendTCPMessage(response, socketFdTCP);
   }
 
   const std::string plid = message.second;
-  std::string file = "";
+  std::string file;
   std::string response;
 
   int ret = getState(plid, response, file);
@@ -184,10 +152,11 @@ int handleSTA(struct protocolMessage message) {
       response = buildSplitStringNewline({"RST", "NOK"});
       break;
     case STATE_ONGOING:
-      response = buildSplitString({"RST", "ACT", response});
-      break;
+      response = buildSplitString({"RST", "ACT"});
+      return sendTCPFile(response, socketFdTCP, file);
     case STATE_FINISHED:
-      response = buildSplitString({"RST", "FIN", response});
+      response = buildSplitString({"RST", "FIN"});
+      return sendTCPFile(response, socketFdTCP, file);
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
@@ -195,8 +164,5 @@ int handleSTA(struct protocolMessage message) {
       break;
   }
 
-  std::cout << "[INFO]: Sending response: " << response << std::endl;
-  std::cout << "[INFO]: Sending file: " << file << std::endl;
-
-  return serverSENDTCPMesage(response, file);
+  return sendTCPMessage(response, socketFdTCP);
 }

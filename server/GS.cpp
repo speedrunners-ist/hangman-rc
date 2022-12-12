@@ -34,11 +34,14 @@ int main(int argc, char *argv[]) {
 
   setServerTCPParameters(verbose);
 
+  const struct peerInfo peer = {"", GSport};
   pid = fork();
 
   if (pid == 0) {
-    createSocketTCP("", GSport);
+    generalTCPHandler(peer);
   } else if (pid > 0) {
-    createSocketUDP("", GSport);
+    generalUDPHandler(peer);
   }
+
+  exit(EXIT_SUCCESS);
 }

@@ -2,7 +2,6 @@
 #define CLIENT_PROTOCOL_H
 
 #include "client-api.h"
-#include <filesystem>
 
 // Expected amount of arguments for each protocol (client-side)
 #define START_ARGS 2

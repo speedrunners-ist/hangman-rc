@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
+#include <filesystem>
 
 typedef std::map<char, bool> Alphabet;
 typedef std::map<std::string, bool> WordList;
@@ -147,7 +148,7 @@ struct messageInfo {
 int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
               struct addrinfo **serverInfo);
 int disconnectUDP(struct addrinfo *res, int fd);
-int disconnectTCP();
+int disconnectTCP(struct addrinfo *res, int fd);
 
 int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
@@ -159,12 +160,10 @@ int parseUDPMessage(std::string message, struct protocolMessage &response);
 
 // TCP utils functions
 int generalTCPHandler(std::string message, struct peerInfo peer);
-int exchangeTCPMessage(std::string message, char *response);
-int sendTCPMessage(std::string message);
-int receiveTCPMessage(std::string &message, int args);
-int receiveTCPFile(std::string &message, std::string dir);
-int parseTCPResponse(char *response);
-int parseFileArgs(struct fileInfo &info);
+int sendTCPMessage(std::string message, int fd);
+int sendTCPFile(std::string message, int fd, std::string filePath);
+int receiveTCPMessage(std::string &message, int args, int fd);
+int receiveTCPFile(struct fileInfo &info, std::string dir, int fd);
 
 // Below, function prototypes
 

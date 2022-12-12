@@ -1,15 +1,14 @@
 #include "server-protocol.h"
 
-static struct addrinfo *resUDP;
-static struct addrinfo hintsUDP;
-static int socketFdUDP;
-static socklen_t addrlen;
-static char buffer[UDP_RECV_SIZE];
-static bool verbose;
-static char host[NI_MAXHOST], service[NI_MAXSERV]; // consts in <netdb.h>
+struct addrinfo hintsUDP, *resUDP;
+int socketFdUDP;
+socklen_t addrlenUDP;
+bool verboseUDP;
+char hostUDP[NI_MAXHOST], serviceUDP[NI_MAXSERV]; // consts in <netdb.h>
+char bufferUDP[UDP_RECV_SIZE];
 
 // clang-format off
-static responseHandler handleUDPClientMessage = {
+responseHandler handleUDPClientMessage = {
   {"SNG", handleSNG},
   {"PLG", handlePLG},
   {"PWG", handlePWG},
@@ -19,57 +18,58 @@ static responseHandler handleUDPClientMessage = {
 // clang-format on
 
 int setServerUDPParameters(std::string filepath, bool vParam) {
-  verbose = vParam;
+  verboseUDP = vParam;
   return setupWordList(filepath);
 }
 
-void createSocketUDP(std::string addr, std::string port) {
-  socketFdUDP = newSocket(SOCK_DGRAM, addr, port, &hintsUDP, &resUDP);
+int createSocketUDP(struct peerInfo peer) {
+  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &hintsUDP, &resUDP);
   if (socketFdUDP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
 
+  return socketFdUDP;
+}
+
+int generalUDPHandler(struct peerInfo peer) {
+  struct protocolMessage response;
+  if (createSocketUDP(peer) == -1) {
+    return -1;
+  }
+
   // Listen for incoming connections
   while (true) {
-    addrlen = sizeof(resUDP->ai_addr);
-    if (recvfrom(socketFdUDP, buffer, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlen) == -1) {
+    addrlenUDP = sizeof(resUDP->ai_addr);
+    if (recvfrom(socketFdUDP, bufferUDP, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlenUDP) == -1) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    std::cout << "[INFO]: Received message: " << buffer;
-    int errcode = getnameinfo(resUDP->ai_addr, addrlen, host, sizeof host, service, sizeof service, 0);
-    if (verbose) {
+    std::cout << "[INFO]: Received message: " << bufferUDP;
+    int errcode = getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
+    if (verboseUDP) {
       // TODO: put type of request
       if (errcode != 0) {
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       } else {
-        std::cout << VERBOSE_SUCCESS(host, service) << std::endl;
+        std::cout << VERBOSE_SUCCESS(hostUDP, serviceUDP) << std::endl;
       }
     }
 
-    generalUDPHandler(std::string(buffer));
-    memset(buffer, 0, UDP_RECV_SIZE);
+    if (parseUDPMessage(std::string(bufferUDP), response) == -1) {
+      std::cerr << UDP_PARSE_ERROR << std::endl;
+      return -1;
+    }
+    try {
+      handleUDPClientMessage[response.first](response);
+    } catch (const std::out_of_range &oor) {
+      std::cerr << UDP_HANGMAN_ERROR << std::endl;
+      return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    }
+    memset(bufferUDP, 0, UDP_RECV_SIZE);
   }
-}
 
-int generalUDPHandler(std::string message) {
-  struct protocolMessage response;
-  int ret = parseUDPMessage(message, response);
-  std::cout << "[INFO]: Parsed message, now on server UDP handler" << std::endl;
-  if (ret == -1) {
-    std::cerr << UDP_PARSE_ERROR << std::endl;
-    return -1;
-  }
-  std::cout << "[INFO]: Message parsed successfully" << std::endl;
-  std::cout << "[INFO]: Message type: " << response.first << std::endl;
-  try {
-    ret = handleUDPClientMessage[response.first](response);
-  } catch (const std::out_of_range &oor) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-  return ret;
+  return 0;
 }
 
 // Server message handlers

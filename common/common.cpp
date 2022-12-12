@@ -104,8 +104,8 @@ std::string GameState::getPlayerID() { return playerID; }
 
 int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
               struct addrinfo **serverInfo) {
-  int socketFd = socket(AF_INET, type, 0);
-  if (socketFd == -1) {
+  int fd = socket(AF_INET, type, 0);
+  if (fd == -1) {
     std::cout << SOCKET_ERROR << std::endl;
     return -1;
   }
@@ -121,7 +121,7 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
       std::cerr << GETADDRINFO_ERROR << std::endl;
       return -1;
     }
-    return socketFd;
+    return fd;
   }
 
   // in this case, it's the server creating a socket
@@ -132,18 +132,18 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
     return -1;
   }
 
-  if (bind(socketFd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
+  if (bind(fd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
     std::cout << BIND_ERROR << std::endl;
     return -1;
   }
-  return socketFd;
+  return fd;
 }
 
-int turnOnSocketTimer(int socketFd) {
+int turnOnSocketTimer(int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
   tv.tv_sec = SOCKET_TIMEOUT;
-  if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     // FIXME: is this exit graceful?
     exit(EXIT_FAILURE);
@@ -151,10 +151,10 @@ int turnOnSocketTimer(int socketFd) {
   return 0;
 }
 
-int turnOffSocketTimer(int socketFd) {
+int turnOffSocketTimer(int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
-  if (setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
     return -1;
   }
@@ -249,6 +249,121 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
 
   std::cerr << RECVFROM_ERROR << std::endl;
   return -1;
+}
+
+/*** TCP message parsing/sending implementation ***/
+
+int disconnectTCP(struct addrinfo *res, int fd) {
+  freeaddrinfo(res);
+  if (close(fd) == -1) {
+    std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int sendTCPMessage(std::string message, int fd) {
+  size_t bytesSent = 0;
+  size_t bytesLeft = message.length();
+  size_t msgLen = bytesLeft;
+  while (bytesSent < msgLen) {
+    ssize_t bytes = send(fd, message.c_str() + bytesSent, bytesLeft, 0);
+    if (bytes < 0) {
+      std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
+      return -1;
+    }
+    bytesSent += (size_t)bytes;
+    bytesLeft -= (size_t)bytes;
+  }
+  return (int)bytesSent;
+}
+
+int sendTCPFile(std::string message, int fd, std::string filePath) {
+  if (sendTCPMessage(message, fd) == -1) {
+    return -1;
+  }
+
+  std::ifstream file(filePath, std::ios::binary);
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << std::endl;
+    return -1;
+  }
+
+  long fileSize = (long)std::filesystem::file_size(filePath);
+  long bytesLeft = fileSize;
+  char buffer[TCP_CHUNK_SIZE];
+  do {
+    memset(buffer, 0, TCP_CHUNK_SIZE);
+    file.read(buffer, (TCP_CHUNK_SIZE < bytesLeft) ? TCP_CHUNK_SIZE : bytesLeft);
+    if (sendTCPMessage(buffer, fd) == -1) {
+      file.close();
+      return -1;
+    }
+    bytesLeft -= file.gcount();
+  } while (bytesLeft > 0);
+
+  file.close();
+  return 0;
+}
+
+int receiveTCPMessage(std::string &message, int args, int fd) {
+  ssize_t bytesReceived = 0;
+  size_t bytesRead = 0;
+  int readArgs = 0;
+  char c;
+  do {
+    // FIXME: there will be a problem if the response is "ERR\n"?
+    turnOnSocketTimer(fd);
+    bytesReceived = read(fd, &c, 1);
+    turnOffSocketTimer(fd);
+    if (bytesReceived == -1) {
+      std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
+      return -1;
+    } else if (c == ' ' || c == '\n') {
+      readArgs++;
+    }
+    message.push_back(c);
+    bytesRead += (size_t)bytesReceived;
+  } while (bytesReceived != 0 && readArgs < args);
+  return (int)bytesRead;
+}
+
+int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
+  ssize_t bytesReceived = 0;
+  size_t bytesRead = 0;
+  size_t bytesLeft = (size_t)info.fileSize;
+  // create directory if it doesn't exist
+  std::filesystem::path dirPath(dir);
+  if (!std::filesystem::exists(dirPath)) {
+    std::filesystem::create_directory(dirPath);
+  }
+
+  std::fstream file;
+  file.open(dir + "/" + info.fileName, std::ios::out | std::ios::in | std::ios::trunc);
+  if (!file.is_open()) {
+    std::cerr << FILE_OPEN_ERROR << std::endl;
+    return -1;
+  }
+  // read from socket and write to file until file size is reached, in chunks
+  char buffer[TCP_CHUNK_SIZE];
+  do {
+    memset(buffer, 0, TCP_CHUNK_SIZE);
+    turnOnSocketTimer(fd);
+    bytesReceived = read(fd, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
+    turnOffSocketTimer(fd);
+    if (bytesReceived == -1) {
+      std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
+      return -1;
+    }
+    // print buffer
+    file.write(buffer, bytesReceived);
+    bytesRead += (size_t)bytesReceived;
+    bytesLeft -= (size_t)bytesReceived;
+  } while (bytesReceived != 0 && bytesLeft > 0);
+
+  // TODO: should we check if the message ends in a newline?
+  file.close();
+  return (int)bytesRead;
 }
 
 /*** Misc functions implementation ***/
