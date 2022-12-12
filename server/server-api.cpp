@@ -310,7 +310,7 @@ int insertScore(std::string plid, GameState &state) {
   const std::string printedScore = scoreStream.str();
 
   // clang-format off
-  std::string scoreline = buildSplitStringNewline({
+  std::string scoreline = buildSplitString({
     printedScore,
     plid,
     state.getWord(),
