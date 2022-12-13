@@ -9,6 +9,7 @@
 #define TCP_LISTEN_ERROR "[ERR]: Failed to listen to TCP socket."
 #define TCP_ACCEPT_ERROR "[ERR]: Failed to accept TCP connection."
 #define TCP_READ_ERROR "[ERR]: Failed to read from TCP socket."
+#define SIGACTION_ERROR "[ERR]: Failed to set action."
 #define FORK_ERROR "[ERR]: Failed to fork process."
 
 // Maximum number of pending TCP connection requests

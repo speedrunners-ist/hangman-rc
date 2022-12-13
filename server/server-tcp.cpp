@@ -8,6 +8,7 @@ bool verboseTCP;
 char hostTCP[NI_MAXHOST], serviceTCP[NI_MAXSERV]; // consts in <netdb.h>
 char bufferTCP[TCP_CHUNK_SIZE];
 pid_t pid;
+struct sigaction act;
 
 // clang-format off
 responseHandler handleTCPClientMessage = {
@@ -36,8 +37,13 @@ int createSocketTCP(struct peerInfo peer) {
 
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
-  // TODO: check if this is necessary
-  signal(SIGCHLD, NULL);
+
+  memset(&act, 0, sizeof(act));
+  act.sa_handler = SIG_IGN;
+  if (sigaction(SIGCHLD, &act, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
+  }
 
   return socketFdTCP;
 }
