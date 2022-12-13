@@ -106,6 +106,6 @@ int createPlaceholderState(std::string plid, std::string filePath);
 /**
  * @brief Destroys all ongoing games on exit.
  */
-void destroyOnGoingGames();
+void destroyOngoingGames();
 
 #endif
