@@ -54,16 +54,16 @@
 #define QUIT_GAME "Game quit by player."
 
 GameState createGame(int length, int mistakes, std::string playerID);
-int getAvailableMistakes(GameState play);
-std::string getWord(GameState play);
+int getAvailableMistakes(GameState state);
+std::string getWord(GameState state);
 void playCorrectLetterGuess(GameState &state, std::string letter);
 void playIncorrectLetterGuess(GameState &state, std::string letter);
 void playIncorrectWordGuess(GameState &state, std::string word);
-int getWordLength(GameState play);
-void setPlayerID(GameState &play, std::string id);
-std::string getPlayerID(GameState play);
-void incrementTrials(GameState &play);
-int getTrials(GameState play);
+int getWordLength(GameState state);
+void setPlayerID(GameState &state, std::string id);
+std::string getPlayerID(GameState state);
+void incrementTrials(GameState &state);
+int getTrials(GameState state);
 
 int setupWordList(std::string filePath);
 bool isOngoingGame(std::string plid);

@@ -14,7 +14,7 @@ responseHandler handleTCPServerMessage = {
 // clang-format on
 
 int createSocketTCP(struct peerInfo peer) {
-  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &hintsTCP, &serverInfoTCP);
+  socketFdTCP = newSocket(SOCK_STREAM, peer, &hintsTCP, &serverInfoTCP);
   if (connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen) == -1) {
     std::cerr << TCP_SERVER_ERROR << std::endl;
     return -1;
@@ -26,11 +26,7 @@ int createSocketTCP(struct peerInfo peer) {
   return socketFdTCP;
 }
 
-int disconnectTCP() {
-  freeaddrinfo(serverInfoTCP);
-  close(socketFdTCP);
-  return 0;
-}
+int disconnectTCP() { return disconnectSocket(serverInfoTCP, socketFdTCP); }
 
 int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessage, int args) {
   if (serverInfoTCP == NULL) {
@@ -44,7 +40,7 @@ int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessag
   }
   int ret = turnOnSocketTimer(socketFdTCP);
   if (ret == -1) {
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     exit(EXIT_FAILURE);
   }
   ret = receiveTCPMessage(responseMessage, args, socketFdTCP);
@@ -53,7 +49,7 @@ int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessag
   }
   ret = turnOffSocketTimer(socketFdTCP);
   if (ret == -1) {
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     exit(EXIT_FAILURE);
   }
   serverMessage.body = responseMessage;
@@ -105,23 +101,23 @@ int handleRSB(struct protocolMessage response) {
     struct fileInfo info;
     int ret = parseFileArgs(info);
     if (ret == -1) {
-      disconnectTCP(serverInfoTCP, socketFdTCP);
+      disconnectTCP();
       return -1;
     }
     if (receiveTCPFile(info, SB_DIR, socketFdTCP) == -1) {
-      disconnectTCP(serverInfoTCP, socketFdTCP);
+      disconnectTCP();
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
-    ret = displayFile(info.fileName, SB_DIR);
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    ret = displayFile(SB_PATH(info.fileName));
+    disconnectTCP();
     return ret;
   } else if (response.second == "EMPTY") {
     std::cout << SB_FAIL << std::endl;
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return 0;
   }
-  disconnectTCP(serverInfoTCP, socketFdTCP);
+  disconnectTCP();
   return -1;
 }
 
@@ -131,35 +127,35 @@ int handleRHL(struct protocolMessage response) {
     const int ret = parseFileArgs(info);
     if (ret == -1) {
       std::cerr << TCP_FILE_ARGS_ERROR << std::endl;
-      disconnectTCP(serverInfoTCP, socketFdTCP);
+      disconnectTCP();
       return -1;
     }
     const int bytesRead = receiveTCPFile(info, H_DIR, socketFdTCP);
     if (bytesRead == -1) {
-      disconnectTCP(serverInfoTCP, socketFdTCP);
+      disconnectTCP();
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
     std::cout << H_SUCCESS(info.fileName, bytesRead) << std::endl;
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return 0;
   } else if (response.second == "NOK") {
     std::cout << H_FAIL << std::endl;
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return 0;
   }
-  disconnectTCP(serverInfoTCP, socketFdTCP);
+  disconnectTCP();
   return -1;
 }
 
 int handleRST(struct protocolMessage response) {
   if (response.second == "NOK") {
     std::cout << ST_NOK << std::endl;
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return 0;
   } else if (response.second == "ERR") {
     std::cerr << ST_ERR << std::endl;
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return -1;
   }
 
@@ -167,13 +163,13 @@ int handleRST(struct protocolMessage response) {
   const int ret = parseFileArgs(info);
   if (ret == -1) {
     std::cerr << TCP_FILE_ARGS_ERROR << std::endl;
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return -1;
   }
 
   const int bytesRead = receiveTCPFile(info, ST_DIR, socketFdTCP);
   if (bytesRead == -1) {
-    disconnectTCP(serverInfoTCP, socketFdTCP);
+    disconnectTCP();
     return -1;
   }
 
@@ -184,13 +180,13 @@ int handleRST(struct protocolMessage response) {
     std::cout << ST_FIN << std::endl;
   }
 
-  displayFile(info.fileName, ST_DIR);
-  disconnectTCP(serverInfoTCP, socketFdTCP);
+  displayFile(ST_PATH(info.fileName));
+  disconnectTCP();
   return 0;
 }
 
 int sendGSB(struct messageInfo info) {
-  if (validateArgsAmount(info.input, SCOREBOARD_ARGS) == -1) {
+  if (!validArgsAmount(info.input, SCOREBOARD_ARGS)) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GSB"});
@@ -198,7 +194,7 @@ int sendGSB(struct messageInfo info) {
 }
 
 int sendGHL(struct messageInfo info) {
-  if (validateArgsAmount(info.input, HINT_ARGS) == -1) {
+  if (!validArgsAmount(info.input, HINT_ARGS)) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GHL", getPlayerID()});
@@ -206,7 +202,7 @@ int sendGHL(struct messageInfo info) {
 }
 
 int sendSTA(struct messageInfo info) {
-  if (validateArgsAmount(info.input, STATE_ARGS) == -1) {
+  if (!validArgsAmount(info.input, STATE_ARGS)) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"STA", getPlayerID()});

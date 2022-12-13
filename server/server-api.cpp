@@ -12,7 +12,7 @@ std::map<std::string, std::function<void(GameState &state, std::string value)>> 
 };
 // clang-format on
 
-// TODO: either call everything GameState play or GameState state, but not both
+// TODO: either call everything GameState state or GameState state, but not both
 
 /*** GameState implementation ***/
 
@@ -33,18 +33,18 @@ void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWo
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
 /*** Util methods in order to let external server implementations use the GameState class ***/
-int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
-std::string getWord(GameState play) { return play.getWord(); }
-void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength(GameState play) { return play.getWordLength(); }
-void setPlayerID(GameState &play, std::string id) { play.setPlayerID(id); }
-std::string getPlayerID(GameState play) { return play.getPlayerID(); }
-int getTrials(GameState play) {
+int getAvailableMistakes(GameState state) { return play.getAvailableMistakes(); }
+std::string getWord(GameState state) { return play.getWord(); }
+void setLastGuess(GameState state, char guess) { play.setLastGuess(guess); }
+void setLastWordGuess(GameState state, std::string guess) { play.setLastWordGuess(guess); }
+int getWordLength(GameState state) { return play.getWordLength(); }
+void setPlayerID(GameState &state, std::string id) { play.setPlayerID(id); }
+std::string getPlayerID(GameState state) { return play.getPlayerID(); }
+int getTrials(GameState state) {
   // the user will always send the trial number related to the one he is playing, hence the +1
   return play.getTrials() + 1;
 }
-void incrementTrials(GameState &play) { play.incrementTrials(); }
+void incrementTrials(GameState &state) { play.incrementTrials(); }
 
 /*** Methods utilized in state file retrieval ***/
 void playCorrectLetterGuess(GameState &state, std::string letter) {

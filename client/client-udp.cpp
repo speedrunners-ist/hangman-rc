@@ -16,7 +16,7 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 int createSocketUDP(struct peerInfo peer) {
-  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &hintsUDP, &serverInfoUDP);
+  socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
   if (socketFdUDP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
     exit(EXIT_FAILURE);
@@ -28,11 +28,7 @@ int createSocketUDP(struct peerInfo peer) {
   return socketFdUDP;
 }
 
-int disconnectUDP() {
-  freeaddrinfo(serverInfoUDP);
-  close(socketFdUDP);
-  return 0;
-}
+int disconnectUDP() { return disconnectSocket(serverInfoUDP, socketFdUDP); }
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
@@ -165,7 +161,7 @@ int handleRRV(struct protocolMessage response) {
 
 // handlers: player requests
 int sendSNG(struct messageInfo info) {
-  if (validateArgsAmount(info.input, START_ARGS) == -1) {
+  if (!validArgsAmount(info.input, START_ARGS)) {
     return -1;
   }
   const size_t pos1 = info.input.find(' ');
@@ -180,7 +176,7 @@ int sendSNG(struct messageInfo info) {
 }
 
 int sendPLG(struct messageInfo info) {
-  if (validateArgsAmount(info.input, PLAY_ARGS) == -1) {
+  if (!validArgsAmount(info.input, PLAY_ARGS)) {
     return -1;
   }
   const size_t pos1 = info.input.find(' ');
@@ -197,7 +193,7 @@ int sendPLG(struct messageInfo info) {
 }
 
 int sendPWG(struct messageInfo info) {
-  if (validateArgsAmount(info.input, GUESS_ARGS) == -1) {
+  if (!validArgsAmount(info.input, GUESS_ARGS)) {
     return -1;
   }
   const size_t pos1 = info.input.find(' ');
@@ -214,7 +210,7 @@ int sendPWG(struct messageInfo info) {
 }
 
 int sendQUT(struct messageInfo info) {
-  if (validateArgsAmount(info.input, QUIT_ARGS) == -1) {
+  if (!validArgsAmount(info.input, QUIT_ARGS)) {
     return -1;
   }
   const std::string command = info.input.substr(0, info.input.find('\n'));
@@ -226,7 +222,7 @@ int sendQUT(struct messageInfo info) {
 }
 
 int sendREV(struct messageInfo info) {
-  if (validateArgsAmount(info.input, REVEAL_ARGS) == -1) {
+  if (!validArgsAmount(info.input, REVEAL_ARGS)) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"REV", getPlayerID()});

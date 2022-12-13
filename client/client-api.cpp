@@ -2,7 +2,7 @@
 
 /*** ClientAPI methods implementation ***/
 
-GameState play;
+GameState state;
 std::string plid;
 
 // Game state functions, useful for the client's protocol implementations

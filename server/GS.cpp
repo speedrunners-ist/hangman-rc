@@ -5,6 +5,7 @@ void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   disconnectTCP();
+  std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
 
@@ -47,5 +48,6 @@ int main(int argc, char *argv[]) {
     generalUDPHandler(peer);
   }
 
+  std::cout << EXIT_PROGRAM << std::endl;
   exit(EXIT_SUCCESS);
 }

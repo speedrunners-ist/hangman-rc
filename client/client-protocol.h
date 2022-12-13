@@ -66,8 +66,10 @@
 #define ST_ERR "[ERR]: The server has encountered an error while processing your request."
 
 #define SB_DIR "client/scoreboard/"
+#define SB_PATH(name) SB_DIR + name
 #define H_DIR "client/hints/"
 #define ST_DIR "client/state/"
+#define ST_PATH(name) ST_DIR + name
 
 int createSocketUDP(struct peerInfo peer);
 int createSocketTCP(struct peerInfo peer);

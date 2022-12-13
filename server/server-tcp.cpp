@@ -22,7 +22,7 @@ int setServerTCPParameters(bool vParam) {
 }
 
 int createSocketTCP(struct peerInfo peer) {
-  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &hintsTCP, &resTCP);
+  socketFdTCP = newSocket(SOCK_STREAM, peer, &hintsTCP, &resTCP);
   if (socketFdTCP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
     exit(EXIT_FAILURE);
@@ -39,12 +39,7 @@ int createSocketTCP(struct peerInfo peer) {
   return socketFdTCP;
 }
 
-int disconnectTCP() {
-  freeaddrinfo(resTCP);
-  close(newConnectionFd);
-  close(socketFdTCP);
-  return 0;
-}
+int disconnectTCP() { return disconnectSocket(resTCP, socketFdTCP); }
 
 int parseTCPMessage(std::string request) {
   std::string responseBegin = request;
