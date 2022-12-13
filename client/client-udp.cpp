@@ -182,7 +182,11 @@ int sendSNG(struct messageInfo info) {
 int sendPLG(struct messageInfo info) {
   if (validateArgsAmount(info.input, PLAY_ARGS) == -1) {
     return -1;
+  } else if (getPlayerID() == "") {
+    std::cerr << NO_PLAYER_ERROR << std::endl;
+    return -1;
   }
+
   const size_t pos1 = info.input.find(' ');
   std::string letter = info.input.substr(pos1 + 1);
   letter.erase(std::remove(letter.begin(), letter.end(), '\n'), letter.end());
@@ -198,6 +202,9 @@ int sendPLG(struct messageInfo info) {
 
 int sendPWG(struct messageInfo info) {
   if (validateArgsAmount(info.input, GUESS_ARGS) == -1) {
+    return -1;
+  } else if (getPlayerID() == "") {
+    std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
   const size_t pos1 = info.input.find(' ');
@@ -216,6 +223,9 @@ int sendPWG(struct messageInfo info) {
 int sendQUT(struct messageInfo info) {
   if (validateArgsAmount(info.input, QUIT_ARGS) == -1) {
     return -1;
+  } else if (getPlayerID() == "") {
+    std::cerr << NO_PLAYER_ERROR << std::endl;
+    return -1;
   }
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitStringNewline({"QUT", getPlayerID()});
@@ -227,6 +237,9 @@ int sendQUT(struct messageInfo info) {
 
 int sendREV(struct messageInfo info) {
   if (validateArgsAmount(info.input, REVEAL_ARGS) == -1) {
+    return -1;
+  } else if (getPlayerID() == "") {
+    std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
   const std::string message = buildSplitStringNewline({"REV", getPlayerID()});
