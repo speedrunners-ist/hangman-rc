@@ -274,7 +274,7 @@ std::string buildSplitStringNewline(std::vector<std::string> args);
  *
  * @param lines: Vector of strings (lines) to be filled with the file's content.
  * @param filePath: Path to the file to be read.
- * @return 0 on success, -1 on error.
+ * @return 0 on success, -2 if the file does not exist, -1 on error.
  */
 int readFile(std::vector<std::string> &lines, std::string filePath);
 

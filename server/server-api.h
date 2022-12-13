@@ -3,49 +3,56 @@
 
 #include "server-utils.h"
 
-// Error Messages
+// Wrong program arguments
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
 
-// User Messages
+// Server initialization message
 #define STARTING_SERVER "[INFO] Starting server."
+
+// Server initialization error
 #define STARTING_SERVER_ERROR "[ERR]: Failed to set server parameters. Exiting..."
+
+// Verbose success message for a message sent by a client
 #define VERBOSE_SUCCESS(host, service) "[INFO]: Message sent by [" << host << ":" << service << "]"
+
+// Verbose error message for a message sent by a client
 #define VERBOSE_ERROR(error) "[ERR]: getnameinfo: " << gai_strerror(error)
 
+// Return codes for each specific scenario for a message received by the server
 enum {
-  // RSG return codes
-  CREATE_GAME_ERROR,
-  CREATE_GAME_SUCCESS,
+  CREATE_GAME_ERROR,   // RSG NOK
+  CREATE_GAME_SUCCESS, // RSG OK
 
   // RLG return codes
-  SYNTAX_ERROR,
-  TRIAL_MISMATCH,
-  DUPLICATE_GUESS,
-  WRONG_GUESS,
-  WRONG_FINAL_GUESS,
-  SUCCESS_GUESS,
-  SUCCESS_FINAL_GUESS,
+  SYNTAX_ERROR,        // RLG ERR/RWG ERR
+  TRIAL_MISMATCH,      // RLG INV/RWG INV
+  DUPLICATE_GUESS,     // RLG DUP
+  WRONG_GUESS,         // RLG NOK/RWG NOK
+  WRONG_FINAL_GUESS,   // RLG OVR/RWG OVR
+  SUCCESS_GUESS,       // RLG OK/RWG WIN
+  SUCCESS_FINAL_GUESS, // RLG WIN
 
   // RQT return codes
-  CLOSE_GAME_ERROR,
-  CLOSE_GAME_SUCCESS,
+  CLOSE_GAME_ERROR,   // RQT NOK
+  CLOSE_GAME_SUCCESS, // RQT OK
 
   // RSB return codes
-  SCOREBOARD_ERROR,
-  SCOREBOARD_EMPTY,
-  SCOREBOARD_SUCCESS,
+  SCOREBOARD_ERROR,   // RSB NOK
+  SCOREBOARD_EMPTY,   // RSB EMPTY
+  SCOREBOARD_SUCCESS, // RSB OK
 
   // RHL return codes
-  HINT_ERROR,
-  HINT_SUCCESS,
+  HINT_ERROR,   // RHL NOK
+  HINT_SUCCESS, // RHL OK
 
   // RST return codes
-  STATE_ERROR,
-  STATE_FINISHED,
-  STATE_ONGOING
+  STATE_ERROR,    // RST NOK
+  STATE_FINISHED, // RST FIN
+  STATE_ONGOING   // RST ACT
 };
 
-// File storing utilities + messages
+// Below, file handling utility macros + scoreboard line macros
+
 #define EMPTY_FILE(file) "[ERR]: File " + file + " is empty."
 #define UNEXPECTED_GAME_LINE(line) "[ERR]: Unexpected line in game file: " + line
 #define GAME_SCORE(correct, total) (correct * 100 / total)
@@ -58,33 +65,213 @@ enum {
 #define WRONG_FINAL_WORD "Wrong final guess (word):"
 #define QUIT_GAME "Game quit by player."
 
-GameState createGame(int length, int mistakes, std::string playerID);
+// Below, a series of wrapper functions which allow the server not to be aware of any
+// "global" state's internal structure at any given time
+
+/**
+ * @brief Gets the available mistakes for a given game state.
+ *
+ * @param state The game state.
+ * @return The number of available mistakes.
+ */
 int getAvailableMistakes(GameState state);
+
+/**
+ * @brief Gets the word for a given game state.
+ *
+ * @param state The game state.
+ * @return The word.
+ */
 std::string getWord(GameState state);
-void playCorrectLetterGuess(GameState &state, std::string letter);
-void playIncorrectLetterGuess(GameState &state, std::string letter);
-void playIncorrectWordGuess(GameState &state, std::string word);
+
+/**
+ * @brief Gets the word length for a given game state.
+ *
+ * @param state The game state.
+ * @return The word length.
+ */
 int getWordLength(GameState state);
-void setPlayerID(GameState &state, std::string id);
+
+/**
+ * @brief Sets the playerID for a given game state.
+ *
+ * @param state The game state.
+ * @param plid The playerID.
+ */
+void setPlayerID(GameState &state, std::string plid);
+
+/**
+ * @brief Gets the playerID for a given game state.
+ *
+ * @param state The game state.
+ * @return The playerID.
+ */
 std::string getPlayerID(GameState state);
-void incrementTrials(GameState &state);
+
+/**
+ * @brief Gets the number of trials for a given game state.
+ *
+ * @param state The game state.
+ * @return The number of trials.
+ */
 int getTrials(GameState state);
 
+/**
+ * @brief Increments the trials for a given game state in a single unit.
+ *
+ * @param state The game state.
+ */
+void incrementTrials(GameState &state);
+
+/**
+ * @brief Handles the case in which a letter is guessed correctly.
+ *
+ * @param state The game state.
+ * @param letter The guessed letter.
+ */
+void playCorrectLetterGuess(GameState &state, std::string letter);
+
+/**
+ * @brief Handles the case in which a letter is guessed incorrectly.
+ *
+ * @param state The game state.
+ * @param letter The guessed letter.
+ */
+void playIncorrectLetterGuess(GameState &state, std::string letter);
+
+/**
+ * @brief Handles the case in which a word is guessed correctly.
+ *
+ * @param state The game state.
+ * @param word The guessed word.
+ */
+void playIncorrectWordGuess(GameState &state, std::string word);
+
+/**
+ * @brief Sets up the server for the retrieval of a word-hint pair from a word list.
+ *
+ * @param filePath The path to the word list file.
+ * @return 0 if the setup was successful, -1 otherwise.
+ */
 int setupWordList(std::string filePath);
+
+/**
+ * @brief Checks if a given game session is ongoing.
+ *
+ * @param plid The playerID of the game session.
+ * @return true if the game session is ongoing, false otherwise.
+ */
 bool isOngoingGame(std::string plid);
+
+/**
+ * @brief Gets a random word-hint pair from the word list.
+ *
+ * @return A pair containing the word and the hint.
+ */
 std::pair<std::string, std::string> getRandomLine();
 
-int createGameSession(std::string plid, std::string &arguments);
-int retrieveGame(std::string playerID, GameState &state);
-int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
+/**
+ * @brief Gets the number of occurrences of a given letter in a given word.
+ *
+ * @param word The word.
+ * @param letter The letter.
+ * @return The number of occurrences.
+ */
 int getLetterOccurrences(std::string word, char letter);
+
+/**
+ * @brief Gets the positions of a given letter in a given word.
+ *
+ * @param word The word.
+ * @param letter The letter.
+ * @param positions The positions.
+ * @return The number of occurrences.
+ */
 int getLetterOccurrencesPositions(std::string word, char letter, std::string &positions);
+
+/**
+ * @brief Retrieves a game state's information from a file.
+ *
+ * @param plid The playerID of the game session.
+ * @param state The game state.
+ * @return 0 if the retrieval was successful, -1 otherwise.
+ */
+int retrieveGame(std::string playerID, GameState &state);
+
+/**
+ * @brief Creates a new game session.
+ *
+ * @param plid The playerID of the game session.
+ * @param arguments The arguments for the game session - word, hint, number of mistakes.
+ * @return CREATE_GAME_SUCCESS if the game session was created successfully, CREATE_GAME_ERROR otherwise.
+ */
+int createGameSession(std::string plid, std::string &arguments);
+
+/**
+ * @brief Plays a letter guess in a given game session.
+ *
+ * @param plid The playerID of the game session.
+ * @param letter The letter.
+ * @param trial The trial number.
+ * @param arguments The arguments to be sent back to the client.
+ * @return A plethora of possible return values.
+ */
+int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments);
+
+/**
+ * @brief Plays a word guess in a given game session.
+ *
+ * @param plid The playerID of the game session.
+ * @param word The word.
+ * @param trial The trial number.
+ * @param arguments The arguments to be sent back to the client.
+ * @return A plethora of possible return values.
+ */
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments);
+
+/**
+ * @brief Closes a given game session, saving its state to a file.
+ *
+ * @param plid The playerID of the game session.
+ * @return 0 if the game session was closed successfully, -1 otherwise.
+ */
 int closeGameSession(std::string plid);
+
+/**
+ * @brief Calculates the score for a given game session, tries to insert it into the scoreboard.
+ *
+ * @param plid The playerID of the game session.
+ * @param state The game state.
+ * @return The score.
+ */
 int insertScore(std::string plid, GameState &state);
 
+/**
+ * @brief Gets the scoreboard.
+ *
+ * @param response The message to be sent back to the client.
+ * @return A plethora of possible return values.
+ */
 int getScoreboard(std::string &response);
+
+/**
+ * @brief Gets the hint for a given game session.
+ *
+ * @param plid The playerID of the game session.
+ * @param response The message to be sent back to the client.
+ * @param filePath The path to the hint file.
+ * @return HINT_SUCCESS if the hint was retrieved successfully, HINT_ERROR otherwise.
+ */
 int getHint(std::string plid, std::string &response, std::string &filePath);
+
+/**
+ * @brief Gets the state for a given game session.
+ *
+ * @param plid The playerID of the game session.
+ * @param response The message to be sent back to the client.
+ * @param filePath The path to the state file.
+ * @return A plethora of possible return values.
+ */
 int getState(std::string plid, std::string &response, std::string &filePath);
 
 #endif /* SERVER_API_H */
