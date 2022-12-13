@@ -208,9 +208,12 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   }
 
   arguments = buildSplitString({std::to_string(getTrials(state))});
-  if (std::stoi(trial) != getTrials(state)) {
+
+  if (getTrials(state) != std::stoi(trial)) {
     return TRIAL_MISMATCH;
-  } else if (state.isLetterGuessed(letter.front())) {
+  }
+
+  if (state.isLetterGuessed(letter.front())) {
     return DUPLICATE_GUESS;
   }
 
