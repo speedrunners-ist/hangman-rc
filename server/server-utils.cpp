@@ -154,6 +154,7 @@ int createPlaceholderState(std::string plid, std::string filePath) {
     std::filesystem::create_directory(dir);
   }
 
+  // create file TMP_PATH(plid) if it doesn't exist
   std::fstream newFile(TMP_PATH(plid), std::ios::out);
   if (!newFile.is_open()) {
     return -1;

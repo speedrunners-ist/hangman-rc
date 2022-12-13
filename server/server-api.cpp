@@ -395,7 +395,7 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
     return STATE_ERROR;
   }
 
-  if (isFinished) {
+  if (!isFinished) {
     filePath = TMP_PATH(plid);
   }
   std::cout << "fileName: " << fileName << std::endl;

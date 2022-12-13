@@ -13,4 +13,5 @@ SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS
 066 099208 island 2 3
 066 099208 island 2 3
 066 099208 island 2 3
-050 099208 lighthouse 2 4
+066 099207 island 2 3
+066 099209 island 2 3
