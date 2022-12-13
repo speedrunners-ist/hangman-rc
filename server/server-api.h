@@ -20,10 +20,11 @@
 
 // Return codes for each specific scenario for a message received by the server
 enum {
+  // RSG return codes
   CREATE_GAME_ERROR,   // RSG NOK
   CREATE_GAME_SUCCESS, // RSG OK
 
-  // RLG return codes
+  // RLG and RWG return codes
   SYNTAX_ERROR,        // RLG ERR/RWG ERR
   TRIAL_MISMATCH,      // RLG INV/RWG INV
   DUPLICATE_GUESS,     // RLG DUP
