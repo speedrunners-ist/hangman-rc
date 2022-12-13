@@ -1,70 +1,51 @@
 #include "server-protocol.h"
 
-int main(int argc, char *argv[]) {
+/*** Signal Handler in order to exit gracefully ***/
+void signalHandler(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectUDP();
+  disconnectTCP();
+  exit(signum);
+}
 
+int main(int argc, char *argv[]) {
   std::string GSIP = DEFAULT_GSIP;
   std::string GSport = DEFAULT_GSPORT;
   std::string filePath;
-
-  bool portSet = false;
   bool verbose = false;
+  int opt;
 
-  // TODO: maybe consider using getopt instead?
-  int i;
-  for (i = 1; i < argc; i++) {
-
-    if (strcmp(argv[i], "-v") == 0) {
-      if (verbose)
-        std::cout << "[WARN]: -v flag already set. Ignoring..." << std::endl;
-      else
+  while ((opt = getopt(argc, argv, "p:v")) != -1) {
+    switch (opt) {
+      case 'p':
+        GSport = optarg;
+        break;
+      case 'v':
         verbose = true;
-      continue;
+        break;
+      default:
+        std::cout << WRONG_ARGS_ERROR << std::endl;
+        exit(EXIT_FAILURE);
     }
-
-    if (strcmp(argv[i], "-p") == 0) {
-      if (portSet) {
-        std::cout << "[ERR]: Port defined multiple times. Exiting..." << std::endl;
-        return -1;
-      }
-      if (i + 1 >= argc) {
-        std::cout << "[ERR]: Invalid input. Expected port number." << std::endl;
-        return -1;
-      }
-      if (validatePort(argv[i + 1]) == -1) {
-        std::cout << "[ERR]: Invalid input. Expected valid port number." << std::endl;
-        return -1;
-      }
-      GSport = argv[i + 1];
-      portSet = true;
-      i++;
-      continue;
-    }
-
-    if (i == 1) {
-      if (std::ifstream(argv[i])) {
-        filePath = argv[i];
-        continue;
-      } else {
-        std::cout << "[ERR]: Invalid input. Expected valid file path." << std::endl;
-        return -1;
-      }
-    }
-
-    std::cout << "[ERR]: Invalid input. Exiting..." << std::endl;
-    return -1;
   }
 
-  if (filePath.empty()) {
-    std::cout << "[ERR]: Invalid input. Expected file path." << std::endl;
-    return -1;
+  filePath = argv[optind];
+  std::cout << STARTING_SERVER << std::endl;
+  if (setServerUDPParameters(filePath, verbose) == -1) {
+    std::cerr << STARTING_SERVER_ERROR << std::endl;
+    exit(EXIT_FAILURE);
   }
 
-  std::cout << "Starting server..." << std::endl;
+  setServerTCPParameters(verbose);
 
-  if (setServerParamaters(filePath, verbose) == -1) {
-    std::cout << "[ERR]: Failed to set server parameters. Exiting..." << std::endl;
-    return -1;
+  const struct peerInfo peer = {"", GSport};
+  pid_t pid = fork();
+
+  if (pid == 0) {
+    generalTCPHandler(peer);
+  } else if (pid > 0) {
+    generalUDPHandler(peer);
   }
 
-  createSocketUDP("", GSport);
+  exit(EXIT_SUCCESS);
 }

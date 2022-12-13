@@ -22,6 +22,14 @@ std::vector<std::string> getKeys(commandHandler map) {
   return keys;
 }
 
+/*** Signal Handler in order to exit gracefully ***/
+void signalHandler(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectUDP();
+  disconnectTCP();
+  exit(signum);
+}
+
 // main function that makes orders
 int main(int argc, char *argv[]) {
   int opt;
@@ -54,7 +62,6 @@ int main(int argc, char *argv[]) {
 
   // Read the user input
   while (fgets(buffer, MAX_USER_INPUT, stdin) != NULL) {
-
     // if the user just pressed enter
     if (strlen(buffer) == 1 && buffer[0] == '\n') {
       continueReading(buffer);
@@ -62,28 +69,23 @@ int main(int argc, char *argv[]) {
     }
 
     std::string input(buffer);
-    // command is the first word - be it with the input ending in a space or \n,
-    // with priority to the space
     std::string command = input.substr(0, input.find_first_of(" \n"));
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
-      const std::string allCommands = buildSplitString(getKeys(handlePlayerMessage));
+      const std::string allCommands = buildSplitStringNewline(getKeys(handlePlayerMessage));
       std::cerr << UNEXPECTED_COMMAND_ERROR(allCommands);
       continueReading(buffer);
       continue;
     }
 
     messageInfo message = {input, peer};
-
-    // if the command is valid, call the appropriate function
-    if (forceExit(command) || handlePlayerMessage[command](message) == EXIT_HANGMAN) {
+    if (forceExitClient(command) || handlePlayerMessage[command](message) == EXIT_HANGMAN) {
       break;
     }
     continueReading(buffer);
   }
 
-  // TODO: should we remove the created directories?
   std::cout << EXIT_PROGRAM << std::endl;
   if (disconnectUDP() == -1) {
     exit(EXIT_FAILURE);

@@ -3,27 +3,22 @@
 
 #include "server-api.h"
 
-#define UDP_HANGMAN_ERROR "[ERR]: Response from server does not match any expected protocols."
+#define INTERNAL_ERROR "[ERR]: Internal error while processing request."
+#define TCP_LISTEN_ERROR "[ERR]: Failed to listen to TCP socket."
+#define TCP_ACCEPT_ERROR "[ERR]: Failed to accept TCP connection."
+#define TCP_READ_ERROR "[ERR]: Failed to read from TCP socket."
+#define MAX_TCP_CONNECTION_REQUESTS 5
 
-// UDP Error Messages - should we really include RSG/RLG/... here? It shouldn't be
-// something the player should know about, I think
-#define SENDTO_ERROR "[ERR]: Failed to send message to server."
-#define RECVFROM_ERROR "[ERR]: Failed to receive message from server."
-#define UDP_RESPONSE_ERROR "[ERR]: Response from server does not match the UDP protocol."
-#define UDP_HANGMAN_ERROR "[ERR]: Response from server does not match any expected protocols."
-#define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
-#define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
-#define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
-#define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
+int setServerUDPParameters(std::string filepath, bool vParam);
+int setServerTCPParameters(bool vParam);
 
-typedef std::map<std::string, std::function<int(struct protocolMessage request)>> commandHandler;
-typedef std::map<std::string, std::function<int(std::string input)>> responseHandler;
-
-int validatePort(std::string port);
-
-int setServerParamaters(std::string filepath, bool verbose);
-
-void createSocketUDP(std::string addr, std::string port);
+int createSocketUDP(struct peerInfo peer);
+int createSocketTCP(struct peerInfo peer);
+int disconnectUDP();
+int disconnectTCP();
+int generalUDPHandler(struct peerInfo peer);
+int parseTCPMessage(std::string request);
+int generalTCPHandler(struct peerInfo peer);
 
 // UDP Server message handlers
 int handleSNG(struct protocolMessage message);
@@ -36,17 +31,5 @@ int handleREV(struct protocolMessage message);
 int handleGSB(struct protocolMessage message);
 int handleGHL(struct protocolMessage message);
 int handleSTA(struct protocolMessage message);
-
-// UDP client message senders
-int sendRSG(std::string input);
-int sendRLG(std::string input);
-int sendRWG(std::string input);
-int sendRQT(std::string input);
-int sendRRV(std::string input);
-
-// TCP Client message senders
-int sendRSB(std::string input);
-int sendRHL(std::string input);
-int sendRST(std::string input);
 
 #endif /* SERVER_PROTOCOL_H */

@@ -1,58 +1,184 @@
 #include "server-protocol.h"
 
-static struct addrinfo hints, *res;
-static int fd, newfd, errcode;
-static struct sockaddr_in addr;
-static socklen_t addrlen;
-static ssize_t n;
-static char buffer[128];
+// TCP related socket variables
+struct addrinfo hintsTCP, *resTCP;
+int socketFdTCP, newConnectionFd;
+socklen_t addrlenTCP;
+bool verboseTCP;
+char hostTCP[NI_MAXHOST], serviceTCP[NI_MAXSERV]; // consts in <netdb.h>
+char bufferTCP[TCP_CHUNK_SIZE];
 
-void openTCP(std::string GSport) {
-  const char *GSPORT = GSport.c_str();
+// clang-format off
+responseHandler handleTCPClientMessage = {
+  {"GSB", handleGSB},
+  {"GHL", handleGHL},
+  {"STA", handleSTA}
+};
+// clang-format on
 
-  if ((fd = socket(AF_INET, SOCK_STREAM, 0) == -1)) // TCP socket
-    exit(1);                                        // error
+int setServerTCPParameters(bool vParam) {
+  verboseTCP = vParam;
+  return 0;
+}
 
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_INET;       // IPv4
-  hints.ai_socktype = SOCK_STREAM; // TCP socket
-  hints.ai_flags = AI_PASSIVE;
-
-  if ((errcode = getaddrinfo(NULL, GSPORT, &hints, &res)) != 0)
-    exit(1); /*error*/
-  if (bind(fd, res->ai_addr, res->ai_addrlen) == -1)
-    exit(1); /*error*/
-
-  // TODO: change number of connections to Constant
-  if (listen(fd, 5) == -1)
-    exit(1); /*error*/
-
-  while (1) {
-    addrlen = sizeof(addr);
-    if ((newfd = accept(fd, (struct sockaddr *)&addr, &addrlen)) == -1)
-      exit(1); /*error*/
-
-    if (read(newfd, buffer, 128) == -1) /*error*/
-      exit(1);
-
-    write(1, "received: ", 10);
-    write(1, buffer, n);
-
-    if (write(newfd, buffer, n) == -1) /*error*/
-      exit(1);
-
-    close(newfd);
+int createSocketTCP(struct peerInfo peer) {
+  socketFdTCP = newSocket(SOCK_STREAM, peer.addr, peer.port, &hintsTCP, &resTCP);
+  if (socketFdTCP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
   }
-  freeaddrinfo(res);
-  close(fd);
+
+  if (listen(socketFdTCP, MAX_TCP_CONNECTION_REQUESTS) == -1) {
+    std::cerr << TCP_LISTEN_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
+  }
+
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
+  return socketFdTCP;
+}
+
+int disconnectTCP() {
+  freeaddrinfo(resTCP);
+  close(newConnectionFd);
+  close(socketFdTCP);
+  return 0;
+}
+
+int parseTCPMessage(std::string request) {
+  std::string responseBegin = request;
+  struct protocolMessage serverMessage;
+  const std::string command = responseBegin.substr(0, 3);
+  responseBegin.erase(0, 4);
+  const std::string plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  serverMessage.first = command;
+  serverMessage.second = plid;
+  serverMessage.body = request;
+  return handleTCPClientMessage[command](serverMessage);
+}
+
+int generalTCPHandler(struct peerInfo peer) {
+  struct protocolMessage response;
+  if (createSocketTCP(peer) == -1) {
+    return -1;
+  }
+  while (true) {
+    addrlenTCP = sizeof(peer.addr);
+    if ((newConnectionFd = accept(socketFdTCP, (struct sockaddr *)&peer.addr, &addrlenTCP)) == -1) {
+      std::cerr << TCP_ACCEPT_ERROR << std::endl;
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
+    }
+
+    if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
+      std::cerr << TCP_READ_ERROR << std::endl;
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
+    }
+
+    std::cout << "[INFO]: Received message: " << bufferTCP;
+    int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP,
+                              sizeof serviceTCP, 0);
+    if (verboseTCP) {
+      if (errcode != 0)
+        std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+      else {
+        std::cout << VERBOSE_SUCCESS(hostTCP, serviceTCP) << std::endl;
+      }
+    }
+
+    parseTCPMessage(std::string(bufferTCP));
+    memset(bufferTCP, 0, TCP_CHUNK_SIZE);
+  }
 }
 
 // Server message handlers
-int handleGSB(struct protocolMessage message) { return 0; }
-int handleGHL(struct protocolMessage message) { return 0; }
-int handleSTA(struct protocolMessage message) { return 0; }
+int handleGSB(struct protocolMessage message) {
+  if (message.body.back() != '\n') {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
+  }
 
-// TCP server message Send
-int sendRSB(std::string input) { return 0; }
-int sendRHL(std::string input) { return 0; }
-int sendRST(std::string input) { return 0; }
+  std::string response;
+  int ret = getScoreboard(response);
+  switch (ret) {
+    case SCOREBOARD_EMPTY:
+      response = buildSplitStringNewline({"RSB", "EMPTY"});
+      break;
+    case SCOREBOARD_SUCCESS:
+      response = buildSplitString({"RSB", "OK", response});
+      return sendTCPFile(response.append(" "), newConnectionFd, SCORES_PATH);
+    default:
+      std::cerr << INTERNAL_ERROR << std::endl;
+      response = buildSplitStringNewline({"RSB", "ERR"});
+      break;
+  }
+  return sendTCPMessage(response, newConnectionFd);
+}
+
+int handleGHL(struct protocolMessage message) {
+  std::cout << "[INFO]: Received GHL message" << std::endl;
+  if (message.body.back() != '\n') {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    std::string response = buildSplitStringNewline({"ERR"});
+    return sendTCPMessage(response, newConnectionFd);
+  }
+
+  const std::string plid = message.second;
+  std::string file;
+  std::string response;
+
+  int ret = getHint(plid, response, file);
+  switch (ret) {
+    case HINT_ERROR:
+      response = buildSplitStringNewline({"RHL", "NOK"});
+      break;
+    case HINT_SUCCESS:
+      response = buildSplitString({"RHL", "OK", response});
+      return sendTCPFile(response.append(" "), newConnectionFd, file);
+      break;
+    default:
+      std::cerr << INTERNAL_ERROR << std::endl;
+      response = buildSplitStringNewline({"RHL", "ERR"});
+      break;
+  }
+
+  return sendTCPMessage(response, newConnectionFd);
+}
+
+int handleSTA(struct protocolMessage message) {
+  std::cout << "[INFO]: Received STA message" << std::endl;
+  if (message.body.back() != '\n') {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    std::string response = buildSplitStringNewline({"ERR"});
+    return sendTCPMessage(response, newConnectionFd);
+  }
+
+  const std::string plid = message.second;
+  std::string file;
+  std::string response;
+
+  int ret = getState(plid, response, file);
+  switch (ret) {
+    case STATE_ERROR:
+      response = buildSplitStringNewline({"RST", "NOK"});
+      return sendTCPMessage(response, newConnectionFd);
+    case STATE_ONGOING:
+      response = buildSplitString({"RST", "ACT", response});
+      break;
+    case STATE_FINISHED:
+      response = buildSplitString({"RST", "FIN", response});
+      break;
+    default:
+      std::cerr << INTERNAL_ERROR << std::endl;
+      response = buildSplitStringNewline({"RST", "ERR"});
+      return sendTCPMessage(response, newConnectionFd);
+  }
+
+  ret = sendTCPFile(response.append(" "), newConnectionFd, file);
+  // remove tmp file
+  // std::string tmpFile = TMP_PATH(plid);
+  // if (remove(tmpFile.c_str()) != 0) {
+  //   std::cerr << "[ERR]: Error deleting file" << std::endl;
+  // }
+  return ret;
+}
