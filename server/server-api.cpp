@@ -324,11 +324,14 @@ int insertScore(std::string plid, GameState &state) {
 
 int getScoreboard(std::string &response) {
   std::vector<std::string> lines;
-  if (readFile(lines, SCORES_PATH) != 0) {
-    return -1;
+  int ret = readFile(lines, SCORES_PATH);
+
+  // could not read the file
+  if (ret == -1) {
+    return SCOREBOARD_ERROR;
   }
 
-  if (lines.empty()) {
+  if (ret == -2 || lines.empty()) {
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }
@@ -360,11 +363,9 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
 
   const std::string fileName = state.getHint();
   filePath = FILE_PATH(fileName);
-  std::cout << "fileName: " << fileName << std::endl;
-  std::cout << "filePath: " << filePath << std::endl;
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
-    return -1;
+    return HINT_ERROR;
   }
 
   long fileSize = (long)std::filesystem::file_size(filePath);
@@ -381,11 +382,17 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
   std::string mostRecentGame;
 
   if (isFinished) {
-    getLastFinishedGame(plid, mostRecentGame);
+    int ret = getLastFinishedGame(plid, mostRecentGame);
+    if (ret != 0) {
+      return STATE_ERROR;
+    }
     filePath = PLID_GAMES_PATH(plid) + "/" + mostRecentGame;
   } else {
     filePath = ONGOING_GAMES_PATH(plid);
-    createPlaceholderState(plid, filePath);
+    int ret = createPlaceholderState(plid, filePath);
+    if (ret != 0) {
+      return STATE_ERROR;
+    }
   }
 
   const std::string fileName = std::filesystem::path(filePath).filename();
@@ -397,9 +404,8 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
   if (!isFinished) {
     filePath = TMP_PATH(plid);
   }
-  std::cout << "fileName: " << fileName << std::endl;
-  std::cout << "filePath: " << filePath << std::endl;
-  long fileSize = (long)std::filesystem::file_size(filePath);
+
+  size_t fileSize = std::filesystem::file_size(filePath);
   response = buildSplitString({fileName, std::to_string(fileSize)});
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
 }

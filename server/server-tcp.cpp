@@ -101,6 +101,10 @@ int handleGSB(struct protocolMessage message) {
   std::string response;
   int ret = getScoreboard(response);
   switch (ret) {
+    case SCOREBOARD_ERROR:
+      // TODO: This doesn't exist
+      response = buildSplitStringNewline({"RSB", "NOK"});
+      break;
     case SCOREBOARD_EMPTY:
       response = buildSplitStringNewline({"RSB", "EMPTY"});
       break;
@@ -175,10 +179,13 @@ int handleSTA(struct protocolMessage message) {
   }
 
   ret = sendTCPFile(response.append(" "), newConnectionFd, file);
+
   // remove tmp file
-  // std::string tmpFile = TMP_PATH(plid);
-  // if (remove(tmpFile.c_str()) != 0) {
-  //   std::cerr << "[ERR]: Error deleting file" << std::endl;
-  // }
+  std::string tmpFile = TMP_PATH(plid);
+  if (remove(tmpFile.c_str()) != 0) {
+    std::cerr << "[ERR]: Error deleting file" << std::endl;
+  } else {
+    std::cout << "[INFO]: Deleted temporary file " << tmpFile << std::endl;
+  }
   return ret;
 }
