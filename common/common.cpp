@@ -102,8 +102,7 @@ std::string GameState::getPlayerID() { return playerID; }
 
 /*** Socket functions implementation ***/
 
-int newSocket(int type, std::string addr, std::string port, struct addrinfo *hints,
-              struct addrinfo **serverInfo) {
+int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
   int fd = socket(AF_INET, type, 0);
   if (fd == -1) {
     std::cout << SOCKET_ERROR << std::endl;
@@ -113,10 +112,10 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
   hints->ai_family = AF_INET;
   hints->ai_socktype = type;
 
-  std::cout << "[DEBUG]: Connecting to " << addr << ":" << port << std::endl;
+  std::cout << "[DEBUG]: Connecting to " << peer.addr << ":" << peer.port << std::endl;
   int status;
-  if (!addr.empty()) {
-    status = getaddrinfo(addr.c_str(), port.c_str(), hints, serverInfo);
+  if (!peer.addr.empty()) {
+    status = getaddrinfo(peer.addr.c_str(), peer.port.c_str(), hints, serverInfo);
     if (status != 0) {
       std::cerr << GETADDRINFO_ERROR << std::endl;
       return -1;
@@ -126,7 +125,7 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
 
   // in this case, it's the server creating a socket
   hints->ai_flags = AI_PASSIVE;
-  status = getaddrinfo(NULL, port.c_str(), hints, serverInfo);
+  status = getaddrinfo(NULL, peer.port.c_str(), hints, serverInfo);
   if (status != 0) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
@@ -137,6 +136,15 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
     return -1;
   }
   return fd;
+}
+
+int disconnectSocket(struct addrinfo *res, int fd) {
+  freeaddrinfo(res);
+  if (close(fd) == -1) {
+    std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
 }
 
 int turnOnSocketTimer(int fd) {
@@ -156,21 +164,13 @@ int turnOffSocketTimer(int fd) {
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
-    return -1;
+    // FIXME: is this exit graceful?
+    exit(EXIT_FAILURE);
   }
   return 0;
 }
 
 /*** UDP message parsing/sending implementation ***/
-
-int disconnectUDP(struct addrinfo *res, int fd) {
-  freeaddrinfo(res);
-  if (close(fd) == -1) {
-    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
-    return -1;
-  }
-  return 0;
-}
 
 int parseUDPMessage(std::string message, struct protocolMessage &response) {
   std::cout << "[DEBUG]: Parsing message: " << message;
@@ -222,13 +222,13 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
 
     int ret = turnOnSocketTimer(fd);
     if (ret == -1) {
-      disconnectUDP(res, fd);
+      disconnectSocket(res, fd);
       exit(EXIT_FAILURE);
     }
     const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
     ret = turnOffSocketTimer(fd);
     if (ret == -1) {
-      disconnectUDP(res, fd);
+      disconnectSocket(res, fd);
       exit(EXIT_FAILURE);
     }
 
@@ -252,15 +252,6 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
 }
 
 /*** TCP message parsing/sending implementation ***/
-
-int disconnectTCP(struct addrinfo *res, int fd) {
-  freeaddrinfo(res);
-  if (close(fd) == -1) {
-    std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-    return -1;
-  }
-  return 0;
-}
 
 int sendTCPMessage(std::string message, int fd) {
   if (write(fd, message.c_str(), message.length()) == -1) {
@@ -398,14 +389,7 @@ std::string buildSplitString(std::vector<std::string> args) {
 }
 
 std::string buildSplitStringNewline(std::vector<std::string> args) {
-  // clang-format off
-  return std::accumulate(
-    ++args.begin(), args.end(), std::string(args[0]),
-    [](std::string a, std::string b) { 
-      return a + " " + b;
-    }
-  ).append("\n");
-  // clang-format on
+  return buildSplitString(args).append("\n");
 }
 
 int readFile(std::vector<std::string> &lines, std::string filePath) {
@@ -430,8 +414,8 @@ int readFile(std::vector<std::string> &lines, std::string filePath) {
   return 0;
 }
 
-int displayFile(std::string filePath, std::string dir) {
-  std::ifstream file(dir + "/" + filePath);
+int displayFile(std::string filePath) {
+  std::ifstream file(filePath);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << " File: " << filePath << std::endl;
     return -1;
@@ -444,14 +428,14 @@ int displayFile(std::string filePath, std::string dir) {
   return 0;
 }
 
-int validateArgsAmount(std::string input, int n) {
+bool validArgsAmount(std::string input, int n) {
   const long int argCount = std::count(input.begin(), input.end(), ' ');
   // argCount will find every space in the string - ideally, one space less than the args amount
   if (argCount != n - 1 || input.back() != '\n') {
     std::cerr << DIFF_ARGS_ERROR << std::endl;
-    return -1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 bool validPlayerID(std::string id) {
@@ -469,7 +453,7 @@ bool validPlayerID(std::string id) {
   return true;
 }
 
-bool forceExit(GameState play, std::string command) { return command == "exit" && !play.isActive(); }
+bool forceExit(GameState state, std::string command) { return command == "exit" && !state.isActive(); }
 
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);

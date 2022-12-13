@@ -24,7 +24,7 @@ int setServerUDPParameters(std::string filepath, bool vParam) {
 }
 
 int createSocketUDP(struct peerInfo peer) {
-  socketFdUDP = newSocket(SOCK_DGRAM, peer.addr, peer.port, &hintsUDP, &resUDP);
+  socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &resUDP);
   if (socketFdUDP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
     exit(EXIT_FAILURE);
@@ -36,11 +36,7 @@ int createSocketUDP(struct peerInfo peer) {
   return socketFdUDP;
 }
 
-int disconnectUDP() {
-  freeaddrinfo(resUDP);
-  close(socketFdUDP);
-  return 0;
-}
+int disconnectUDP() { return disconnectSocket(resUDP, socketFdUDP); }
 
 int generalUDPHandler(struct peerInfo peer) {
   struct protocolMessage response;

@@ -69,7 +69,8 @@
     "iomanip": "cpp",
     "valarray": "cpp",
     "codecvt": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "*.rh": "cpp"
   },
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true

@@ -2,37 +2,56 @@
 
 /*** ClientAPI methods implementation ***/
 
-GameState play;
+GameState state;
 std::string plid;
 
-// Game state functions, useful for the client's protocol implementations
 void createGame(int length, int mistakes, std::string playerID) {
-  play = GameState(length, mistakes, playerID);
+  state = GameState(length, mistakes, playerID);
 }
-int getAvailableMistakes() { return play.getAvailableMistakes(); }
-std::string getWord() { return play.getWord(); }
+
 int playCorrectGuess(std::string positions, int n) {
-  int ret = play.correctGuess(positions, n);
+  int ret = state.correctGuess(positions, n);
   if (ret == 0) {
-    play.incrementTrials();
+    state.incrementTrials();
   }
   return ret;
 }
+
 void playIncorrectGuess() {
   incrementTrials();
-  play.incorrectGuess();
+  state.incorrectGuess();
 }
-void playCorrectFinalGuess() { play.correctFinalGuess(); }
 
-void playCorrectFinalWordGuess() { play.correctFinalWordGuess(); }
+void playCorrectFinalGuess() { state.correctFinalGuess(); }
 
-void setLastGuess(char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength() { return play.getWordLength(); }
+void playCorrectFinalWordGuess() { state.correctFinalWordGuess(); }
+
+int getAvailableMistakes() { return state.getAvailableMistakes(); }
+
+std::string getWord() { return state.getWord(); }
+
+void setLastGuess(char guess) { state.setLastGuess(guess); }
+
+void setLastWordGuess(std::string guess) { state.setLastWordGuess(guess); }
+
+int getWordLength() { return state.getWordLength(); }
+
 void setPlayerID(std::string id) { plid = id; }
-std::string getPlayerID() { return plid; }
-void resetGame() { play.setInactive(); }
-void incrementTrials() { play.incrementTrials(); }
-int getTrials() { return play.getTrials(); }
 
-bool forceExitClient(std::string command) { return forceExit(play, command); }
+std::string getPlayerID() { return plid; }
+
+void resetGame() { state.setInactive(); }
+
+void incrementTrials() { state.incrementTrials(); }
+
+int getTrials() { return state.getTrials(); }
+
+bool forceExitClient(std::string command) { return forceExit(state, command); }
+
+std::vector<std::string> getKeys(commandHandler map) {
+  std::vector<std::string> keys;
+  for (auto const &pair : map) {
+    keys.push_back(pair.first);
+  }
+  return keys;
+}

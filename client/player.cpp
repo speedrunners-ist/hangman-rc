@@ -13,24 +13,14 @@ commandHandler handlePlayerMessage = {
 };
 // clang-format on
 
-// C++ unfortunately doesn't have a built-in function to retrieve a map's keys
-std::vector<std::string> getKeys(commandHandler map) {
-  std::vector<std::string> keys;
-  for (auto const &pair : map) {
-    keys.push_back(pair.first);
-  }
-  return keys;
-}
-
-/*** Signal Handler in order to exit gracefully ***/
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   disconnectTCP();
+  std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
 
-// main function that makes orders
 int main(int argc, char *argv[]) {
   int opt;
   std::string GSIP = DEFAULT_GSIP;
@@ -58,7 +48,7 @@ int main(int argc, char *argv[]) {
 
   char buffer[MAX_USER_INPUT];
   // TODO: should we include a help menu as the first thing the player sees?
-  std::cout << "> ";
+  continueReading(buffer);
 
   // Read the user input
   while (fgets(buffer, MAX_USER_INPUT, stdin) != NULL) {

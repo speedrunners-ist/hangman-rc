@@ -12,8 +12,6 @@ std::map<std::string, std::function<void(GameState &state, std::string value)>> 
 };
 // clang-format on
 
-// TODO: either call everything GameState play or GameState state, but not both
-
 /*** GameState implementation ***/
 
 bool GameState::isLetterGuessed(char letter) { return guessedLetters[letter]; }
@@ -33,20 +31,25 @@ void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWo
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
 /*** Util methods in order to let external server implementations use the GameState class ***/
-int getAvailableMistakes(GameState play) { return play.getAvailableMistakes(); }
-std::string getWord(GameState play) { return play.getWord(); }
-void setLastGuess(GameState play, char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(GameState play, std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength(GameState play) { return play.getWordLength(); }
-void setPlayerID(GameState &play, std::string id) { play.setPlayerID(id); }
-std::string getPlayerID(GameState play) { return play.getPlayerID(); }
-int getTrials(GameState play) {
+
+int getAvailableMistakes(GameState state) { return state.getAvailableMistakes(); }
+
+std::string getWord(GameState state) { return state.getWord(); }
+
+int getWordLength(GameState state) { return state.getWordLength(); }
+
+void setPlayerID(GameState &state, std::string plid) { state.setPlayerID(plid); }
+
+std::string getPlayerID(GameState state) { return state.getPlayerID(); }
+
+int getTrials(GameState state) {
   // the user will always send the trial number related to the one he is playing, hence the +1
-  return play.getTrials() + 1;
+  return state.getTrials() + 1;
 }
-void incrementTrials(GameState &play) { play.incrementTrials(); }
+void incrementTrials(GameState &state) { state.incrementTrials(); }
 
 /*** Methods utilized in state file retrieval ***/
+
 void playCorrectLetterGuess(GameState &state, std::string letter) {
   const int occurrences = getLetterOccurrences(state.getWord(), letter.front());
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
@@ -66,6 +69,7 @@ void playIncorrectWordGuess(GameState &state, std::string word) {
 }
 
 /*** General util methods ***/
+
 int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
   readFile(lines, filePath);
@@ -326,28 +330,16 @@ int getScoreboard(std::string &response) {
   std::vector<std::string> lines;
   int ret = readFile(lines, SCORES_PATH);
 
-  // could not read the file
   if (ret == -1) {
     return SCOREBOARD_ERROR;
-  }
-
-  if (ret == -2 || lines.empty()) {
+  } else if (ret == -2 || lines.empty()) {
+    // if the file did not exist or was empty
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }
 
-  // iterate over the lines
-
-  size_t fileSize = 0;
-
-  for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
-    fileSize += it->size();
-    fileSize += 1; // for the newline
-  }
-
-  response.append("scoreboard.txt ");
-  response.append(std::to_string(fileSize));
-
+  long fileSize = (long)std::filesystem::file_size(SCORES_PATH);
+  response = buildSplitString({"scoreboard.txt", std::to_string(fileSize)});
   return SCOREBOARD_SUCCESS;
 }
 
@@ -362,7 +354,7 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
   }
 
   const std::string fileName = state.getHint();
-  filePath = FILE_PATH(fileName);
+  filePath = HINTS_PATH(fileName);
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
     return HINT_ERROR;
@@ -386,7 +378,7 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
     if (ret != 0) {
       return STATE_ERROR;
     }
-    filePath = PLID_GAMES_PATH(plid) + "/" + mostRecentGame;
+    filePath = PLID_GAMES_DIR(plid) + "/" + mostRecentGame;
   } else {
     filePath = ONGOING_GAMES_PATH(plid);
     int ret = createPlaceholderState(plid, filePath);
