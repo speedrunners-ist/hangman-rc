@@ -9,7 +9,7 @@
 #define FINISHED_GAMES_PATH(plid, time) PLID_GAMES_PATH(plid) + "/GAME_" + time + ".txt"
 #define SCORES_PATH "server/scores/scoreboard.txt"
 #define TOP_10_HEADER "TOP 10 SCORES"
-#define SCORES_HEADER "SCORE PLAYER     WORD                      GOOD TRIALS  TOTAL TRIALS"
+#define SCORES_HEADER "SCORE PLAYER  WORD      GOOD TRIALS  TOTAL TRIALS"
 #define MAX_CACHE_SIZE 128
 #define TIME_FORMAT "%Y-%m-%d_%H-%M-%S"
 #define FILE_PATH(filename) "server/hints/" + filename

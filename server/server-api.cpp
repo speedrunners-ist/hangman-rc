@@ -230,7 +230,6 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   }
 
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
-
   if (state.getSpotsLeft() == 0) {
     appendGameFile(plid, CORRECT_FINAL_LETTER, letter);
     if (transferGameFile(plid) != 0) {
@@ -299,7 +298,7 @@ int closeGameSession(std::string plid) {
 }
 
 int insertScore(std::string plid, GameState &state) {
-  const int initialMistakes = initialAvailableMistakes(getWordLength(state)) + 1;
+  const int initialMistakes = initialAvailableMistakes(getWordLength(state));
   const int trialsMade = state.getTrials();
   const int successfulGuesses = trialsMade - (initialMistakes - state.getAvailableMistakes());
   const int score = GAME_SCORE(successfulGuesses, trialsMade);
