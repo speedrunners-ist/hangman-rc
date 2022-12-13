@@ -101,6 +101,10 @@ int handleGSB(struct protocolMessage message) {
   std::string response;
   int ret = getScoreboard(response);
   switch (ret) {
+    case SCOREBOARD_ERROR:
+      // TODO: This doesn't exist
+      response = buildSplitStringNewline({"RSB", "NOK"});
+      break;
     case SCOREBOARD_EMPTY:
       response = buildSplitStringNewline({"RSB", "EMPTY"});
       break;

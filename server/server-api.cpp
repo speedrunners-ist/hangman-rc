@@ -328,7 +328,7 @@ int getScoreboard(std::string &response) {
 
   // could not read the file
   if (ret == -1) {
-    return -1;
+    return SCOREBOARD_ERROR;
   }
 
   if (ret == -2 || lines.empty()) {
