@@ -81,6 +81,7 @@ int setupWordList(std::string filePath) {
   for (auto line : lines) {
     const size_t wordPos = line.find(' ');
     std::string word = line.substr(0, wordPos);
+    toLower(word);
     std::string file = line.substr(wordPos + 1);
     wordsList[word] = file;
   }
@@ -104,7 +105,7 @@ int getLetterOccurrencesPositions(std::string word, char letter, std::string &po
   int occurrences = 0;
   const std::string space = " ";
   for (size_t i = 0; i < word.length(); i++) {
-    if (word[i] == letter) {
+    if (tolower(word[i]) == letter) {
       positions.append(space + std::to_string(i + 1));
       occurrences++;
     }
@@ -196,6 +197,9 @@ int createGameSession(std::string plid, std::string &arguments) {
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
+
+  toLower(letter);
+
   if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
@@ -248,6 +252,9 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 }
 
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
+
+  toLower(word);
+
   if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     return SYNTAX_ERROR;
   }

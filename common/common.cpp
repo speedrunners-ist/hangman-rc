@@ -459,3 +459,5 @@ void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
   std::cout << "> ";
 }
+
+void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
