@@ -24,7 +24,7 @@ std::vector<std::string> getKeys(commandHandler map) {
 
 /*** Signal Handler in order to exit gracefully ***/
 void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << SIGNAL_MESSAGE(signum) << std::endl;
   disconnectUDP();
   disconnectTCP();
   exit(signum);
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
   char buffer[MAX_USER_INPUT];
   // TODO: should we include a help menu as the first thing the player sees?
-  std::cout << "> ";
+  std::cout << PROMPT;
 
   // Read the user input
   while (fgets(buffer, MAX_USER_INPUT, stdin) != NULL) {

@@ -55,7 +55,7 @@ int generalUDPHandler(struct peerInfo peer) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    std::cout << "[INFO]: Received message: " << bufferUDP;
+    std::cout << "[DEBUG]: Received message: " << bufferUDP;
     int errcode =
         getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
     if (verboseUDP) {
@@ -85,7 +85,7 @@ int generalUDPHandler(struct peerInfo peer) {
 
 // Server message handlers
 int handleSNG(struct protocolMessage message) {
-  std::cout << "[INFO]: Received SNG message" << std::endl;
+  std::cout << "[DEBUG]: Received SNG message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
@@ -106,12 +106,12 @@ int handleSNG(struct protocolMessage message) {
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RSG", "ERR"});
   }
-  std::cout << "[INFO]: Sending RSG message" << std::endl;
+  std::cout << "[DEBUG]: Sending RSG message" << std::endl;
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
 int handlePLG(struct protocolMessage message) {
-  std::cout << "[INFO]: Received PLG message" << std::endl;
+  std::cout << "[DEBUg]: Received PLG message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
@@ -159,7 +159,7 @@ int handlePLG(struct protocolMessage message) {
 }
 
 int handlePWG(struct protocolMessage message) {
-  std::cout << "[INFO]: Received PWG message" << std::endl;
+  std::cout << "[DEBUG]: Received PWG message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
@@ -205,7 +205,7 @@ int handlePWG(struct protocolMessage message) {
 }
 
 int handleQUT(struct protocolMessage message) {
-  std::cout << "[INFO]: Received QUT message" << std::endl;
+  std::cout << "[DEBUG]: Received QUT message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
@@ -230,7 +230,7 @@ int handleQUT(struct protocolMessage message) {
 }
 
 int handleREV(struct protocolMessage message) {
-  std::cout << "[INFO]: Received REV message" << std::endl;
+  std::cout << "[DEBUG]: Received REV message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);

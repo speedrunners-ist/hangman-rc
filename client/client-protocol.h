@@ -40,21 +40,22 @@
 #define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
 #define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
 #define RSG_OK(mistakes, word)                                                                               \
-  ("New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word)
+  "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
 #define RSG_NOK "Failed to start a new game. Try again later."
-#define RLG_WIN(word) ("WELL DONE! You guessed: " + word)
+#define RLG_WIN(word) "WELL DONE! You guessed: " + word
 #define RLG_DUP "You have already guessed this letter."
-#define RLG_NOK(mistakes) ("Wrong guess. " + std::to_string(mistakes) + " errors left.")
+#define RLG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RLG_OVR "GAME OVER! You do not have any more errors left."
 #define RLG_INV "An invalid trial parameter was sent. Try again."
 #define RLG_ERR "RLG ERR"
-#define RWG_WIN(word) ("WELL DONE! You guessed: " + word)
-#define RWG_NOK(mistakes) ("Wrong guess. " + std::to_string(mistakes) + " errors left.")
+#define RWG_WIN(word) "WELL DONE! You guessed: " + word
+#define RWG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."
 #define RWG_ERR "RWG ERR"
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game. Try again later."
+#define RRV_OK(word) "[INFO]: The word is: " + word
 
 // TCP - client-side specific messages
 #define SB_FAIL "[INFO]: The server hasn't held any games yet."

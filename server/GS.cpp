@@ -2,7 +2,7 @@
 
 /*** Signal Handler in order to exit gracefully ***/
 void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << SIGNAL_MESSAGE(signum) << std::endl;
   disconnectUDP();
   disconnectTCP();
   exit(signum);
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         verbose = true;
         break;
       default:
-        std::cout << WRONG_ARGS_ERROR << std::endl;
+        std::cerr << WRONG_ARGS_ERROR << std::endl;
         exit(EXIT_FAILURE);
     }
   }

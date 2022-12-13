@@ -106,7 +106,7 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
               struct addrinfo **serverInfo) {
   int fd = socket(AF_INET, type, 0);
   if (fd == -1) {
-    std::cout << SOCKET_ERROR << std::endl;
+    std::cerr << SOCKET_ERROR << std::endl;
     return -1;
   }
   memset(hints, 0, sizeof *hints);
@@ -133,7 +133,7 @@ int newSocket(int type, std::string addr, std::string port, struct addrinfo *hin
   }
 
   if (bind(fd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
-    std::cout << BIND_ERROR << std::endl;
+    std::cerr << BIND_ERROR << std::endl;
     return -1;
   }
   return fd;
@@ -155,7 +155,7 @@ int turnOffSocketTimer(int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
+    std::cerr << SOCKET_TIMER_RESET_ERROR << std::endl;
     return -1;
   }
   return 0;
@@ -200,7 +200,7 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[INFO]: Sending message: " << message;
+  std::cout << "[DEBUG]: Sending message: " << message;
   if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
@@ -466,5 +466,5 @@ bool forceExit(GameState play, std::string command) { return command == "exit" &
 
 void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
-  std::cout << "> ";
+  std::cout << PROMPT;
 }

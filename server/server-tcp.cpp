@@ -75,7 +75,7 @@ int generalTCPHandler(struct peerInfo peer) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    std::cout << "[INFO]: Received message: " << bufferTCP;
+    std::cout << "[DEBUG]: Received message: " << bufferTCP;
     int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP,
                               sizeof serviceTCP, 0);
     if (verboseTCP) {
@@ -116,7 +116,7 @@ int handleGSB(struct protocolMessage message) {
 }
 
 int handleGHL(struct protocolMessage message) {
-  std::cout << "[INFO]: Received GHL message" << std::endl;
+  std::cout << "[DEBUG]: Received GHL message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
@@ -146,7 +146,7 @@ int handleGHL(struct protocolMessage message) {
 }
 
 int handleSTA(struct protocolMessage message) {
-  std::cout << "[INFO]: Received STA message" << std::endl;
+  std::cout << "[DEBUG]: Received STA message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});

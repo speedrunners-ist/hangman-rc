@@ -159,7 +159,7 @@ int handleRQT(struct protocolMessage response) {
 }
 
 int handleRRV(struct protocolMessage response) {
-  std::cout << "[REV]: Word is " << response.second << std::endl;
+  std::cout << RRV_OK(response.second) << std::endl;
   return 0;
 }
 

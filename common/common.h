@@ -85,6 +85,9 @@ public:
 #define UDP_TRIES 3
 #define SOCKET_TIMEOUT 5
 
+#define SIGNAL_MESSAGE(signum) "[INFO]: Received signal " << signum << ". Exiting program."
+#define PROMPT "> "
+
 #define SOCKET_ERROR "[ERR]: Failed to create socket."
 #define SOCKET_TIMER_SET_ERROR "[ERR]: Failed to set socket timeout."
 #define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."

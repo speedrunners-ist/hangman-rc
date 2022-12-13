@@ -360,8 +360,6 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
 
   const std::string fileName = state.getHint();
   filePath = FILE_PATH(fileName);
-  std::cout << "fileName: " << fileName << std::endl;
-  std::cout << "filePath: " << filePath << std::endl;
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
     return -1;
@@ -397,8 +395,6 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
   if (!isFinished) {
     filePath = TMP_PATH(plid);
   }
-  std::cout << "fileName: " << fileName << std::endl;
-  std::cout << "filePath: " << filePath << std::endl;
   long fileSize = (long)std::filesystem::file_size(filePath);
   response = buildSplitString({fileName, std::to_string(fileSize)});
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
