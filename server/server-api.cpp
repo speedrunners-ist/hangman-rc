@@ -363,11 +363,9 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
 
   const std::string fileName = state.getHint();
   filePath = FILE_PATH(fileName);
-  std::cout << "fileName: " << fileName << std::endl;
-  std::cout << "filePath: " << filePath << std::endl;
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
-    return -1;
+    return HINT_ERROR;
   }
 
   long fileSize = (long)std::filesystem::file_size(filePath);
