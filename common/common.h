@@ -109,6 +109,7 @@ public:
 #define INVALID_FILE_ARGS "[ERR]: Arguments for file transfer are invalid."
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."
 #define FILE_RECV_SUCCESS "[INFO]: File received successfully."
+#define FILE_DOES_NOT_EXIST "[ERR]: File does not exist."
 
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 

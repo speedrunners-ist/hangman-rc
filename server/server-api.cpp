@@ -324,11 +324,14 @@ int insertScore(std::string plid, GameState &state) {
 
 int getScoreboard(std::string &response) {
   std::vector<std::string> lines;
-  if (readFile(lines, SCORES_PATH) != 0) {
+  int ret = readFile(lines, SCORES_PATH);
+
+  // could not read the file
+  if (ret == -1) {
     return -1;
   }
 
-  if (lines.empty()) {
+  if (ret == -2 || lines.empty()) {
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }
