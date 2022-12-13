@@ -410,6 +410,13 @@ std::string buildSplitStringNewline(std::vector<std::string> args) {
 
 int readFile(std::vector<std::string> &lines, std::string filePath) {
   std::ifstream file(filePath);
+
+  // if file doesn't exist
+  if (file.fail()) {
+    std::cerr << FILE_DOES_NOT_EXIST << " File: " << filePath << std::endl;
+    return -2;
+  }
+
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << " File: " << filePath << std::endl;
     return -1;
