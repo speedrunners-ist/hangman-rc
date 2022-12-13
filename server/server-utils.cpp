@@ -182,3 +182,13 @@ int createPlaceholderState(std::string plid, std::string filePath) {
   oldFile.close();
   return 0;
 }
+
+void destroyOnGoingGames() {
+  const std::filesystem::path path = GAMES_DIR;
+
+  for (const auto &entry : std::filesystem::directory_iterator{path}) {
+    if (!entry.is_directory()) {
+      std::filesystem::remove(entry.path());
+    }
+  }
+}
