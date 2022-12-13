@@ -60,12 +60,12 @@
   "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
 #define UNEXPECTED_COMMAND_ERROR(commands)                                                                   \
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
+#define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
 #define RSG_NOK "Failed to start a new game. Try again later."
 #define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
-
 #define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
 #define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
 #define RLG_WIN(word) ("WELL DONE! You guessed: " + word)

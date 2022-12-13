@@ -1,6 +1,5 @@
 #include "server-protocol.h"
 
-/*** Signal Handler in order to exit gracefully ***/
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
