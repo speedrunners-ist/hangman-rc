@@ -2,7 +2,7 @@
 
 int createGameFile(std::string plid, std::string word, std::string hint) {
   // create games directory if it doesn't exist
-  std::filesystem::path dir(GAMES_PATH);
+  std::filesystem::path dir(GAMES_DIR);
   if (!std::filesystem::exists(dir)) {
     std::filesystem::create_directory(dir);
   }
@@ -43,7 +43,7 @@ int transferGameFile(std::string plid) {
   std::string newFile = FINISHED_GAMES_PATH(plid, time);
 
   // create the player's directory if it doesn't exist
-  std::filesystem::path dir(PLID_GAMES_PATH(plid));
+  std::filesystem::path dir(PLID_GAMES_DIR(plid));
   if (!std::filesystem::exists(dir)) {
     std::filesystem::create_directory(dir);
   }
@@ -126,7 +126,7 @@ void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
 
 int getLastFinishedGame(std::string plid, std::string &filePath) {
 
-  std::filesystem::path dir(PLID_GAMES_PATH(plid));
+  std::filesystem::path dir(PLID_GAMES_DIR(plid));
   if (!std::filesystem::exists(dir)) {
     return -1;
   }

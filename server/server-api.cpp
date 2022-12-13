@@ -362,7 +362,7 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
   }
 
   const std::string fileName = state.getHint();
-  filePath = FILE_PATH(fileName);
+  filePath = HINTS_PATH(fileName);
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
     return HINT_ERROR;
@@ -386,7 +386,7 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
     if (ret != 0) {
       return STATE_ERROR;
     }
-    filePath = PLID_GAMES_PATH(plid) + "/" + mostRecentGame;
+    filePath = PLID_GAMES_DIR(plid) + "/" + mostRecentGame;
   } else {
     filePath = ONGOING_GAMES_PATH(plid);
     int ret = createPlaceholderState(plid, filePath);
