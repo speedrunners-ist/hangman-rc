@@ -12,32 +12,38 @@
 #define VERBOSE_SUCCESS(host, service) "[INFO]: Message sent by [" << host << ":" << service << "]"
 #define VERBOSE_ERROR(error) "[ERR]: getnameinfo: " << gai_strerror(error)
 
-// RSG return codes
-#define CREATE_GAME_ERROR 1
-#define CREATE_GAME_SUCCESS 2
+enum {
+  // RSG return codes
+  CREATE_GAME_ERROR,
+  CREATE_GAME_SUCCESS,
 
-// RLG return codes
-#define SUCCESS_GUESS 1
-#define SUCCESS_FINAL_GUESS 2
-#define DUPLICATE_GUESS 3
-#define WRONG_GUESS 4
-#define WRONG_FINAL_GUESS 5
-#define TRIAL_MISMATCH 6
-#define SYNTAX_ERROR 7
+  // RLG return codes
+  SYNTAX_ERROR,
+  TRIAL_MISMATCH,
+  DUPLICATE_GUESS,
+  WRONG_GUESS,
+  WRONG_FINAL_GUESS,
+  SUCCESS_GUESS,
+  SUCCESS_FINAL_GUESS,
 
-// RQT return codes
-#define CLOSE_GAME_ERROR 1
-#define CLOSE_GAME_SUCCESS 2
+  // RQT return codes
+  CLOSE_GAME_ERROR,
+  CLOSE_GAME_SUCCESS,
 
-#define SCOREBOARD_EMPTY 1
-#define SCOREBOARD_SUCCESS 2
+  // RSB return codes
+  SCOREBOARD_ERROR,
+  SCOREBOARD_EMPTY,
+  SCOREBOARD_SUCCESS,
 
-#define HINT_ERROR 1
-#define HINT_SUCCESS 2
+  // RHL return codes
+  HINT_ERROR,
+  HINT_SUCCESS,
 
-#define STATE_ONGOING 1
-#define STATE_FINISHED 2
-#define STATE_ERROR 3
+  // RST return codes
+  STATE_ERROR,
+  STATE_FINISHED,
+  STATE_ONGOING
+};
 
 // File storing utilities + messages
 #define EMPTY_FILE(file) "[ERR]: File " + file + " is empty."
