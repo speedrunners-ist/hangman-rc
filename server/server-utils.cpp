@@ -124,13 +124,11 @@ void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines) {
   }
 }
 
-void getLastFinishedGame(std::string plid, std::string &filePath) {
+int getLastFinishedGame(std::string plid, std::string &filePath) {
 
   std::filesystem::path dir(PLID_GAMES_PATH(plid));
   if (!std::filesystem::exists(dir)) {
-    std::filesystem::create_directory(dir);
-    filePath = "";
-    return;
+    return -1;
   }
 
   std::vector<std::string> files;
@@ -139,19 +137,24 @@ void getLastFinishedGame(std::string plid, std::string &filePath) {
   }
 
   if (files.size() == 0) {
-    filePath = "";
-    return;
+    return -1;
   }
 
   std::sort(files.begin(), files.end());
   // return name
   filePath = files.back().erase(0, files.back().find_last_of('/') + 1);
+  return 0;
 }
 
 int createPlaceholderState(std::string plid, std::string filePath) {
   std::filesystem::path dir(TMP_DIR);
-  if (!std::filesystem::exists(dir)) {
-    std::filesystem::create_directory(dir);
+
+  try {
+    if (!std::filesystem::exists(dir))
+      std::filesystem::create_directory(dir);
+  } catch (std::filesystem::filesystem_error &e) {
+    std::cerr << e.what() << std::endl;
+    return -1;
   }
 
   // create file TMP_PATH(plid) if it doesn't exist

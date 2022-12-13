@@ -13,9 +13,8 @@
 #define MAX_CACHE_SIZE 128
 #define TIME_FORMAT "%Y-%m-%d_%H-%M-%S"
 #define FILE_PATH(filename) "server/hints/" + filename
-#define STATE_PATH(plid) "server/state/" + plid + ".txt"
-#define TMP_DIR "server/state/tmp/"
-#define TMP_PATH(plid) "server/state/tmp/" + plid + ".txt"
+#define TMP_DIR "server/state/"
+#define TMP_PATH(plid) TMP_DIR + plid + ".txt"
 
 int createGameFile(std::string plid, std::string word, std::string hint);
 int appendGameFile(std::string plid, std::string code, std::string play);
@@ -23,7 +22,7 @@ int transferGameFile(std::string plid);
 int appendScoreFile(int score, std::string scoreline);
 void writeScoreFileHeader(std::fstream &file, std::vector<std::string> lines);
 
-void getLastFinishedGame(std::string plid, std::string &filePath);
+int getLastFinishedGame(std::string plid, std::string &filePath);
 int createPlaceholderState(std::string plid, std::string filePath);
 
 #endif

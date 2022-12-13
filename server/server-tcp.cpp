@@ -175,10 +175,13 @@ int handleSTA(struct protocolMessage message) {
   }
 
   ret = sendTCPFile(response.append(" "), newConnectionFd, file);
+
   // remove tmp file
-  // std::string tmpFile = TMP_PATH(plid);
-  // if (remove(tmpFile.c_str()) != 0) {
-  //   std::cerr << "[ERR]: Error deleting file" << std::endl;
-  // }
+  std::string tmpFile = TMP_PATH(plid);
+  if (remove(tmpFile.c_str()) != 0) {
+    std::cerr << "[ERR]: Error deleting file" << std::endl;
+  } else {
+    std::cout << "[INFO]: Deleted temporary file " << tmpFile << std::endl;
+  }
   return ret;
 }
