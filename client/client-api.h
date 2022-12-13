@@ -110,7 +110,7 @@ int getTrials();
  * @brief Checks whether the player wants to exit the program, and if so, exits
  *
  * @param command The command to be checked.
- * @return true if the player wants to exit, false otherwise.
+ * @return True if the player wants to exit, false otherwise.
  */
 bool forceExitClient(std::string command);
 

@@ -3,30 +3,57 @@
 
 #include "client-api.h"
 
-// Expected amount of arguments for each protocol (client-side)
+// Expected amount of arguments for the "start" command.
 #define START_ARGS 2
+
+// Expected amount of arguments for the "play" command.
 #define PLAY_ARGS 2
+
+// Expected amount of arguments for the "guess" command.
 #define GUESS_ARGS 2
+
+// Expected amount of arguments for the quit and "exit" commands.
 #define QUIT_ARGS 1
+
+// Expected amount of arguments for the "rev" command.
 #define REVEAL_ARGS 1
+
+// Expected amount of arguments for the "scoreboard" command.
 #define SCOREBOARD_ARGS 1
+
+// Expected amount of arguments for the "hint" command.
 #define HINT_ARGS 1
+
+// Expected amount of arguments for the "state" command.
 #define STATE_ARGS 1
 
-// Maximum amount of bytes that can be sent by the server for each UDP command
-// Macros defined as the sum of each element's max byte amount
-// Account for spaces and for the newline in the end
+// NOTE: the Byte amounts below include spaces and a newline character.
+
+// Maximum amount of Bytes that can be sent by the server in a RSG message.
 #define RSG_BYTES 3 + 1 + 3 + 1 + 2 + 1 + 1 + 1
+
+// Maximum amount of Bytes that can be sent by the server in a RLG message.
 #define RLG_BYTES 3 + 1 + 3 + 1 + 1 + 2 + 2 * 30 + 1
+
+// Maximum amount of Bytes that can be sent by the server in a RWG message.
 #define RWG_BYTES 3 + 1 + 3 + 1 + 1 + 1
+
+// Maximum amount of Bytes that can be sent by the server in a RQT message.
 #define RQT_BYTES 3 + 1 + 3 + 1
+
+// Maximum amount of Bytes that can be sent by the server in a RRV message.
 #define RRV_BYTES 3 + 1 + 30 + 1
 
+// Amount of expected arguments in a TCP server response.
 #define TCP_DEFAULT_ARGS 2
+
+// Amount of expected file information arguments in a TCP server response.
 #define TCP_FILE_ARGS 2
 
-#define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
+// Below, a series of error messages to be displayed to the user via stderr.
+// Errors range from general incorrect input usage to command-specific errors.
 
+#define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                                  \
@@ -34,71 +61,256 @@
 #define UNEXPECTED_COMMAND_ERROR(commands)                                                                   \
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 
-// UDP - client-side specific messages
+#define RSG_OK(mistakes, word)                                                                               \
+  "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
+#define RSG_NOK "Failed to start a new game. Try again later."
 #define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
+
 #define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
 #define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
-#define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
-#define RSG_OK(mistakes, word)                                                                               \
-  ("New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word)
-#define RSG_NOK "Failed to start a new game. Try again later."
 #define RLG_WIN(word) ("WELL DONE! You guessed: " + word)
 #define RLG_DUP "You have already guessed this letter."
-#define RLG_NOK(mistakes) ("Wrong guess. " + std::to_string(mistakes) + " errors left.")
+#define RLG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RLG_OVR "GAME OVER! You do not have any more errors left."
 #define RLG_INV "An invalid trial parameter was sent. Try again."
 #define RLG_ERR "RLG ERR"
-#define RWG_WIN(word) ("WELL DONE! You guessed: " + word)
-#define RWG_NOK(mistakes) ("Wrong guess. " + std::to_string(mistakes) + " errors left.")
+
+#define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
+#define RWG_WIN(word) "WELL DONE! You guessed: " + word
+#define RWG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."
 #define RWG_ERR "RWG ERR"
+
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game. Try again later."
 
-// TCP - client-side specific messages
-#define SB_FAIL "[INFO]: The server hasn't held any games yet."
-#define H_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
-#define H_FAIL "[INFO]: The server could not send any hints at the moment."
-#define ST_ACT "[INFO]: Displaying information about the current game."
-#define ST_FIN "[INFO]: Displaying information about the last finished game."
-#define ST_NOK "[INFO]: The server could not find any games (neither active nor finished)."
-#define ST_ERR "[ERR]: The server has encountered an error while processing your request."
+#define RSB_FAIL "[INFO]: The server hasn't held any games yet."
+#define RHL_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
+#define RHL_FAIL "[INFO]: The server could not send any hints at the moment."
+#define RST_ACT "[INFO]: Displaying information about the current game."
+#define RST_FIN "[INFO]: Displaying information about the last finished game."
+#define RST_NOK "[INFO]: The server could not find any games (neither active nor finished)."
+#define RST_ERR "[ERR]: The server has encountered an error while processing your request."
 
+// Directory where the scoreboard file will be stored.
 #define SB_DIR "client/scoreboard/"
-#define SB_PATH(name) SB_DIR + name
+
+// Directory where the hint files will be stored.
 #define H_DIR "client/hints/"
+
+// Directory where the state files will be stored.
 #define ST_DIR "client/state/"
+
+// File name for the scoreboard file
+#define SB_PATH(name) SB_DIR + name
+
+// File name for the state file
 #define ST_PATH(name) ST_DIR + name
 
+/**
+ * @brief Creates a socket for UDP communication with the server.
+ *
+ * @param peer The peerInfo struct containing the server's IP and port.
+ * @return The socket's file descriptor.
+ */
 int createSocketUDP(struct peerInfo peer);
+
+/**
+ * @brief Creates a socket for TCP communication with the server.
+ *
+ * @param peer The peerInfo struct containing the server's IP and port.
+ * @return The socket's file descriptor.
+ */
 int createSocketTCP(struct peerInfo peer);
-int generalUDPHandler(std::string message, size_t maxBytes);
+
+/**
+ * @brief Ends the UDP communication with the server.
+ *
+ * @return 0 if the disconnection was successful, -1 otherwise.
+ */
 int disconnectUDP();
+
+/**
+ * @brief Ends the TCP communication with the server.
+ *
+ * @return 0 if the disconnection was successful, -1 otherwise.
+ */
 int disconnectTCP();
 
-// UDP Server message servers
+/**
+ * @brief Centralized UDP communication handler with the server.
+ *
+ * @param message The message to be sent to the server.
+ * @param maxBytes The maximum amount of bytes to be received from the server.
+ *
+ * @return 0 if the communication was successful, -1 otherwise.
+ */
+int generalUDPHandler(std::string message, size_t maxBytes);
+
+/**
+ * @brief Perform message sending and retrieval (TCP) with the server.
+ *
+ * @param message The message to be sent to the server.
+ * @param serverMessage The struct that will hold the server's response.
+ * @param args The amount of arguments expected in the server's response.
+ *
+ * @return 0 if the communication was successful, -1 otherwise.
+ */
+int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessage, int args);
+
+/**
+ * @brief Parses the server's TCP response
+ *
+ * @param serverMessage The struct that holds the server's response.
+ * @return 0 if the response was successfully parsed and handled, -1 otherwise.
+ */
+int parseTCPResponse(struct protocolMessage &serverMessage);
+
+/**
+ * @brief Parses the server-sent file information for the following file transfer.
+ *
+ * @param info The struct that will hold the file information.
+ * @return 0 if the file information was successfully parsed, -1 otherwise.
+ */
+int parseFileArgs(struct fileInfo &info);
+
+/**
+ * @brief Centralized TCP communication handler with the server.
+ *
+ * @param message The message to be sent to the server.
+ * @param peer The peerInfo struct containing the server's IP and port.
+ *
+ * @return 0 if the communication was successful, -1 otherwise.
+ */
+int generalTCPHandler(std::string message, struct peerInfo peer);
+
+/**
+ * @brief Handles RSG responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRSG(struct protocolMessage response);
+
+/**
+ * @brief Handles RLG responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRLG(struct protocolMessage response);
+
+/**
+ * @brief Handles RWG responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRWG(struct protocolMessage response);
+
+/**
+ * @brief Handles RQT responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRQT(struct protocolMessage response);
+
+/**
+ * @brief Handles RRV responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRRV(struct protocolMessage response);
 
-// TCP Server message servers
+/**
+ * @brief Handles RSB responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRSB(struct protocolMessage response);
+
+/**
+ * @brief Handles RHL responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRHL(struct protocolMessage response);
+
+/**
+ * @brief Handles RST responses from the server.
+ *
+ * @param response The response from the server.
+ * @return 0 if the response was handled successfully, -1 otherwise.
+ */
 int handleRST(struct protocolMessage response);
 
-// UDP Client message handlers
+/**
+ * @brief Sends SNG messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendSNG(struct messageInfo info);
+
+/**
+ * @brief Sends PLG messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendPLG(struct messageInfo info);
+
+/**
+ * @brief Sends PWG messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendPWG(struct messageInfo info);
+
+/**
+ * @brief Sends QUT messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendQUT(struct messageInfo info);
+
+/**
+ * @brief Sends REV messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendREV(struct messageInfo info);
 
-// TCP Client message handlers
+/**
+ * @brief Sends GSB messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendGSB(struct messageInfo info);
+
+/**
+ * @brief Sends GHL messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendGHL(struct messageInfo info);
+
+/**
+ * @brief Sends STA messages to the server.
+ *
+ * @param info The messageInfo struct containing the message's parameters.
+ * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
+ */
 int sendSTA(struct messageInfo info);
 
 #endif /* CLIENT_PROTOCOL_H */

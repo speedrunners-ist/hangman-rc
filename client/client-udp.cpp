@@ -1,6 +1,5 @@
 #include "client-protocol.h"
 
-// UDP related socket variables
 struct addrinfo *serverInfoUDP;
 struct addrinfo hintsUDP;
 int socketFdUDP;

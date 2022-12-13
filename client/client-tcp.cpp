@@ -1,6 +1,5 @@
 #include "client-protocol.h"
 
-// TCP related socket variables
 struct addrinfo *serverInfoTCP;
 struct addrinfo hintsTCP;
 int socketFdTCP;
@@ -113,7 +112,7 @@ int handleRSB(struct protocolMessage response) {
     disconnectTCP();
     return ret;
   } else if (response.second == "EMPTY") {
-    std::cout << SB_FAIL << std::endl;
+    std::cout << RSB_FAIL << std::endl;
     disconnectTCP();
     return 0;
   }
@@ -136,11 +135,11 @@ int handleRHL(struct protocolMessage response) {
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
-    std::cout << H_SUCCESS(info.fileName, bytesRead) << std::endl;
+    std::cout << RHL_SUCCESS(info.fileName, bytesRead) << std::endl;
     disconnectTCP();
     return 0;
   } else if (response.second == "NOK") {
-    std::cout << H_FAIL << std::endl;
+    std::cout << RHL_FAIL << std::endl;
     disconnectTCP();
     return 0;
   }
@@ -150,11 +149,11 @@ int handleRHL(struct protocolMessage response) {
 
 int handleRST(struct protocolMessage response) {
   if (response.second == "NOK") {
-    std::cout << ST_NOK << std::endl;
+    std::cout << RST_NOK << std::endl;
     disconnectTCP();
     return 0;
   } else if (response.second == "ERR") {
-    std::cerr << ST_ERR << std::endl;
+    std::cerr << RST_ERR << std::endl;
     disconnectTCP();
     return -1;
   }
@@ -175,9 +174,9 @@ int handleRST(struct protocolMessage response) {
 
   std::cout << FILE_RECV_SUCCESS << std::endl;
   if (response.second == "ACT") {
-    std::cout << ST_ACT << std::endl;
+    std::cout << RST_ACT << std::endl;
   } else if (response.second == "FIN") {
-    std::cout << ST_FIN << std::endl;
+    std::cout << RST_FIN << std::endl;
   }
 
   displayFile(ST_PATH(info.fileName));
