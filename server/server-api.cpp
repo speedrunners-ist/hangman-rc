@@ -33,18 +33,18 @@ void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWo
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
 /*** Util methods in order to let external server implementations use the GameState class ***/
-int getAvailableMistakes(GameState state) { return play.getAvailableMistakes(); }
-std::string getWord(GameState state) { return play.getWord(); }
-void setLastGuess(GameState state, char guess) { play.setLastGuess(guess); }
-void setLastWordGuess(GameState state, std::string guess) { play.setLastWordGuess(guess); }
-int getWordLength(GameState state) { return play.getWordLength(); }
-void setPlayerID(GameState &state, std::string id) { play.setPlayerID(id); }
-std::string getPlayerID(GameState state) { return play.getPlayerID(); }
+int getAvailableMistakes(GameState state) { return state.getAvailableMistakes(); }
+std::string getWord(GameState state) { return state.getWord(); }
+void setLastGuess(GameState state, char guess) { state.setLastGuess(guess); }
+void setLastWordGuess(GameState state, std::string guess) { state.setLastWordGuess(guess); }
+int getWordLength(GameState state) { return state.getWordLength(); }
+void setPlayerID(GameState &state, std::string id) { state.setPlayerID(id); }
+std::string getPlayerID(GameState state) { return state.getPlayerID(); }
 int getTrials(GameState state) {
   // the user will always send the trial number related to the one he is playing, hence the +1
-  return play.getTrials() + 1;
+  return state.getTrials() + 1;
 }
-void incrementTrials(GameState &state) { play.incrementTrials(); }
+void incrementTrials(GameState &state) { state.incrementTrials(); }
 
 /*** Methods utilized in state file retrieval ***/
 void playCorrectLetterGuess(GameState &state, std::string letter) {
