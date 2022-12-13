@@ -7,6 +7,7 @@ socklen_t addrlenTCP;
 bool verboseTCP;
 char hostTCP[NI_MAXHOST], serviceTCP[NI_MAXSERV]; // consts in <netdb.h>
 char bufferTCP[TCP_CHUNK_SIZE];
+pid_t pid;
 
 // clang-format off
 responseHandler handleTCPClientMessage = {
@@ -35,6 +36,8 @@ int createSocketTCP(struct peerInfo peer) {
 
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
+  // TODO: check if this is necessary
+  signal(SIGCHLD, NULL);
 
   return socketFdTCP;
 }
@@ -65,29 +68,41 @@ int generalTCPHandler(struct peerInfo peer) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
-      std::cerr << TCP_READ_ERROR << std::endl;
+    if ((pid = fork()) == -1) {
+      std::cerr << FORK_ERROR << std::endl;
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
-
-    std::cout << "[INFO]: Received message: " << bufferTCP;
-    int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP,
-                              sizeof serviceTCP, 0);
-    if (verboseTCP) {
-      if (errcode != 0)
-        std::cerr << VERBOSE_ERROR(errcode) << std::endl;
-      else {
-        std::cout << VERBOSE_SUCCESS(hostTCP, serviceTCP) << std::endl;
-      }
+    // Father process
+    if (pid != 0) {
+      close(newConnectionFd);
     }
+    // Child process
+    else {
+      close(socketFdTCP);
+      if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
+        std::cerr << TCP_READ_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
 
-    parseTCPMessage(std::string(bufferTCP));
-    memset(bufferTCP, 0, TCP_CHUNK_SIZE);
+      std::cout << "[INFO]: Received message: " << bufferTCP;
+      int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP,
+                                serviceTCP, sizeof serviceTCP, 0);
+      if (verboseTCP) {
+        if (errcode != 0)
+          std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+        else {
+          std::cout << VERBOSE_SUCCESS(hostTCP, serviceTCP) << std::endl;
+        }
+      }
+      parseTCPMessage(std::string(bufferTCP));
+      exit(EXIT_SUCCESS);
+    }
   }
 }
 
 // Server message handlers
 int handleGSB(struct protocolMessage message) {
+  std::cout << "[INFO]: Received GSB message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
