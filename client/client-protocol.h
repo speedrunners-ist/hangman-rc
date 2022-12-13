@@ -35,6 +35,7 @@
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 
 // UDP - client-side specific messages
+#define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
 #define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
 #define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
 #define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
