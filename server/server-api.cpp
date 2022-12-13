@@ -197,9 +197,6 @@ int createGameSession(std::string plid, std::string &arguments) {
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
-
-  toLower(letter);
-
   if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
@@ -218,6 +215,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return DUPLICATE_GUESS;
   }
 
+  toLower(letter);
   std::string positions;
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
@@ -252,9 +250,6 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 }
 
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
-
-  toLower(word);
-
   if (!validPlayerID(plid) || !isOngoingGame(plid)) {
     return SYNTAX_ERROR;
   }
@@ -270,11 +265,11 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
     return TRIAL_MISMATCH;
   }
 
-  arguments = trial;
-
+  toLower(word);
   state.setLastWordGuess(word);
   state.addGuessedWord(word);
   state.incrementTrials();
+  arguments = trial;
 
   if (state.getWord() == word) {
     appendGameFile(plid, CORRECT_FINAL_WORD, word);
