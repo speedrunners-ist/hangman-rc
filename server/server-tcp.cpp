@@ -38,6 +38,7 @@ int createSocketTCP(struct peerInfo peer) {
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
 
+  // Ignore SIGCHLD to avoid zombie processes
   memset(&act, 0, sizeof(act));
   act.sa_handler = SIG_IGN;
   if (sigaction(SIGCHLD, &act, NULL) == -1) {
@@ -78,12 +79,10 @@ int generalTCPHandler(struct peerInfo peer) {
       std::cerr << FORK_ERROR << std::endl;
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
-    // Father process
-    if (pid != 0) {
+
+    if (pid != 0) { // Father process
       close(newConnectionFd);
-    }
-    // Child process
-    else {
+    } else { // Child process
       close(socketFdTCP);
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
