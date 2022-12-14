@@ -66,7 +66,12 @@ int parseTCPMessage(std::string request) {
   serverMessage.first = command;
   serverMessage.second = plid;
   serverMessage.body = request;
-  return handleTCPClientMessage[command](serverMessage);
+  try {
+    return handleTCPClientMessage[command](serverMessage);
+  } catch (const std::bad_function_call &oor) {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
+  }
 }
 
 int generalTCPHandler(struct peerInfo peer) {
@@ -96,6 +101,9 @@ int generalTCPHandler(struct peerInfo peer) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         exit(EXIT_FAILURE); // TODO: exit gracefully here
       }
+
+      std::cout << "[INFO]: New connection" << std::endl;
+
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
         exit(EXIT_FAILURE); // TODO: exit gracefully here
@@ -112,6 +120,7 @@ int generalTCPHandler(struct peerInfo peer) {
         }
       }
       parseTCPMessage(std::string(bufferTCP));
+      std::cout << "[INFO]: Closing connection" << std::endl;
       exit(EXIT_SUCCESS);
     }
   }
