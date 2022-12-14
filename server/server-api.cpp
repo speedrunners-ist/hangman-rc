@@ -303,6 +303,20 @@ int closeGameSession(std::string plid) {
   return CLOSE_GAME_SUCCESS;
 }
 
+int revealWord(std::string plid, std::string &word) {
+  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+    return REVEAL_ERROR;
+  }
+
+  GameState state;
+  if (retrieveGame(plid, state) != 0) {
+    return REVEAL_ERROR;
+  }
+
+  word = RRV_OK(state.getWord());
+  return REVEAL_SUCCESS;
+}
+
 int insertScore(std::string plid, GameState &state) {
   const int initialMistakes = initialAvailableMistakes(getWordLength(state));
   const int trialsMade = state.getTrials();

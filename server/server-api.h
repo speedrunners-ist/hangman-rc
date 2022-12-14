@@ -34,8 +34,12 @@ enum {
   SUCCESS_FINAL_GUESS, // RLG WIN
 
   // RQT return codes
-  CLOSE_GAME_ERROR,   // RQT NOK
+  CLOSE_GAME_ERROR,   // RQT ERR
   CLOSE_GAME_SUCCESS, // RQT OK
+
+  // RRV return codes
+  REVEAL_ERROR,   // RRV ERR
+  REVEAL_SUCCESS, // RRV OK
 
   // RSB return codes
   SCOREBOARD_ERROR,   // RSB NOK
@@ -239,6 +243,16 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 int closeGameSession(std::string plid);
 
 /**
+ * @brief Retrieves a given game session's correct word in development, and "OK" in production.
+ * Used for testing purposes.
+ *
+ * @param plid The playerID of the game session.
+ * @param word The wanted word.
+ * @return REVEAL_SUCCESS if the word was retrieved successfully, REVEAL_ERROR otherwise.
+ */
+int revealWord(std::string plid, std::string &word);
+
+/**
  * @brief Calculates the score for a given game session, tries to insert it into the scoreboard.
  *
  * @param plid The playerID of the game session.
@@ -276,3 +290,12 @@ int getHint(std::string plid, std::string &response, std::string &filePath);
 int getState(std::string plid, std::string &response, std::string &filePath);
 
 #endif /* SERVER_API_H */
+
+// In production, a compiler flag (PRODUCTION) will be used in order to tell that
+// the RRV command should answer with RRV OK, not RRV with the actual word.
+// For that, we'll define a macro that will be used in the code.
+#ifdef PRODUCTION
+#define RRV_OK(word) "OK"
+#else
+#define RRV_OK(word) word
+#endif
