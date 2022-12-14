@@ -53,6 +53,7 @@ void incrementTrials(GameState &state) { state.incrementTrials(); }
 void playCorrectLetterGuess(GameState &state, std::string letter) {
   const int occurrences = getLetterOccurrences(state.getWord(), letter.front());
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
+  state.addGuessedLetter(letter.front());
   state.incrementTrials();
 }
 
