@@ -52,7 +52,7 @@ int disconnectUDP() { return disconnectSocket(resUDP, socketFdUDP); }
 
 int generalUDPHandler(struct peerInfo peer) {
   struct protocolMessage request;
-  lastMessage[0] = '\0';
+  memset(lastMessage, 0, UDP_RECV_SIZE);
   if (createSocketUDP(peer) == -1) {
     return -1;
   }
@@ -76,7 +76,7 @@ int generalUDPHandler(struct peerInfo peer) {
     }
 
     // Check if message is the same as the last one
-    if (std::string(bufferUDP).compare(lastMessage) == 0) {
+    if (strcmp(bufferUDP, lastMessage) == 0) {
       sendUDPMessage(response, resUDP, socketFdUDP);
       memset(bufferUDP, 0, UDP_RECV_SIZE);
       continue;
@@ -92,7 +92,7 @@ int generalUDPHandler(struct peerInfo peer) {
 
     try {
       handleUDPClientMessage[request.first](request);
-    } catch (const std::out_of_range &oor) {
+    } catch (const std::bad_function_call &oor) {
       std::cerr << UDP_HANGMAN_ERROR << std::endl;
       return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
     }
