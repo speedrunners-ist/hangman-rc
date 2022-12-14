@@ -122,4 +122,9 @@ bool forceExitClient(std::string command);
  */
 std::vector<std::string> getKeys(commandHandler map);
 
+/**
+ * @brief Prints the help menu.
+ */
+void printHelpMenu();
+
 #endif /* CLIENT_API_H */

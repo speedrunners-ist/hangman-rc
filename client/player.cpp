@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   }
 
   char buffer[MAX_USER_INPUT];
-  // TODO: should we include a help menu as the first thing the player sees?
+  printHelpMenu();
   continueReading(buffer);
 
   // Read the user input

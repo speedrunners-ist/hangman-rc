@@ -55,3 +55,21 @@ std::vector<std::string> getKeys(commandHandler map) {
   }
   return keys;
 }
+
+void printHelpMenu() {
+  std::cout << "Welcome to a brand new Hangman game!" << std::endl;
+  std::cout << "To play, you can use the following commands:" << std::endl;
+  std::cout << "  - start/sg <player_id>: starts a new game. The Player ID must be composed of 6 digits."
+            << std::endl;
+  std::cout << "  - play/pl <letter>: works as a letter guess." << std::endl;
+  std::cout << "  - guess/gw <word>: works as a word guess." << std::endl;
+  std::cout << "  - scoreboard/sb: shows the scoreboard, with the Top 10 scores stored by the server."
+            << std::endl;
+  std::cout << "  - hint/h: shows a hint for the current word." << std::endl;
+  std::cout << "  - state/st: shows the current state of the game (or the state of your last finished game)."
+            << std::endl;
+  std::cout << "  - rev: if in development, shows the current word. Otherwise, does nothing." << std::endl;
+  std::cout << "  - quit: quits the game." << std::endl;
+  std::cout << "  - exit: quits the game and exits the program." << std::endl;
+  std::cout << "  Good luck!" << std::endl;
+}
