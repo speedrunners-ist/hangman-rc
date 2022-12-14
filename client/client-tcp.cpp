@@ -3,6 +3,7 @@
 struct addrinfo *serverInfoTCP;
 struct addrinfo hintsTCP;
 int socketFdTCP;
+bool isTCPConnected = false;
 
 // clang-format off
 responseHandler handleTCPServerMessage = {
@@ -18,6 +19,7 @@ int createSocketTCP(struct peerInfo peer) {
     std::cerr << TCP_SERVER_ERROR << std::endl;
     return -1;
   }
+  isTCPConnected = true;
 
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
@@ -25,7 +27,13 @@ int createSocketTCP(struct peerInfo peer) {
   return socketFdTCP;
 }
 
-int disconnectTCP() { return disconnectSocket(serverInfoTCP, socketFdTCP); }
+int disconnectTCP() {
+  if (isTCPConnected) {
+    isTCPConnected = false;
+    return disconnectSocket(serverInfoTCP, socketFdTCP);
+  }
+  return 0;
+}
 
 int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessage, int args) {
   if (serverInfoTCP == NULL) {
