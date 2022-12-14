@@ -7,6 +7,7 @@ socklen_t addrlenUDP;
 bool verboseUDP;
 char hostUDP[NI_MAXHOST], serviceUDP[NI_MAXSERV]; // consts in <netdb.h>
 char bufferUDP[UDP_RECV_SIZE];
+struct sigaction actUDP;
 
 // clang-format off
 responseHandler handleUDPClientMessage = {
@@ -32,6 +33,15 @@ int createSocketUDP(struct peerInfo peer) {
 
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
+
+  memset(&actUDP, 0, sizeof(actUDP));
+  actUDP.sa_handler = SIG_IGN;
+
+  // Igonre SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
+  }
 
   return socketFdUDP;
 }
