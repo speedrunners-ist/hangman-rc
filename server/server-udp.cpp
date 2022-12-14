@@ -87,7 +87,8 @@ int generalUDPHandler(struct peerInfo peer) {
 
     if (parseUDPMessage(std::string(bufferUDP), request) == -1) {
       std::cerr << UDP_PARSE_ERROR << std::endl;
-      return -1;
+      memset(bufferUDP, 0, UDP_RECV_SIZE);
+      continue;
     }
 
     try {
