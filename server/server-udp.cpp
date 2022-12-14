@@ -107,12 +107,12 @@ int generalUDPHandler(struct peerInfo peer) {
 // Server message handlers
 int handleSNG(struct protocolMessage message) {
   std::cout << "[INFO]: Received SNG message" << std::endl;
-  if (message.body.back() != '\n') {
+  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDformat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"RSG", "ERR"}), resUDP, socketFdUDP);
   }
-  const std::string plid = message.second;
 
+  const std::string plid = message.second;
   std::string gameInfo;
   const int ret = createGameSession(plid, gameInfo);
   switch (ret) {

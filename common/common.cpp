@@ -439,6 +439,7 @@ bool validArgsAmount(std::string input, int n) {
 }
 
 bool validPlayerID(std::string id) {
+  // TODO: DEPRECATED
   if (id.length() != 6) {
     std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
     return false;
@@ -461,3 +462,7 @@ void continueReading(char *buffer) {
 }
 
 void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
+
+bool hasPLIDformat(std::string plid) {
+  return plid.length() == 6 && std::all_of(plid.begin(), plid.end(), ::isdigit);
+}

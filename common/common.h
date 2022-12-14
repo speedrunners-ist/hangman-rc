@@ -334,4 +334,12 @@ void signalHandler(int signum);
  */
 void toLower(std::string &str);
 
+/*
+ * @brief Checks if a given string has the PLID format.
+ *
+ * @param plid: String to be checked.
+ * @return True if the string has the PLID format, false otherwise.
+ */
+bool hasPLIDformat(std::string plid);
+
 #endif /* COMMON_H */

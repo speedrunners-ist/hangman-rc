@@ -153,10 +153,6 @@ int retrieveGame(std::string playerID, GameState &state) {
 }
 
 int createGameSession(std::string plid, std::string &arguments) {
-  if (!validPlayerID(plid)) {
-    return CREATE_GAME_ERROR;
-  }
-
   // If there's already an ongoing game for the given player
   if (isOngoingGame(plid)) {
     GameState state;
