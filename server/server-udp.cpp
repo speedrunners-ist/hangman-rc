@@ -99,7 +99,7 @@ int handleSNG(struct protocolMessage message) {
 
   std::string gameInfo;
   std::string response;
-  int ret = createGameSession(plid, gameInfo);
+  const int ret = createGameSession(plid, gameInfo);
   switch (ret) {
     case CREATE_GAME_ERROR:
       response = buildSplitStringNewline({"RSG", "NOK"});
@@ -183,7 +183,7 @@ int handlePWG(struct protocolMessage message) {
 
   std::string guessInfo;
   std::string response;
-  int ret = guessWord(plid, word, trial, guessInfo);
+  const int ret = guessWord(plid, word, trial, guessInfo);
 
   switch (ret) {
     case SUCCESS_GUESS:
@@ -218,7 +218,7 @@ int handleQUT(struct protocolMessage message) {
 
   const std::string plid = message.second;
   std::string response;
-  int ret = closeGameSession(plid);
+  const int ret = closeGameSession(plid);
 
   switch (ret) {
     case CLOSE_GAME_SUCCESS:
@@ -242,14 +242,15 @@ int handleREV(struct protocolMessage message) {
   }
 
   const std::string plid = message.second;
+  std::string word;
   std::string response;
-  int ret = closeGameSession(plid); // FIXME: RRV SHOULD SEND THE PLAY'S WORD, NOT CLOSE THE TING
+  const int ret = revealWord(plid, word);
 
   switch (ret) {
-    case CLOSE_GAME_SUCCESS:
-      response = buildSplitStringNewline({"RRV", "OK"});
+    case REVEAL_SUCCESS:
+      response = buildSplitStringNewline({"RRV", word});
       break;
-    case CLOSE_GAME_ERROR:
+    case REVEAL_ERROR:
       response = buildSplitStringNewline({"RRV", "ERR"});
       break;
     default:
