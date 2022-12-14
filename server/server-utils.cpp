@@ -183,12 +183,15 @@ int createPlaceholderState(std::string plid, std::string filePath) {
   return 0;
 }
 
-void destroyOnGoingGames() {
-  const std::filesystem::path path = GAMES_DIR;
+void destroyTempFiles() {
+  const std::filesystem::path gamePath = GAMES_DIR;
 
-  for (const auto &entry : std::filesystem::directory_iterator{path}) {
+  for (const auto &entry : std::filesystem::directory_iterator{gamePath}) {
     if (!entry.is_directory()) {
       std::filesystem::remove(entry.path());
     }
   }
+  const std::filesystem::path statePath = TMP_DIR;
+
+  std::filesystem::remove_all(statePath);
 }

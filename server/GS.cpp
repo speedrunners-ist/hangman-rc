@@ -4,7 +4,7 @@ void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   disconnectTCP();
-  destroyOnGoingGames();
+  destroyTempFiles();
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
