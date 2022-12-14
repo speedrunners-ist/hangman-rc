@@ -350,4 +350,12 @@ bool hasPLIDFormat(std::string plid);
  */
 bool hasTrialFormat(std::string trial);
 
+/*
+ * @brief Checks if a given string has the WORD format.
+ *
+ * @param word: String to be checked.
+ * @return True if the string has the WORD format, false otherwise.
+ */
+bool hasWordFormat(std::string word);
+
 #endif /* COMMON_H */

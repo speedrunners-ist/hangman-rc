@@ -201,21 +201,39 @@ int handlePLG(struct protocolMessage message) {
 
 int handlePWG(struct protocolMessage message) {
   std::cout << "[INFO]: Received PWG message" << std::endl;
-  if (message.body.back() != '\n') {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-  message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
 
   const std::string plid = message.second;
-  std::string args = message.body.substr(message.secondPos + 1);
-  if (args.find(' ') == std::string::npos) {
+  // Check PLID
+  if (!hasPLIDFormat(plid)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
+
+  // Remove newline from body
+  message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
+
+  if (message.body.size() <= message.secondPos) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
+
+  std::string args = message.body.substr(message.secondPos + 1);
+  if (args.size() < 3 || args.find(' ') == std::string::npos) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
+
   const std::string word = args.substr(0, args.find(' '));
-  args = args.substr(args.find(' ') + 1);
-  const std::string trial = args;
+  if (!hasWordFormat(word)) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
+
+  const std::string trial = args.substr(args.find(' ') + 1);
+  if (!hasTrialFormat(trial)) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
 
   std::string guessInfo;
   const int ret = guessWord(plid, word, trial, guessInfo);

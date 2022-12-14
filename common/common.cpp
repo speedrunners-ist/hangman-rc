@@ -468,3 +468,5 @@ bool hasPLIDFormat(std::string plid) {
 }
 
 bool hasTrialFormat(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }
+
+bool hasWordFormat(std::string word) { return std::all_of(word.begin(), word.end(), ::isalpha); }
