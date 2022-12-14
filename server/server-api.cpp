@@ -209,7 +209,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   arguments = buildSplitString({std::to_string(getTrials(state))});
 
-  if (getTrials(state) != std::stoi(trial)) {
+  if (std::stoi(trial) != getTrials(state)) {
     return TRIAL_MISMATCH;
   }
 
