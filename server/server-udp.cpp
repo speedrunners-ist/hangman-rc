@@ -59,6 +59,8 @@ int generalUDPHandler(struct peerInfo peer) {
 
   // Listen for incoming connections
   while (true) {
+    memset(bufferUDP, 0, UDP_RECV_SIZE);
+
     addrlenUDP = sizeof(resUDP->ai_addr);
     if (recvfrom(socketFdUDP, bufferUDP, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlenUDP) == -1) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
@@ -78,7 +80,6 @@ int generalUDPHandler(struct peerInfo peer) {
     // Check if message is the same as the last one
     if (strcmp(bufferUDP, lastMessage) == 0) {
       sendUDPMessage(response, resUDP, socketFdUDP);
-      memset(bufferUDP, 0, UDP_RECV_SIZE);
       continue;
     }
 
@@ -87,7 +88,7 @@ int generalUDPHandler(struct peerInfo peer) {
 
     if (parseUDPMessage(std::string(bufferUDP), request) == -1) {
       std::cerr << UDP_PARSE_ERROR << std::endl;
-      memset(bufferUDP, 0, UDP_RECV_SIZE);
+      sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
       continue;
     }
 
@@ -95,9 +96,9 @@ int generalUDPHandler(struct peerInfo peer) {
       handleUDPClientMessage[request.first](request);
     } catch (const std::bad_function_call &oor) {
       std::cerr << UDP_HANGMAN_ERROR << std::endl;
-      return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+      sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+      continue;
     }
-    memset(bufferUDP, 0, UDP_RECV_SIZE);
   }
 
   return 0;
