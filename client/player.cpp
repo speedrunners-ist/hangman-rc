@@ -14,7 +14,7 @@ commandHandler handlePlayerMessage = {
 // clang-format on
 
 void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   disconnectTCP();
   std::cout << EXIT_PROGRAM << std::endl;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   }
 
   char buffer[MAX_USER_INPUT];
-  // TODO: should we include a help menu as the first thing the player sees?
+  printHelpMenu();
   continueReading(buffer);
 
   // Read the user input
