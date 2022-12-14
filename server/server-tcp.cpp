@@ -87,9 +87,15 @@ int generalTCPHandler(struct peerInfo peer) {
     }
 
     if (pid != 0) { // Father process
-      close(newConnectionFd);
+      if (close(newConnectionFd == -1)) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
     } else { // Child process
-      close(socketFdTCP);
+      if (close(socketFdTCP == -1)) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
         exit(EXIT_FAILURE); // TODO: exit gracefully here
