@@ -14,7 +14,7 @@ commandHandler handlePlayerMessage = {
 // clang-format on
 
 void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   disconnectTCP();
   std::cout << EXIT_PROGRAM << std::endl;

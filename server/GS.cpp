@@ -1,7 +1,7 @@
 #include "server-protocol.h"
 
 void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   disconnectTCP();
   destroyTempFiles();
