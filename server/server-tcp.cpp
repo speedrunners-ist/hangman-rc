@@ -46,7 +46,7 @@ int createSocketTCP(struct peerInfo peer) {
     exit(EXIT_FAILURE); // TODO: exit gracefully here
   }
 
-  // Igonre SIGPIPE to avoid crashing when writing to a closed socket
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
     exit(EXIT_FAILURE); // TODO: exit gracefully here
