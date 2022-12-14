@@ -245,7 +245,7 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
     }
     return 0;
 
-  } while (--triesLeft >= 0);
+  } while (--triesLeft > 0);
 
   std::cerr << RECVFROM_ERROR << std::endl;
   return -1;
