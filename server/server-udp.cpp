@@ -107,7 +107,7 @@ int generalUDPHandler(struct peerInfo peer) {
 // Server message handlers
 int handleSNG(struct protocolMessage message) {
   std::cout << "[INFO]: Received SNG message" << std::endl;
-  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDformat(message.second)) {
+  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
@@ -132,17 +132,39 @@ int handleSNG(struct protocolMessage message) {
 
 int handlePLG(struct protocolMessage message) {
   std::cout << "[INFO]: Received PLG message" << std::endl;
-  if (message.body.back() != '\n') {
+
+  const std::string plid = message.second;
+  // Check PLID
+  if (!hasPLIDFormat(plid)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
+
+  // Remove newline from body
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
 
-  const std::string plid = message.second;
+  if (message.body.size() <= message.secondPos) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
+
   std::string args = message.body.substr(message.secondPos + 1);
+  if (args.size() < 3) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
+
   const std::string letter = args.substr(0, 1);
-  args = args.substr(2); // skip both the space and the letter
-  const std::string trial = args;
+  if (isdigit(letter[0]) || args[1] != ' ') {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
+
+  const std::string trial = args.substr(2);
+  if (!hasTrialFormat(trial)) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+  }
 
   std::string guessInfo;
   const int ret = playLetter(plid, letter, trial, guessInfo);

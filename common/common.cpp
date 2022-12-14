@@ -463,6 +463,8 @@ void continueReading(char *buffer) {
 
 void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
 
-bool hasPLIDformat(std::string plid) {
+bool hasPLIDFormat(std::string plid) {
   return plid.length() == 6 && std::all_of(plid.begin(), plid.end(), ::isdigit);
 }
+
+bool hasTrialFormat(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }

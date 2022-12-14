@@ -340,6 +340,14 @@ void toLower(std::string &str);
  * @param plid: String to be checked.
  * @return True if the string has the PLID format, false otherwise.
  */
-bool hasPLIDformat(std::string plid);
+bool hasPLIDFormat(std::string plid);
+
+/*
+ * @brief Checks if a given string has the TRIAL format.
+ *
+ * @param trial: String to be checked.
+ * @return True if the string has the TRIAL format, false otherwise.
+ */
+bool hasTrialFormat(std::string trial);
 
 #endif /* COMMON_H */
