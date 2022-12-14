@@ -8,7 +8,8 @@ std::map<std::string, std::string> wordsList;
 std::map<std::string, std::function<void(GameState &state, std::string value)>> handleLineRetrieval = {
   {CORRECT_LETTER, playCorrectLetterGuess},
   {WRONG_LETTER, playIncorrectLetterGuess},
-  {WRONG_WORD, playIncorrectWordGuess}
+  {WRONG_WORD, playIncorrectWordGuess},
+  {HINT, setHint},
 };
 // clang-format on
 
@@ -67,6 +68,8 @@ void playIncorrectWordGuess(GameState &state, std::string word) {
   state.addGuessedWord(word);
   state.incrementTrials();
 }
+
+void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 
 /*** General util methods ***/
 
@@ -142,7 +145,7 @@ int retrieveGame(std::string playerID, GameState &state) {
     const std::string value = l.substr(l.find(':') + 2, l.find('\n'));
     try {
       handleLineRetrieval[key](state, value);
-    } catch (const std::out_of_range &e) {
+    } catch (const std::bad_function_call &e) {
       std::cerr << UNEXPECTED_GAME_LINE(l) << std::endl;
       return -1;
     }
