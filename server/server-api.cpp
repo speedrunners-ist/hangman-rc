@@ -81,6 +81,7 @@ int setupWordList(std::string filePath) {
   for (auto line : lines) {
     const size_t wordPos = line.find(' ');
     std::string word = line.substr(0, wordPos);
+    toLower(word);
     std::string file = line.substr(wordPos + 1);
     wordsList[word] = file;
   }
@@ -104,7 +105,7 @@ int getLetterOccurrencesPositions(std::string word, char letter, std::string &po
   int occurrences = 0;
   const std::string space = " ";
   for (size_t i = 0; i < word.length(); i++) {
-    if (word[i] == letter) {
+    if (tolower(word[i]) == letter) {
       positions.append(space + std::to_string(i + 1));
       occurrences++;
     }
@@ -214,6 +215,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return DUPLICATE_GUESS;
   }
 
+  toLower(letter);
   std::string positions;
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
@@ -263,11 +265,11 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
     return TRIAL_MISMATCH;
   }
 
-  arguments = trial;
-
+  toLower(word);
   state.setLastWordGuess(word);
   state.addGuessedWord(word);
   state.incrementTrials();
+  arguments = trial;
 
   if (state.getWord() == word) {
     appendGameFile(plid, CORRECT_FINAL_WORD, word);
