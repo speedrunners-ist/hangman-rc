@@ -109,7 +109,7 @@ int handleSNG(struct protocolMessage message) {
   std::cout << "[INFO]: Received SNG message" << std::endl;
   if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDformat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"RSG", "ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
   const std::string plid = message.second;
@@ -124,7 +124,7 @@ int handleSNG(struct protocolMessage message) {
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RSG", "ERR"});
+      response = buildSplitStringNewline({"ERR"});
   }
   std::cout << "[INFO]: Sending RSG message" << std::endl;
   return sendUDPMessage(response, resUDP, socketFdUDP);
