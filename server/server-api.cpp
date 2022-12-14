@@ -143,7 +143,7 @@ int retrieveGame(std::string playerID, GameState &state) {
     const std::string value = l.substr(l.find(':') + 2, l.find('\n'));
     try {
       handleLineRetrieval[key](state, value);
-    } catch (const std::out_of_range &e) {
+    } catch (const std::bad_function_call &e) {
       std::cerr << UNEXPECTED_GAME_LINE(l) << std::endl;
       return -1;
     }
@@ -209,9 +209,12 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   }
 
   arguments = buildSplitString({std::to_string(getTrials(state))});
+
   if (std::stoi(trial) != getTrials(state)) {
     return TRIAL_MISMATCH;
-  } else if (state.isLetterGuessed(letter.front())) {
+  }
+
+  if (state.isLetterGuessed(letter.front())) {
     return DUPLICATE_GUESS;
   }
 

@@ -7,6 +7,8 @@ socklen_t addrlenUDP;
 bool verboseUDP;
 char hostUDP[NI_MAXHOST], serviceUDP[NI_MAXSERV]; // consts in <netdb.h>
 char bufferUDP[UDP_RECV_SIZE];
+char lastMessage[UDP_RECV_SIZE];
+std::string response;
 struct sigaction actUDP;
 
 // clang-format off
@@ -49,7 +51,8 @@ int createSocketUDP(struct peerInfo peer) {
 int disconnectUDP() { return disconnectSocket(resUDP, socketFdUDP); }
 
 int generalUDPHandler(struct peerInfo peer) {
-  struct protocolMessage response;
+  struct protocolMessage request;
+  memset(lastMessage, 0, UDP_RECV_SIZE);
   if (createSocketUDP(peer) == -1) {
     return -1;
   }
@@ -72,13 +75,24 @@ int generalUDPHandler(struct peerInfo peer) {
       }
     }
 
-    if (parseUDPMessage(std::string(bufferUDP), response) == -1) {
+    // Check if message is the same as the last one
+    if (strcmp(bufferUDP, lastMessage) == 0) {
+      sendUDPMessage(response, resUDP, socketFdUDP);
+      memset(bufferUDP, 0, UDP_RECV_SIZE);
+      continue;
+    }
+
+    memset(lastMessage, 0, UDP_RECV_SIZE);
+    memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1);
+
+    if (parseUDPMessage(std::string(bufferUDP), request) == -1) {
       std::cerr << UDP_PARSE_ERROR << std::endl;
       return -1;
     }
+
     try {
-      handleUDPClientMessage[response.first](response);
-    } catch (const std::out_of_range &oor) {
+      handleUDPClientMessage[request.first](request);
+    } catch (const std::bad_function_call &oor) {
       std::cerr << UDP_HANGMAN_ERROR << std::endl;
       return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
     }
@@ -98,7 +112,6 @@ int handleSNG(struct protocolMessage message) {
   const std::string plid = message.second;
 
   std::string gameInfo;
-  std::string response;
   const int ret = createGameSession(plid, gameInfo);
   switch (ret) {
     case CREATE_GAME_ERROR:
@@ -130,7 +143,6 @@ int handlePLG(struct protocolMessage message) {
   const std::string trial = args;
 
   std::string guessInfo;
-  std::string response;
   const int ret = playLetter(plid, letter, trial, guessInfo);
 
   switch (ret) {
@@ -182,7 +194,6 @@ int handlePWG(struct protocolMessage message) {
   const std::string trial = args;
 
   std::string guessInfo;
-  std::string response;
   const int ret = guessWord(plid, word, trial, guessInfo);
 
   switch (ret) {
@@ -217,7 +228,6 @@ int handleQUT(struct protocolMessage message) {
   }
 
   const std::string plid = message.second;
-  std::string response;
   const int ret = closeGameSession(plid);
 
   switch (ret) {
@@ -243,7 +253,6 @@ int handleREV(struct protocolMessage message) {
 
   const std::string plid = message.second;
   std::string word;
-  std::string response;
   const int ret = revealWord(plid, word);
 
   switch (ret) {
