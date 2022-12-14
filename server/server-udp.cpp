@@ -37,7 +37,7 @@ int createSocketUDP(struct peerInfo peer) {
   memset(&actUDP, 0, sizeof(actUDP));
   actUDP.sa_handler = SIG_IGN;
 
-  // Igonre SIGPIPE to avoid crashing when writing to a closed socket
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
     exit(EXIT_FAILURE); // TODO: exit gracefully here
