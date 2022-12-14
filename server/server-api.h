@@ -13,7 +13,8 @@
 #define STARTING_SERVER_ERROR "[ERR]: Failed to set server parameters. Exiting..."
 
 // Verbose success message for a message sent by a client
-#define VERBOSE_SUCCESS(host, service) "[INFO]: Message sent by [" << host << ":" << service << "]"
+#define VERBOSE_SUCCESS(protocol, host, service)                                                             \
+  "[INFO]: " << protocol << " message sent by [" << host << ":" << service << "]"
 
 // Verbose error message for a message sent by a client
 #define VERBOSE_ERROR(error) "[ERR]: getnameinfo: " << gai_strerror(error)

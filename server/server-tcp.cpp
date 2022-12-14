@@ -7,6 +7,8 @@ socklen_t addrlenTCP;
 bool verboseTCP;
 char hostTCP[NI_MAXHOST], serviceTCP[NI_MAXSERV]; // consts in <netdb.h>
 char bufferTCP[TCP_CHUNK_SIZE];
+pid_t pid;
+struct sigaction actTCP;
 
 // clang-format off
 responseHandler handleTCPClientMessage = {
@@ -35,6 +37,20 @@ int createSocketTCP(struct peerInfo peer) {
 
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
+
+  // Ignore SIGCHLD to avoid zombie processes
+  memset(&actTCP, 0, sizeof(actTCP));
+  actTCP.sa_handler = SIG_IGN;
+  if (sigaction(SIGCHLD, &actTCP, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
+  }
+
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
+  }
 
   return socketFdTCP;
 }
@@ -65,29 +81,45 @@ int generalTCPHandler(struct peerInfo peer) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
-      std::cerr << TCP_READ_ERROR << std::endl;
+    if ((pid = fork()) == -1) {
+      std::cerr << FORK_ERROR << std::endl;
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    std::cout << "[INFO]: Received message: " << bufferTCP;
-    int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP, serviceTCP,
-                              sizeof serviceTCP, 0);
-    if (verboseTCP) {
-      if (errcode != 0)
-        std::cerr << VERBOSE_ERROR(errcode) << std::endl;
-      else {
-        std::cout << VERBOSE_SUCCESS(hostTCP, serviceTCP) << std::endl;
+    if (pid != 0) { // Father process
+      if (close(newConnectionFd == -1)) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
       }
-    }
+    } else { // Child process
+      if (close(socketFdTCP == -1)) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
+      if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
+        std::cerr << TCP_READ_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
 
-    parseTCPMessage(std::string(bufferTCP));
-    memset(bufferTCP, 0, TCP_CHUNK_SIZE);
+      std::cout << "[INFO]: Received message: " << bufferTCP;
+      if (verboseTCP) {
+        int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP,
+                                  serviceTCP, sizeof serviceTCP, 0);
+        if (errcode != 0)
+          std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+        else {
+          std::cout << VERBOSE_SUCCESS("TCP", hostTCP, serviceTCP) << std::endl;
+        }
+      }
+      parseTCPMessage(std::string(bufferTCP));
+      exit(EXIT_SUCCESS);
+    }
   }
 }
 
 // Server message handlers
 int handleGSB(struct protocolMessage message) {
+  std::cout << "[INFO]: Received GSB message" << std::endl;
   if (message.body.back() != '\n') {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
