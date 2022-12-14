@@ -246,11 +246,10 @@ int handlePWG(struct protocolMessage message) {
 
 int handleQUT(struct protocolMessage message) {
   std::cout << "[INFO]: Received QUT message" << std::endl;
-  if (message.body.back() != '\n') {
+  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
-
   const std::string plid = message.second;
   const int ret = closeGameSession(plid);
 
@@ -270,7 +269,7 @@ int handleQUT(struct protocolMessage message) {
 
 int handleREV(struct protocolMessage message) {
   std::cout << "[INFO]: Received REV message" << std::endl;
-  if (message.body.back() != '\n') {
+  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
