@@ -245,7 +245,7 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
     }
     return 0;
 
-  } while (--triesLeft >= 0);
+  } while (--triesLeft > 0);
 
   std::cerr << RECVFROM_ERROR << std::endl;
   return -1;
@@ -459,3 +459,5 @@ void continueReading(char *buffer) {
   memset(buffer, 0, MAX_USER_INPUT);
   std::cout << "> ";
 }
+
+void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }

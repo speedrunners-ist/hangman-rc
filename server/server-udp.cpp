@@ -9,6 +9,7 @@ char hostUDP[NI_MAXHOST], serviceUDP[NI_MAXSERV]; // consts in <netdb.h>
 char bufferUDP[UDP_RECV_SIZE];
 char lastMessage[UDP_RECV_SIZE];
 std::string response;
+struct sigaction actUDP;
 
 // clang-format off
 responseHandler handleUDPClientMessage = {
@@ -35,6 +36,15 @@ int createSocketUDP(struct peerInfo peer) {
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
 
+  memset(&actUDP, 0, sizeof(actUDP));
+  actUDP.sa_handler = SIG_IGN;
+
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    exit(EXIT_FAILURE); // TODO: exit gracefully here
+  }
+
   return socketFdUDP;
 }
 
@@ -55,14 +65,13 @@ int generalUDPHandler(struct peerInfo peer) {
     }
 
     std::cout << "[INFO]: Received message: " << bufferUDP;
-    int errcode =
-        getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
     if (verboseUDP) {
-      // TODO: put type of request
+      int errcode =
+          getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
       if (errcode != 0) {
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       } else {
-        std::cout << VERBOSE_SUCCESS(hostUDP, serviceUDP) << std::endl;
+        std::cout << VERBOSE_SUCCESS("UDP", hostUDP, serviceUDP) << std::endl;
       }
     }
 
@@ -103,7 +112,7 @@ int handleSNG(struct protocolMessage message) {
   const std::string plid = message.second;
 
   std::string gameInfo;
-  int ret = createGameSession(plid, gameInfo);
+  const int ret = createGameSession(plid, gameInfo);
   switch (ret) {
     case CREATE_GAME_ERROR:
       response = buildSplitStringNewline({"RSG", "NOK"});
@@ -185,7 +194,7 @@ int handlePWG(struct protocolMessage message) {
   const std::string trial = args;
 
   std::string guessInfo;
-  int ret = guessWord(plid, word, trial, guessInfo);
+  const int ret = guessWord(plid, word, trial, guessInfo);
 
   switch (ret) {
     case SUCCESS_GUESS:
@@ -219,7 +228,7 @@ int handleQUT(struct protocolMessage message) {
   }
 
   const std::string plid = message.second;
-  int ret = closeGameSession(plid);
+  const int ret = closeGameSession(plid);
 
   switch (ret) {
     case CLOSE_GAME_SUCCESS:
@@ -243,13 +252,14 @@ int handleREV(struct protocolMessage message) {
   }
 
   const std::string plid = message.second;
-  int ret = closeGameSession(plid); // FIXME: RRV SHOULD SEND THE PLAY'S WORD, NOT CLOSE THE TING
+  std::string word;
+  const int ret = revealWord(plid, word);
 
   switch (ret) {
-    case CLOSE_GAME_SUCCESS:
-      response = buildSplitStringNewline({"RRV", "OK"});
+    case REVEAL_SUCCESS:
+      response = buildSplitStringNewline({"RRV", word});
       break;
-    case CLOSE_GAME_ERROR:
+    case REVEAL_ERROR:
       response = buildSplitStringNewline({"RRV", "ERR"});
       break;
     default:

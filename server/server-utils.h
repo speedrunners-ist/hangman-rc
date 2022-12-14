@@ -103,4 +103,9 @@ int getLastFinishedGame(std::string plid, std::string &filePath);
  */
 int createPlaceholderState(std::string plid, std::string filePath);
 
+/**
+ * @brief Destroys all temporary files on exit.
+ */
+void destroyTempFiles();
+
 #endif

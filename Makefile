@@ -20,10 +20,16 @@ CXXFLAGS += $(INCLUDES)
 # Warnings
 CXXFLAGS += -fdiagnostics-color=always -Wall  -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 CXXFLAGS += -Wno-sign-compare
+# Differentiate between dev and prod
+CXXFLAGS += -DPRODUCTION
 
-.PHONY: all clean fmt depend
+.PHONY: all dev clean fmt depend
 
 all: $(TARGET_EXECS)
+
+# In development, we want the rev command to be answered with the actual word
+dev: CXXFLAGS := $(filter-out -DPRODUCTION,$(CXXFLAGS))
+dev: all
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXECS)

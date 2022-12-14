@@ -327,4 +327,11 @@ void continueReading(char *buffer);
  */
 void signalHandler(int signum);
 
+/**
+ * @brief Converts a given string to lowercase.
+ *
+ * @param str: String to be converted.
+ */
+void toLower(std::string &str);
+
 #endif /* COMMON_H */
