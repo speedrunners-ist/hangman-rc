@@ -96,13 +96,13 @@ int generalTCPHandler(struct peerInfo peer) {
       }
 
       std::cout << "[INFO]: Received message: " << bufferTCP;
-      int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP,
-                                serviceTCP, sizeof serviceTCP, 0);
       if (verboseTCP) {
+        int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP,
+                                  serviceTCP, sizeof serviceTCP, 0);
         if (errcode != 0)
           std::cerr << VERBOSE_ERROR(errcode) << std::endl;
         else {
-          std::cout << VERBOSE_SUCCESS(hostTCP, serviceTCP) << std::endl;
+          std::cout << VERBOSE_SUCCESS("TCP", hostTCP, serviceTCP) << std::endl;
         }
       }
       parseTCPMessage(std::string(bufferTCP));

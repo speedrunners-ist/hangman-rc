@@ -62,14 +62,13 @@ int generalUDPHandler(struct peerInfo peer) {
     }
 
     std::cout << "[INFO]: Received message: " << bufferUDP;
-    int errcode =
-        getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
     if (verboseUDP) {
-      // TODO: put type of request
+      int errcode =
+          getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
       if (errcode != 0) {
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       } else {
-        std::cout << VERBOSE_SUCCESS(hostUDP, serviceUDP) << std::endl;
+        std::cout << VERBOSE_SUCCESS("UDP", hostUDP, serviceUDP) << std::endl;
       }
     }
 
