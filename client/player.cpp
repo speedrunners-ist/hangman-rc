@@ -46,6 +46,9 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
+  // When getting a SIGPIPE, shutdown the client
+  signal(SIGPIPE, signalHandler);
+
   char buffer[MAX_USER_INPUT];
   printHelpMenu();
   continueReading(buffer);
