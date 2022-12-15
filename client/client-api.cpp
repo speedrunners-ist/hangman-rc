@@ -73,3 +73,13 @@ void printHelpMenu() {
   std::cout << "  - exit: quits the game and exits the program." << std::endl;
   std::cout << "  Good luck!" << std::endl;
 }
+
+void displayCurrentInformation() {
+  if (state.isActive()) {
+    std::cout << "Current game information:" << std::endl;
+    std::cout << "  - Word (as currently guessed): " << getWord() << std::endl;
+    std::cout << "  - Available mistakes: " << getAvailableMistakes() << std::endl;
+    return;
+  }
+  std::cout << "No game currently active." << std::endl;
+}

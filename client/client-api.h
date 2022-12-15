@@ -126,5 +126,9 @@ std::vector<std::string> getKeys(commandHandler map);
  * @brief Prints the help menu.
  */
 void printHelpMenu();
+/**
+ * @brief Displays the current information regarding the current game state. 
+ */
+void displayCurrentInformation();
 
 #endif /* CLIENT_API_H */
