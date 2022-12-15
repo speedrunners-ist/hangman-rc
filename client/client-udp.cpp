@@ -63,6 +63,9 @@ int handleRSG(struct protocolMessage response) {
   } else if (response.second == "NOK") {
     std::cout << RSG_NOK << std::endl;
     return 0;
+  } else if (response.second == "ERR") {
+    std::cout << RSG_ERR << std::endl;
+    return 0;
   }
 
   return -1;
