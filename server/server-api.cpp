@@ -28,7 +28,7 @@ void GameState::addGuessedLetter(char letter) { guessedLetters[letter] = true; }
 
 void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWord] = true; }
 
-bool GameState::isWordGuessed(std::string word) { return guessedWords[word]; }
+bool GameState::isWordGuessed(std::string guessedWord) { return guessedWords[guessedWord]; }
 
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
