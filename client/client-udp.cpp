@@ -18,7 +18,12 @@ int createSocketUDP(struct peerInfo peer) {
   return socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
 }
 
-int disconnectUDP() { return disconnectSocket(serverInfoUDP, socketFdUDP); }
+int disconnectUDP() {
+  if (disconnectSocket(serverInfoUDP, socketFdUDP) == 0)
+    return 0;
+  std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
+  return -1;
+}
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];

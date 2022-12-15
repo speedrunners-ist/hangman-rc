@@ -54,7 +54,7 @@ int createSocketTCP(struct peerInfo peer) {
   signal(SIGTERM, signalHandlerTCP);
 
   if (memset(&actTCP, 0, sizeof(actTCP)) == NULL) {
-    std::cerr << SIGACTION_ERROR << std::endl;
+    std::cerr << MEMSET_ERROR << std::endl;
     disconnectTCP();
     exit(EXIT_FAILURE);
   }
@@ -146,7 +146,7 @@ int generalTCPHandler(struct peerInfo peer) {
 
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
-        disconnectTCPchild();
+        disconnectTCPchild(); // TODO; do here?
         exit(EXIT_FAILURE);
       }
 
@@ -173,7 +173,7 @@ int generalTCPHandler(struct peerInfo peer) {
     do
       ret = close(newConnectionFd);
     while (ret == -1 && errno == EINTR);
-    if (ret) {
+    if (ret == -1) {
       std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
       disconnectTCP();
       exit(EXIT_FAILURE);

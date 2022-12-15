@@ -19,11 +19,15 @@ int createSocketTCP(struct peerInfo peer) {
 }
 
 int disconnectTCP() {
-  if (isTCPConnected) {
-    isTCPConnected = false;
-    return disconnectSocket(serverInfoTCP, socketFdTCP);
+  if (!isTCPConnected)
+    return 0;
+
+  isTCPConnected = false;
+  if (disconnectSocket(serverInfoTCP, socketFdTCP) == 0) {
+    return 0;
   }
-  return 0;
+  std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+  return -1;
 }
 
 int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessage, int args) {

@@ -61,12 +61,17 @@ int createSocketUDP(struct peerInfo peer) {
   return socketFdUDP;
 }
 
-int disconnectUDP() { return disconnectSocket(resUDP, socketFdUDP); }
+int disconnectUDP() {
+  if (disconnectSocket(resUDP, socketFdUDP) == 0)
+    return 0;
+  std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
+  return -1;
+}
 
 int generalUDPHandler(struct peerInfo peer) {
   struct protocolMessage request;
   if (memset(lastMessage, 0, UDP_RECV_SIZE) == NULL) {
-    std::cerr << SOCKET_ERROR << std::endl;
+    std::cerr << MEMSET_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -75,14 +80,14 @@ int generalUDPHandler(struct peerInfo peer) {
   // Listen for incoming connections
   while (true) {
     if (memset(bufferUDP, 0, UDP_RECV_SIZE) == NULL) {
-      std::cerr << SOCKET_ERROR << std::endl;
+      std::cerr << MEMSET_ERROR << std::endl;
       disconnectUDP();
       exit(EXIT_FAILURE);
     }
 
     addrlenUDP = sizeof(resUDP->ai_addr);
     if (recvfrom(socketFdUDP, bufferUDP, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlenUDP) == -1) {
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      exit(EXIT_FAILURE); // TODO: exit gracefully here?
     }
 
     std::cout << "[INFO]: Received message: " << bufferUDP;
@@ -103,13 +108,13 @@ int generalUDPHandler(struct peerInfo peer) {
     }
 
     if (memset(lastMessage, 0, UDP_RECV_SIZE) == NULL) {
-      std::cerr << SOCKET_ERROR << std::endl;
+      std::cerr << MEMSET_ERROR << std::endl;
       disconnectUDP();
       exit(EXIT_FAILURE);
     }
 
     if (memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1)) {
-      std::cerr << SOCKET_ERROR << std::endl;
+      std::cerr << MEMSET_ERROR << std::endl;
       disconnectUDP();
       exit(EXIT_FAILURE);
     }

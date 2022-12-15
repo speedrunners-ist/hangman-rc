@@ -167,6 +167,7 @@ public:
 #define BIND_ERROR "[ERR]: Failed to bind socket."
 #define SENDTO_ERROR "[ERR]: Failed to send message."
 #define RECVFROM_ERROR "[ERR]: Failed to receive message."
+#define MEMSET_ERROR "[ERR]: Failed to set memory."
 
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
