@@ -28,6 +28,8 @@ void GameState::addGuessedLetter(char letter) { guessedLetters[letter] = true; }
 
 void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWord] = true; }
 
+bool GameState::isWordGuessed(std::string word) { return guessedWords[word]; }
+
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
 /*** Util methods in order to let external server implementations use the GameState class ***/
@@ -263,6 +265,10 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   arguments = buildSplitString({std::to_string(getTrials(state))});
   if (std::stoi(trial) != getTrials(state)) {
     return TRIAL_MISMATCH;
+  }
+
+  if (state.isWordGuessed(word)) {
+    return DUPLICATE_GUESS;
   }
 
   toLower(word);

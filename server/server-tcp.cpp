@@ -203,7 +203,7 @@ int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Received STA message" << std::endl;
   if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitStringNewline({"ERR"});
+    std::string response = buildSplitStringNewline({"RST", "NOK"});
     return sendTCPMessage(response, newConnectionFd);
   }
 

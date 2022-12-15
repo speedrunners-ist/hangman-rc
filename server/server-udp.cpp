@@ -117,7 +117,7 @@ int handleSNG(struct protocolMessage message) {
   std::cout << "[INFO]: Received SNG message" << std::endl;
   if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"RSG, ERR"}), resUDP, socketFdUDP);
   }
 
   const std::string plid = message.second;
@@ -250,6 +250,9 @@ int handlePWG(struct protocolMessage message) {
     case SUCCESS_GUESS:
       response = buildSplitStringNewline({"RWG", "WIN", guessInfo});
       break;
+    case DUPLICATE_GUESS:
+      response = buildSplitStringNewline({"RWG", "DUP", guessInfo});
+      break;
     case WRONG_GUESS:
       response = buildSplitStringNewline({"RWG", "NOK", guessInfo});
       break;
@@ -274,7 +277,7 @@ int handleQUT(struct protocolMessage message) {
   std::cout << "[INFO]: Received QUT message" << std::endl;
   if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(buildSplitStringNewline({"RQT", "ERR"}), resUDP, socketFdUDP);
   }
   const std::string plid = message.second;
   const int ret = closeGameSession(plid);
@@ -284,7 +287,7 @@ int handleQUT(struct protocolMessage message) {
       response = buildSplitStringNewline({"RQT", "OK"});
       break;
     case CLOSE_GAME_ERROR:
-      response = buildSplitStringNewline({"RQT", "ERR"});
+      response = buildSplitStringNewline({"RQT", "NOK"});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;

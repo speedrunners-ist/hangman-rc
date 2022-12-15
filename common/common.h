@@ -133,6 +133,7 @@ public:
   std::string getHint();
   void addGuessedLetter(char letter);
   void addGuessedWord(std::string word);
+  bool GameState::isWordGuessed(std::string word);
   void setMistakesLeft(int mistakes);
 };
 
