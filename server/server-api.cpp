@@ -223,7 +223,6 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
   state.incrementTrials();
-  arguments = buildSplitString({arguments, positions});
 
   if (occurrences == 0) {
     state.setMistakesLeft(state.getAvailableMistakes() - 1);
@@ -238,6 +237,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return WRONG_GUESS;
   }
 
+  arguments = buildSplitString({arguments, positions});
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
   if (state.getSpotsLeft() == 0) {
     appendGameFile(plid, CORRECT_FINAL_LETTER, letter);
