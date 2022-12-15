@@ -133,6 +133,7 @@ public:
   std::string getHint();
   void addGuessedLetter(char letter);
   void addGuessedWord(std::string word);
+  bool isWordGuessed(std::string word);
   void setMistakesLeft(int mistakes);
 };
 
@@ -333,5 +334,29 @@ void signalHandler(int signum);
  * @param str: String to be converted.
  */
 void toLower(std::string &str);
+
+/*
+ * @brief Checks if a given string has the PLID format.
+ *
+ * @param plid: String to be checked.
+ * @return True if the string has the PLID format, false otherwise.
+ */
+bool hasPLIDFormat(std::string plid);
+
+/*
+ * @brief Checks if a given string has the TRIAL format.
+ *
+ * @param trial: String to be checked.
+ * @return True if the string has the TRIAL format, false otherwise.
+ */
+bool hasTrialFormat(std::string trial);
+
+/*
+ * @brief Checks if a given string has the WORD format.
+ *
+ * @param word: String to be checked.
+ * @return True if the string has the WORD format, false otherwise.
+ */
+bool hasWordFormat(std::string word);
 
 #endif /* COMMON_H */

@@ -28,6 +28,8 @@ void GameState::addGuessedLetter(char letter) { guessedLetters[letter] = true; }
 
 void GameState::addGuessedWord(std::string guessedWord) { guessedWords[guessedWord] = true; }
 
+bool GameState::isWordGuessed(std::string guessedWord) { return guessedWords[guessedWord]; }
+
 void GameState::setMistakesLeft(int mistakes) { mistakesLeft = mistakes; }
 
 /*** Util methods in order to let external server implementations use the GameState class ***/
@@ -53,6 +55,7 @@ void incrementTrials(GameState &state) { state.incrementTrials(); }
 void playCorrectLetterGuess(GameState &state, std::string letter) {
   const int occurrences = getLetterOccurrences(state.getWord(), letter.front());
   state.setSpotsLeft(state.getSpotsLeft() - occurrences);
+  state.addGuessedLetter(letter.front());
   state.incrementTrials();
 }
 
@@ -152,10 +155,6 @@ int retrieveGame(std::string playerID, GameState &state) {
 }
 
 int createGameSession(std::string plid, std::string &arguments) {
-  if (!validPlayerID(plid)) {
-    return CREATE_GAME_ERROR;
-  }
-
   // If there's already an ongoing game for the given player
   if (isOngoingGame(plid)) {
     GameState state;
@@ -266,6 +265,10 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   arguments = buildSplitString({std::to_string(getTrials(state))});
   if (std::stoi(trial) != getTrials(state)) {
     return TRIAL_MISMATCH;
+  }
+
+  if (state.isWordGuessed(word)) {
+    return DUPLICATE_GUESS;
   }
 
   toLower(word);

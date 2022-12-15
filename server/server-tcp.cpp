@@ -10,6 +10,20 @@ char bufferTCP[TCP_CHUNK_SIZE];
 pid_t pid;
 struct sigaction actTCP;
 
+void signalHandlerTCP(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectTCP();
+  std::cout << EXIT_PROGRAM << std::endl;
+  exit(signum);
+}
+
+void signalHandlerTCPchild(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectTCPchild();
+  std::cout << EXIT_PROGRAM << std::endl;
+  exit(signum);
+}
+
 // clang-format off
 responseHandler handleTCPClientMessage = {
   {"GSB", handleGSB},
@@ -35,8 +49,8 @@ int createSocketTCP(struct peerInfo peer) {
     exit(EXIT_FAILURE); // TODO: exit gracefully here
   }
 
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
+  signal(SIGINT, signalHandlerTCP);
+  signal(SIGTERM, signalHandlerTCP);
 
   // Ignore SIGCHLD to avoid zombie processes
   memset(&actTCP, 0, sizeof(actTCP));
@@ -56,6 +70,7 @@ int createSocketTCP(struct peerInfo peer) {
 }
 
 int disconnectTCP() { return disconnectSocket(resTCP, socketFdTCP); }
+int disconnectTCPchild() { return disconnectSocket(resTCP, newConnectionFd); }
 
 int parseTCPMessage(std::string request) {
   std::string responseBegin = request;
@@ -66,7 +81,12 @@ int parseTCPMessage(std::string request) {
   serverMessage.first = command;
   serverMessage.second = plid;
   serverMessage.body = request;
-  return handleTCPClientMessage[command](serverMessage);
+  try {
+    return handleTCPClientMessage[command](serverMessage);
+  } catch (const std::bad_function_call &oor) {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
+  }
 }
 
 int generalTCPHandler(struct peerInfo peer) {
@@ -86,16 +106,16 @@ int generalTCPHandler(struct peerInfo peer) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    if (pid != 0) { // Father process
-      if (close(newConnectionFd == -1)) {
+    if (pid == 0) { // Child process
+
+      signal(SIGINT, signalHandlerTCPchild);
+
+      if (close(socketFdTCP) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         exit(EXIT_FAILURE); // TODO: exit gracefully here
       }
-    } else { // Child process
-      if (close(socketFdTCP == -1)) {
-        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
-      }
+      std::cout << "[INFO]: New connection" << std::endl;
+
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
         exit(EXIT_FAILURE); // TODO: exit gracefully here
@@ -112,7 +132,18 @@ int generalTCPHandler(struct peerInfo peer) {
         }
       }
       parseTCPMessage(std::string(bufferTCP));
+      std::cout << "[INFO]: Closing connection" << std::endl;
+
+      if (close(newConnectionFd) == -1) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
       exit(EXIT_SUCCESS);
+    }
+
+    if (close(newConnectionFd) == -1) {
+      std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
   }
 }
@@ -120,9 +151,11 @@ int generalTCPHandler(struct peerInfo peer) {
 // Server message handlers
 int handleGSB(struct protocolMessage message) {
   std::cout << "[INFO]: Received GSB message" << std::endl;
-  if (message.body.back() != '\n') {
+
+  if (message.body.compare("GSB\n")) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
+    std::string response = buildSplitStringNewline({"ERR"});
+    return sendTCPMessage(response, newConnectionFd);
   }
 
   std::string response;
@@ -148,13 +181,14 @@ int handleGSB(struct protocolMessage message) {
 
 int handleGHL(struct protocolMessage message) {
   std::cout << "[INFO]: Received GHL message" << std::endl;
-  if (message.body.back() != '\n') {
+
+  const std::string plid = message.second;
+  if (!hasPLIDFormat(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
     return sendTCPMessage(response, newConnectionFd);
   }
 
-  const std::string plid = message.second;
   std::string file;
   std::string response;
 
@@ -178,13 +212,13 @@ int handleGHL(struct protocolMessage message) {
 
 int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Received STA message" << std::endl;
-  if (message.body.back() != '\n') {
+  const std::string plid = message.second;
+  if (!hasPLIDFormat(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitStringNewline({"ERR"});
+    std::string response = buildSplitStringNewline({"RST", "NOK"});
     return sendTCPMessage(response, newConnectionFd);
   }
 
-  const std::string plid = message.second;
   std::string file;
   std::string response;
 
