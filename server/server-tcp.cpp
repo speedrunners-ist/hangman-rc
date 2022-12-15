@@ -10,6 +10,13 @@ char bufferTCP[TCP_CHUNK_SIZE];
 pid_t pid;
 struct sigaction actTCP;
 
+void signalHandlerTCP(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectTCP();
+  std::cout << EXIT_PROGRAM << std::endl;
+  exit(signum);
+}
+
 // clang-format off
 responseHandler handleTCPClientMessage = {
   {"GSB", handleGSB},
@@ -35,8 +42,8 @@ int createSocketTCP(struct peerInfo peer) {
     exit(EXIT_FAILURE); // TODO: exit gracefully here
   }
 
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
+  signal(SIGINT, signalHandlerTCP);
+  signal(SIGTERM, signalHandlerTCP);
 
   // Ignore SIGCHLD to avoid zombie processes
   memset(&actTCP, 0, sizeof(actTCP));
@@ -91,17 +98,12 @@ int generalTCPHandler(struct peerInfo peer) {
       exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
 
-    if (pid != 0) { // Father process
-      if (close(newConnectionFd == -1)) {
-        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
-      }
-    } else { // Child process
-      if (close(socketFdTCP == -1)) {
-        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
-      }
+    if (pid == 0) { // Child process
 
+      if (close(socketFdTCP) == -1) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
       std::cout << "[INFO]: New connection" << std::endl;
 
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
@@ -121,7 +123,17 @@ int generalTCPHandler(struct peerInfo peer) {
       }
       parseTCPMessage(std::string(bufferTCP));
       std::cout << "[INFO]: Closing connection" << std::endl;
+
+      if (close(newConnectionFd) == -1) {
+        std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+        exit(EXIT_FAILURE); // TODO: exit gracefully here
+      }
       exit(EXIT_SUCCESS);
+    }
+
+    if (close(newConnectionFd) == -1) {
+      std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+      exit(EXIT_FAILURE); // TODO: exit gracefully here
     }
   }
 }

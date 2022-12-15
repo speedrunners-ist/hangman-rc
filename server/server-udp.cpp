@@ -21,6 +21,14 @@ responseHandler handleUDPClientMessage = {
 };
 // clang-format on
 
+void signalHandlerUDP(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectUDP();
+  destroyTempFiles();
+  std::cout << EXIT_PROGRAM << std::endl;
+  exit(signum);
+}
+
 int setServerUDPParameters(std::string filepath, bool vParam) {
   verboseUDP = vParam;
   return setupWordList(filepath);
@@ -33,8 +41,8 @@ int createSocketUDP(struct peerInfo peer) {
     exit(EXIT_FAILURE);
   }
 
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
+  signal(SIGINT, signalHandlerUDP);
+  signal(SIGTERM, signalHandlerUDP);
 
   memset(&actUDP, 0, sizeof(actUDP));
   actUDP.sa_handler = SIG_IGN;

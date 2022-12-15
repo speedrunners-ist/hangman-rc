@@ -1,14 +1,5 @@
 #include "server-protocol.h"
 
-void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
-  disconnectUDP();
-  disconnectTCP();
-  destroyTempFiles();
-  std::cout << EXIT_PROGRAM << std::endl;
-  exit(signum);
-}
-
 int main(int argc, char *argv[]) {
   std::string GSIP = DEFAULT_GSIP;
   std::string GSport = DEFAULT_GSPORT;
