@@ -77,8 +77,19 @@ int createSocketTCP(struct peerInfo peer) {
   return socketFdTCP;
 }
 
-int disconnectTCP() { return disconnectSocket(resTCP, socketFdTCP); }
-int disconnectTCPchild() { return disconnectSocket(resTCP, newConnectionFd); }
+int disconnectTCP() {
+  if (disconnectSocket(resTCP, socketFdTCP) == 0)
+    return 0;
+  std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+  return -1;
+}
+
+int disconnectTCPchild() {
+  if (disconnectSocket(resTCP, newConnectionFd))
+    return 0;
+  std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+  return -1;
+}
 
 int parseTCPMessage(std::string request) {
   std::string responseBegin = request;

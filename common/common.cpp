@@ -143,21 +143,19 @@ int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct add
 
 int disconnectSocket(struct addrinfo *res, int fd) {
   freeaddrinfo(res);
-  if (close(fd) == -1) {
-    std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-    return -1;
-  }
-  return 0;
+  return close(fd);
 }
 
 int turnOnSocketTimer(int fd) {
   struct timeval tv;
-  memset(&tv, 0, sizeof(tv));
+  if (memset(&tv, 0, sizeof(tv)) == NULL) {
+    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    return -1;
+  }
   tv.tv_sec = SOCKET_TIMEOUT;
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
-    // FIXME: is this exit graceful?
-    exit(EXIT_FAILURE);
+    return -1;
   }
   return 0;
 }
@@ -225,14 +223,12 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
 
     int ret = turnOnSocketTimer(fd);
     if (ret == -1) {
-      disconnectSocket(res, fd);
-      exit(EXIT_FAILURE);
+      return -1;
     }
     const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
     ret = turnOffSocketTimer(fd);
     if (ret == -1) {
-      disconnectSocket(res, fd);
-      exit(EXIT_FAILURE);
+      return -1;
     }
 
     if (bytesReceived == -1) {
