@@ -11,14 +11,14 @@ pid_t pid;
 struct sigaction actTCP;
 
 void signalHandlerTCP(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
   disconnectTCP();
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
 
 void signalHandlerTCPchild(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
   disconnectTCPchild();
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);

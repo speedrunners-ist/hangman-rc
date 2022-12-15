@@ -22,7 +22,7 @@ responseHandler handleUDPClientMessage = {
 // clang-format on
 
 void signalHandlerUDP(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
   disconnectUDP();
   destroyTempFiles();
   std::cout << EXIT_PROGRAM << std::endl;
