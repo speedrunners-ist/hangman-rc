@@ -163,12 +163,11 @@ int createGameSession(std::string plid, std::string &arguments) {
     if (retrieveGame(plid, state) != 0) {
       return CREATE_GAME_ERROR;
     }
-
-    // FIXME: I think we should just allow the player to continue playing the
-    // game, even if they have already made a play, hence this being commented out
-    // if (state.getTrials() != 1) {
-    //   return CREATE_GAME_ERROR;
-    // }
+    
+    if (state.getTrials() != 1) {
+      // If a game is ongoing, the player is not allowed to start a new one
+      return GAME_ONGOING;
+    }
     const std::string word = state.getWord();
     const int wordLength = (int)word.length();
     const int availableMistakes = initialAvailableMistakes(wordLength);

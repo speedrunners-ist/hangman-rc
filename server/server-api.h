@@ -22,7 +22,8 @@
 // Return codes for each specific scenario for a message received by the server
 enum {
   // RSG return codes
-  CREATE_GAME_ERROR,   // RSG NOK
+  CREATE_GAME_ERROR,   // RSG ERR
+  GAME_ONGOING,        // RSG NOK
   CREATE_GAME_SUCCESS, // RSG OK
 
   // RLG and RWG return codes

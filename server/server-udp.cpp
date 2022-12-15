@@ -125,6 +125,9 @@ int handleSNG(struct protocolMessage message) {
   const int ret = createGameSession(plid, gameInfo);
   switch (ret) {
     case CREATE_GAME_ERROR:
+      response = buildSplitStringNewline({"RSG", "ERR"});
+      break;
+    case GAME_ONGOING:
       response = buildSplitStringNewline({"RSG", "NOK"});
       break;
     case CREATE_GAME_SUCCESS:
