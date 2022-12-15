@@ -141,9 +141,11 @@ int generalTCPHandler(struct peerInfo peer) {
 // Server message handlers
 int handleGSB(struct protocolMessage message) {
   std::cout << "[INFO]: Received GSB message" << std::endl;
-  if (message.body.back() != '\n') {
+
+  if (message.body.compare("GSB\n")) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"ERR"}), newConnectionFd);
+    std::string response = buildSplitStringNewline({"ERR"});
+    return sendTCPMessage(response, newConnectionFd);
   }
 
   std::string response;
