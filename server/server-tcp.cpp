@@ -46,7 +46,7 @@ int createSocketTCP(struct peerInfo peer) {
 
   if (listen(socketFdTCP, MAX_TCP_CONNECTION_REQUESTS) == -1) {
     std::cerr << TCP_LISTEN_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    return -1;
   }
 
   signal(SIGINT, signalHandlerTCP);
@@ -57,13 +57,13 @@ int createSocketTCP(struct peerInfo peer) {
   actTCP.sa_handler = SIG_IGN;
   if (sigaction(SIGCHLD, &actTCP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    return -1;
   }
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    return -1;
   }
 
   return socketFdTCP;
@@ -98,27 +98,26 @@ int generalTCPHandler(struct peerInfo peer) {
     addrlenTCP = sizeof(peer.addr);
     if ((newConnectionFd = accept(socketFdTCP, (struct sockaddr *)&peer.addr, &addrlenTCP)) == -1) {
       std::cerr << TCP_ACCEPT_ERROR << std::endl;
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      return -1;
     }
 
     if ((pid = fork()) == -1) {
       std::cerr << FORK_ERROR << std::endl;
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      return -1;
     }
 
     if (pid == 0) { // Child process
-
       signal(SIGINT, signalHandlerTCPchild);
 
       if (close(socketFdTCP) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
+        return -1;
       }
       std::cout << "[INFO]: New connection" << std::endl;
 
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
+        return -1;
       }
 
       std::cout << "[INFO]: Received message: " << bufferTCP;
@@ -136,14 +135,14 @@ int generalTCPHandler(struct peerInfo peer) {
 
       if (close(newConnectionFd) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
+        return -1;
       }
       exit(EXIT_SUCCESS);
     }
 
     if (close(newConnectionFd) == -1) {
       std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      return -1;
     }
   }
 }

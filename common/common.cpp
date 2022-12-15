@@ -142,7 +142,17 @@ int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct add
 }
 
 int disconnectSocket(struct addrinfo *res, int fd) {
+  struct timeval tv;
+  memset(&tv, 0, sizeof(tv));
   freeaddrinfo(res);
+  if (turnOffSocketTimer(fd) == -1) {
+    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    if (close(fd) == -1) {
+      std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+    }
+    return -1;
+  }
+
   if (close(fd) == -1) {
     std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
     return -1;
@@ -156,8 +166,7 @@ int turnOnSocketTimer(int fd) {
   tv.tv_sec = SOCKET_TIMEOUT;
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
-    // FIXME: is this exit graceful?
-    exit(EXIT_FAILURE);
+    return -1;
   }
   return 0;
 }
@@ -167,8 +176,7 @@ int turnOffSocketTimer(int fd) {
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
-    // FIXME: is this exit graceful?
-    exit(EXIT_FAILURE);
+    return -1;
   }
   return 0;
 }
@@ -223,18 +231,7 @@ int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, st
       return -1;
     }
 
-    int ret = turnOnSocketTimer(fd);
-    if (ret == -1) {
-      disconnectSocket(res, fd);
-      exit(EXIT_FAILURE);
-    }
     const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
-    ret = turnOffSocketTimer(fd);
-    if (ret == -1) {
-      disconnectSocket(res, fd);
-      exit(EXIT_FAILURE);
-    }
-
     if (bytesReceived == -1) {
       if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
         break;
@@ -313,13 +310,15 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
   size_t bytesRead = 0;
   int readArgs = 0;
   char c;
+  if (turnOnSocketTimer(fd) == -1) {
+    return -1;
+  }
   do {
     // FIXME: there will be a problem if the response is "ERR\n"?
-    turnOnSocketTimer(fd);
     bytesReceived = read(fd, &c, 1);
-    turnOffSocketTimer(fd);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
+      turnOffSocketTimer(fd);
       return -1;
     } else if (c == ' ' || c == '\n') {
       readArgs++;
@@ -327,6 +326,10 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
     message.push_back(c);
     bytesRead += (size_t)bytesReceived;
   } while (bytesReceived != 0 && readArgs < args);
+
+  if (turnOffSocketTimer(fd) == -1) {
+    return -1;
+  }
   return (int)bytesRead;
 }
 
@@ -348,13 +351,15 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
   }
   // read from socket and write to file until file size is reached, in chunks
   char buffer[TCP_CHUNK_SIZE];
+  if (turnOnSocketTimer(fd) == -1) {
+    return -1;
+  }
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
-    turnOnSocketTimer(fd);
     bytesReceived = read(fd, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
-    turnOffSocketTimer(fd);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
+      turnOffSocketTimer(fd);
       return -1;
     }
     // print buffer
@@ -363,8 +368,9 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
     bytesLeft -= (size_t)bytesReceived;
   } while (bytesReceived != 0 && bytesLeft > 0);
 
-  // TODO: should we check if the message ends in a newline?
-  // TODO: we should remove the newline from the file (it's currently there)
+  if (turnOffSocketTimer(fd) == -1) {
+    return -1;
+  }
   file.close();
   return (int)bytesRead;
 }

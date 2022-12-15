@@ -19,11 +19,15 @@ int createSocketTCP(struct peerInfo peer) {
     std::cerr << TCP_SERVER_ERROR << std::endl;
     return -1;
   }
-  isTCPConnected = true;
 
+  if (turnOnSocketTimer(socketFdTCP) == -1) {
+    disconnectTCP();
+    return -1;
+  }
+
+  isTCPConnected = true;
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
-
   return socketFdTCP;
 }
 
@@ -45,20 +49,11 @@ int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessag
   if (sendTCPMessage(message, socketFdTCP) == -1) {
     return -1;
   }
-  int ret = turnOnSocketTimer(socketFdTCP);
-  if (ret == -1) {
-    disconnectTCP();
-    exit(EXIT_FAILURE);
-  }
-  ret = receiveTCPMessage(responseMessage, args, socketFdTCP);
-  if (ret == -1) {
+
+  if (receiveTCPMessage(responseMessage, args, socketFdTCP) == -1) {
     return -1;
   }
-  ret = turnOffSocketTimer(socketFdTCP);
-  if (ret == -1) {
-    disconnectTCP();
-    exit(EXIT_FAILURE);
-  }
+  // TODO: we're not disconnecting from the server here, and the project's statement says we should
   serverMessage.body = responseMessage;
   return 0;
 }
@@ -98,6 +93,9 @@ int generalTCPHandler(std::string message, struct peerInfo peer) {
     return -1;
   }
   if (exchangeTCPMessage(message, serverMessage, TCP_DEFAULT_ARGS) == -1) {
+    return -1;
+  }
+  if (disconnectTCP() == -1) {
     return -1;
   }
   return parseTCPResponse(serverMessage);
