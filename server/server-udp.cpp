@@ -44,12 +44,17 @@ int createSocketUDP(struct peerInfo peer) {
   signal(SIGINT, signalHandlerUDP);
   signal(SIGTERM, signalHandlerUDP);
 
-  memset(&actUDP, 0, sizeof(actUDP));
+  if (memset(&actUDP, 0, sizeof(actUDP)) == NULL) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectUDP();
+    exit(EXIT_FAILURE);
+  }
   actUDP.sa_handler = SIG_IGN;
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectUDP();
     exit(EXIT_FAILURE); // TODO: exit gracefully here
   }
 
@@ -60,14 +65,20 @@ int disconnectUDP() { return disconnectSocket(resUDP, socketFdUDP); }
 
 int generalUDPHandler(struct peerInfo peer) {
   struct protocolMessage request;
-  memset(lastMessage, 0, UDP_RECV_SIZE);
-  if (createSocketUDP(peer) == -1) {
-    return -1;
+  if (memset(lastMessage, 0, UDP_RECV_SIZE) == NULL) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
   }
+
+  createSocketUDP(peer);
 
   // Listen for incoming connections
   while (true) {
-    memset(bufferUDP, 0, UDP_RECV_SIZE);
+    if (memset(bufferUDP, 0, UDP_RECV_SIZE) == NULL) {
+      std::cerr << SOCKET_ERROR << std::endl;
+      disconnectUDP();
+      exit(EXIT_FAILURE);
+    }
 
     addrlenUDP = sizeof(resUDP->ai_addr);
     if (recvfrom(socketFdUDP, bufferUDP, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlenUDP) == -1) {
@@ -78,7 +89,7 @@ int generalUDPHandler(struct peerInfo peer) {
     if (verboseUDP) {
       int errcode =
           getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
-      if (errcode != 0) {
+      if (errcode != 0) { // TODO: what to do here?
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       } else {
         std::cout << VERBOSE_SUCCESS("UDP", hostUDP, serviceUDP) << std::endl;
@@ -91,8 +102,17 @@ int generalUDPHandler(struct peerInfo peer) {
       continue;
     }
 
-    memset(lastMessage, 0, UDP_RECV_SIZE);
-    memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1);
+    if (memset(lastMessage, 0, UDP_RECV_SIZE) == NULL) {
+      std::cerr << SOCKET_ERROR << std::endl;
+      disconnectUDP();
+      exit(EXIT_FAILURE);
+    }
+
+    if (memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1)) {
+      std::cerr << SOCKET_ERROR << std::endl;
+      disconnectUDP();
+      exit(EXIT_FAILURE);
+    }
 
     if (parseUDPMessage(std::string(bufferUDP), request) == -1) {
       std::cerr << UDP_PARSE_ERROR << std::endl;
