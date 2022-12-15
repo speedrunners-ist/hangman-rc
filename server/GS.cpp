@@ -21,6 +21,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (GSIP.compare(DEFAULT_GSIP) == 0) {
+    std::cout << "Could not find IP address, using default IP: " << DEFAULT_GSIP << std::endl;
+  }
+
+  if (GSport.compare(DEFAULT_GSPORT) == 0) {
+    std::cout << "Could not find Gsport number, using default port: " << DEFAULT_GSPORT << std::endl;
+  }
+
   filePath = argv[optind];
   std::cout << STARTING_SERVER << std::endl;
   if (setServerUDPParameters(filePath, verbose) == -1) {
@@ -31,7 +39,17 @@ int main(int argc, char *argv[]) {
   setServerTCPParameters(verbose);
 
   const struct peerInfo peer = {"", GSport};
-  pid_t pid = fork();
+  pid_t pid;
+
+  if ((pid = fork()) == -1) {
+    std::cerr << FORK_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (pid < 0) {
+    std::cerr << FORK_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   if (pid == 0) {
     generalTCPHandler(peer);

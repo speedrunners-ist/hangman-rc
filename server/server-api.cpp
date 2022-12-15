@@ -76,7 +76,9 @@ void playIncorrectWordGuess(GameState &state, std::string word) {
 
 int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
-  readFile(lines, filePath);
+  if (readFile(lines, filePath)) {
+    return -1;
+  }
   if (lines.size() == 0) {
     std::cerr << EMPTY_FILE(filePath) << std::endl;
     return -1;

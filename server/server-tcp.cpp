@@ -46,24 +46,32 @@ int createSocketTCP(struct peerInfo peer) {
 
   if (listen(socketFdTCP, MAX_TCP_CONNECTION_REQUESTS) == -1) {
     std::cerr << TCP_LISTEN_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    disconnectTCP();
+    exit(EXIT_FAILURE);
   }
 
   signal(SIGINT, signalHandlerTCP);
   signal(SIGTERM, signalHandlerTCP);
 
-  // Ignore SIGCHLD to avoid zombie processes
-  memset(&actTCP, 0, sizeof(actTCP));
+  if (memset(&actTCP, 0, sizeof(actTCP)) == NULL) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectTCP();
+    exit(EXIT_FAILURE);
+  }
   actTCP.sa_handler = SIG_IGN;
+
+  // Ignore SIGCHLD to avoid zombie processes
   if (sigaction(SIGCHLD, &actTCP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    disconnectTCP();
+    exit(EXIT_FAILURE);
   }
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    disconnectTCP();
+    exit(EXIT_FAILURE);
   }
 
   return socketFdTCP;
@@ -91,41 +99,51 @@ int parseTCPMessage(std::string request) {
 
 int generalTCPHandler(struct peerInfo peer) {
   struct protocolMessage response;
-  if (createSocketTCP(peer) == -1) {
-    return -1;
-  }
+  int ret;
+  createSocketTCP(peer);
+
   while (true) {
     addrlenTCP = sizeof(peer.addr);
-    if ((newConnectionFd = accept(socketFdTCP, (struct sockaddr *)&peer.addr, &addrlenTCP)) == -1) {
+    do
+      newConnectionFd = accept(socketFdTCP, (struct sockaddr *)&peer.addr, &addrlenTCP);
+    while (newConnectionFd == -1 && errno == EINTR);
+
+    if (newConnectionFd == -1) {
       std::cerr << TCP_ACCEPT_ERROR << std::endl;
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      disconnectTCP();
+      exit(EXIT_FAILURE);
     }
 
     if ((pid = fork()) == -1) {
       std::cerr << FORK_ERROR << std::endl;
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      disconnectTCP();
+      disconnectTCPchild();
+      exit(EXIT_FAILURE);
     }
 
     if (pid == 0) { // Child process
 
       signal(SIGINT, signalHandlerTCPchild);
+      signal(SIGTERM, signalHandlerTCPchild);
 
       if (close(socketFdTCP) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
+        disconnectTCPchild();
+        exit(EXIT_FAILURE);
       }
       std::cout << "[INFO]: New connection" << std::endl;
 
       if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
+        disconnectTCPchild();
+        exit(EXIT_FAILURE);
       }
 
       std::cout << "[INFO]: Received message: " << bufferTCP;
       if (verboseTCP) {
         int errcode = getnameinfo((struct sockaddr *)&peer.addr, addrlenTCP, hostTCP, sizeof hostTCP,
                                   serviceTCP, sizeof serviceTCP, 0);
-        if (errcode != 0)
+        if (errcode != 0) // TODO: what to do here?
           std::cerr << VERBOSE_ERROR(errcode) << std::endl;
         else {
           std::cout << VERBOSE_SUCCESS("TCP", hostTCP, serviceTCP) << std::endl;
@@ -136,14 +154,18 @@ int generalTCPHandler(struct peerInfo peer) {
 
       if (close(newConnectionFd) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-        exit(EXIT_FAILURE); // TODO: exit gracefully here
+        exit(EXIT_FAILURE);
       }
       exit(EXIT_SUCCESS);
     }
 
-    if (close(newConnectionFd) == -1) {
+    do
+      ret = close(newConnectionFd);
+    while (ret == -1 && errno == EINTR);
+    if (ret) {
       std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+      disconnectTCP();
+      exit(EXIT_FAILURE);
     }
   }
 }
