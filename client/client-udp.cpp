@@ -21,9 +21,13 @@ int createSocketUDP(struct peerInfo peer) {
     exit(EXIT_FAILURE);
   }
 
+  if (turnOnSocketTimer(socketFdUDP) == -1) {
+    disconnectUDP();
+    return -1;
+  }
+
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
-
   return socketFdUDP;
 }
 
