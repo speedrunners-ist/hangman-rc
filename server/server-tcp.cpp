@@ -171,13 +171,14 @@ int handleGSB(struct protocolMessage message) {
 
 int handleGHL(struct protocolMessage message) {
   std::cout << "[INFO]: Received GHL message" << std::endl;
-  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
+
+  const std::string plid = message.second;
+  if (!hasPLIDFormat(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
     return sendTCPMessage(response, newConnectionFd);
   }
 
-  const std::string plid = message.second;
   std::string file;
   std::string response;
 
@@ -201,13 +202,13 @@ int handleGHL(struct protocolMessage message) {
 
 int handleSTA(struct protocolMessage message) {
   std::cout << "[INFO]: Received STA message" << std::endl;
-  if (!message.body.substr(message.secondPos + 1).empty() || !hasPLIDFormat(message.second)) {
+  const std::string plid = message.second;
+  if (!hasPLIDFormat(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"RST", "NOK"});
     return sendTCPMessage(response, newConnectionFd);
   }
 
-  const std::string plid = message.second;
   std::string file;
   std::string response;
 
