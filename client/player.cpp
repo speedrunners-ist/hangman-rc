@@ -41,12 +41,22 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (GSIP.compare(DEFAULT_GSIP) == 0) {
+    std::cout << "Could not find IP address, using default IP: " << DEFAULT_GSIP << std::endl;
+  }
+
+  if (GSport.compare(DEFAULT_GSPORT) == 0) {
+    std::cout << "Could not find Gsport number, using default port: " << DEFAULT_GSPORT << std::endl;
+  }
+
   const struct peerInfo peer = {GSIP, GSport};
   if (createSocketUDP(peer) == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  // When getting a SIGPIPE, shutdown the client
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
   signal(SIGPIPE, signalHandler);
 
   char buffer[MAX_USER_INPUT];
@@ -80,9 +90,11 @@ int main(int argc, char *argv[]) {
     continueReading(buffer);
   }
 
-  std::cout << EXIT_PROGRAM << std::endl;
   if (disconnectUDP() == -1) {
+    std::cerr << UDP_SOCKET_CLOSE_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  std::cout << EXIT_PROGRAM << std::endl;
   exit(EXIT_SUCCESS);
 }

@@ -15,16 +15,7 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 int createSocketUDP(struct peerInfo peer) {
-  socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
-  if (socketFdUDP == -1) {
-    std::cerr << SOCKET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
-
-  return socketFdUDP;
+  return socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
 }
 
 int disconnectUDP() { return disconnectSocket(serverInfoUDP, socketFdUDP); }
