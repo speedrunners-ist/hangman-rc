@@ -170,11 +170,11 @@ int setupWordList(std::string filePath);
 bool isOngoingGame(std::string plid);
 
 /**
- * @brief Gets a random word-hint pair from the word list.
- *
- * @return A pair containing the word and the hint.
+ * @brief Gets a new word-hint pair from the server's word list. 
+ * 
+ * @return The word-hint pair.
  */
-std::pair<std::string, std::string> getRandomLine();
+std::pair<std::string, std::string> getWordHintPair();
 
 /**
  * @brief Gets the number of occurrences of a given letter in a given word.

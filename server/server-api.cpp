@@ -1,6 +1,7 @@
 #include "server-api.h"
 
-std::map<std::string, std::string> wordsList;
+std::vector<std::pair<std::string, std::string>> wordsList;
+std::vector<std::pair<std::string, std::string>>::iterator currentPair;
 
 // clang-format off
 // Note that there's no need to handle correct guesses, since in that case
@@ -85,19 +86,20 @@ int setupWordList(std::string filePath) {
     const size_t wordPos = line.find(' ');
     std::string word = line.substr(0, wordPos);
     toLower(word);
-    std::string file = line.substr(wordPos + 1);
-    wordsList[word] = file;
+    const std::string hint = line.substr(wordPos + 1);
+    wordsList.push_back(std::make_pair(word, hint));
   }
+  currentPair = wordsList.begin();
   return 0;
 }
 
 bool isOngoingGame(std::string plid) { return std::filesystem::exists(ONGOING_GAMES_PATH(plid)); }
 
-std::pair<std::string, std::string> getRandomLine() {
-  const int randomIndex = rand() % (int)wordsList.size();
-  auto it = wordsList.begin();
-  std::advance(it, randomIndex);
-  return *it;
+std::pair<std::string, std::string> getWordHintPair() {
+  if (currentPair == wordsList.end()) {
+    currentPair = wordsList.begin();
+  }
+  return *currentPair++;
 }
 
 int getLetterOccurrences(std::string word, char letter) {
@@ -177,10 +179,9 @@ int createGameSession(std::string plid, std::string &arguments) {
 
   // Here, we must create a new game (since the player either never played a game
   // or finished the last one)
-  // We pick a random line from the words list for the game
-  const std::pair<std::string, std::string> randomLine = getRandomLine();
-  const std::string word = randomLine.first;
-  const std::string hint = randomLine.second;
+  const std::pair<std::string, std::string> line = getWordHintPair();
+  const std::string word = line.first;
+  const std::string hint = line.second;
   const int wordLength = (int)word.length();
   const int availableMistakes = initialAvailableMistakes(wordLength);
 
