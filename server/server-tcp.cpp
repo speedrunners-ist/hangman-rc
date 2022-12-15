@@ -67,13 +67,6 @@ int createSocketTCP(struct peerInfo peer) {
     exit(EXIT_FAILURE);
   }
 
-  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
-  if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
-    std::cerr << SIGACTION_ERROR << std::endl;
-    disconnectTCP();
-    exit(EXIT_FAILURE);
-  }
-
   return socketFdTCP;
 }
 
@@ -83,7 +76,6 @@ int disconnectTCP() {
   std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
   return -1;
 }
-
 int disconnectTCPchild() {
   if (disconnectSocket(resTCP, newConnectionFd))
     return 0;
@@ -133,7 +125,6 @@ int generalTCPHandler(struct peerInfo peer) {
     }
 
     if (pid == 0) { // Child process
-
       signal(SIGINT, signalHandlerTCPchild);
       signal(SIGTERM, signalHandlerTCPchild);
 

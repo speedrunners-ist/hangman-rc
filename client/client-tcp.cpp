@@ -15,7 +15,17 @@ responseHandler handleTCPServerMessage = {
 
 int createSocketTCP(struct peerInfo peer) {
   socketFdTCP = newSocket(SOCK_STREAM, peer, &hintsTCP, &serverInfoTCP);
-  return connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen);
+  if (connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen) == -1) {
+    std::cerr << TCP_SERVER_ERROR << std::endl;
+    return -1;
+  }
+
+  if (turnOnSocketTimer(socketFdTCP) == -1) {
+    disconnectTCP();
+    return -1;
+  }
+
+  return socketFdTCP;
 }
 
 int disconnectTCP() {
@@ -40,18 +50,11 @@ int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessag
   if (sendTCPMessage(message, socketFdTCP) == -1) {
     return -1;
   }
-  int ret = turnOnSocketTimer(socketFdTCP);
-  if (ret == -1) {
+
+  if (receiveTCPMessage(responseMessage, args, socketFdTCP) == -1) {
     return -1;
   }
-  ret = receiveTCPMessage(responseMessage, args, socketFdTCP);
-  if (ret == -1) {
-    return -1;
-  }
-  ret = turnOffSocketTimer(socketFdTCP);
-  if (ret == -1) {
-    return -1;
-  }
+  // TODO: we're not disconnecting from the server here, and the project's statement says we should
   serverMessage.body = responseMessage;
   return 0;
 }
@@ -100,7 +103,6 @@ int generalTCPHandler(std::string message, struct peerInfo peer) {
     disconnectTCP();
     exit(EXIT_FAILURE);
   }
-
   return parseTCPResponse(serverMessage);
 }
 
@@ -128,10 +130,8 @@ int handleRSB(struct protocolMessage response) {
     return ret;
   } else if (response.second == "EMPTY") {
     std::cout << RSB_FAIL << std::endl;
-    disconnectTCP();
     return 0;
   }
-  disconnectTCP();
   return -1;
 }
 
@@ -153,25 +153,20 @@ int handleRHL(struct protocolMessage response) {
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
     std::cout << RHL_SUCCESS(info.fileName, bytesRead) << std::endl;
-    disconnectTCP();
     return 0;
   } else if (response.second == "NOK") {
     std::cout << RHL_FAIL << std::endl;
-    disconnectTCP();
     return 0;
   }
-  disconnectTCP();
   return -1;
 }
 
 int handleRST(struct protocolMessage response) {
   if (response.second == "NOK") {
     std::cout << RST_NOK << std::endl;
-    disconnectTCP();
     return 0;
   } else if (response.second == "ERR") {
     std::cerr << RST_ERR << std::endl;
-    disconnectTCP();
     return -1;
   }
 

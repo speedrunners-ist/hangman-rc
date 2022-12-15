@@ -15,7 +15,18 @@ responseHandler handleUDPServerMessage = {
 // clang-format on
 
 int createSocketUDP(struct peerInfo peer) {
-  return socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
+  socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
+  if (socketFdUDP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (turnOnSocketTimer(socketFdUDP) == -1) {
+    disconnectUDP();
+    return -1;
+  }
+
+  return socketFdUDP;
 }
 
 int disconnectUDP() {
@@ -69,6 +80,9 @@ int handleRSG(struct protocolMessage response) {
     return 0;
   } else if (response.second == "NOK") {
     std::cout << RSG_NOK << std::endl;
+    return 0;
+  } else if (response.second == "ERR") {
+    std::cout << RSG_ERR << std::endl;
     return 0;
   }
   return -1;
