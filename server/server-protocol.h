@@ -45,6 +45,13 @@ void signalHandlerUDP(int signum);
 void signalHandlerTCP(int signum);
 
 /**
+ * @brief Closes the TCP child socket and exits the program.
+ *
+ * @param signum
+ */
+void signalHandlerTCPchild(int signum);
+
+/**
  * @brief Sets up the server's UDP socket.
  *
  * @return 0 if the setup was successful, -1 otherwise.
@@ -71,6 +78,13 @@ int disconnectUDP();
  * @return 0 if the disconnection was successful, -1 otherwise.
  */
 int disconnectTCP();
+
+/**
+ * @brief Disconnects the server from the TCP child socket.
+ *
+ * @return 0 if the disconnection was successful, -1 otherwise.
+ */
+int disconnectTCPchild();
 
 /**
  * @brief Centralized UDP communication handler with the client.

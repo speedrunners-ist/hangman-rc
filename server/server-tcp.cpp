@@ -17,6 +17,13 @@ void signalHandlerTCP(int signum) {
   exit(signum);
 }
 
+void signalHandlerTCPchild(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  disconnectTCPchild();
+  std::cout << EXIT_PROGRAM << std::endl;
+  exit(signum);
+}
+
 // clang-format off
 responseHandler handleTCPClientMessage = {
   {"GSB", handleGSB},
@@ -63,6 +70,7 @@ int createSocketTCP(struct peerInfo peer) {
 }
 
 int disconnectTCP() { return disconnectSocket(resTCP, socketFdTCP); }
+int disconnectTCPchild() { return disconnectSocket(resTCP, newConnectionFd); }
 
 int parseTCPMessage(std::string request) {
   std::string responseBegin = request;
@@ -99,6 +107,8 @@ int generalTCPHandler(struct peerInfo peer) {
     }
 
     if (pid == 0) { // Child process
+
+      signal(SIGINT, signalHandlerTCPchild);
 
       if (close(socketFdTCP) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
