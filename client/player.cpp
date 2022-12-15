@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
     if (forceExitClient(command) || handlePlayerMessage[command](message) == EXIT_HANGMAN) {
       break;
     }
+    displayCurrentInformation();
     continueReading(buffer);
   }
 

@@ -43,6 +43,9 @@ void GameState::incorrectGuess() {
   guessedLetters[guess] = true;
   guessesMade++;
   mistakesLeft--;
+  if (mistakesLeft == 0) {
+    active = 0;
+  }
 }
 
 int GameState::correctGuess(std::string positions, int n) {
