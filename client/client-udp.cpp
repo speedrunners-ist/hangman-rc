@@ -22,13 +22,24 @@ int disconnectUDP() { return disconnectSocket(serverInfoUDP, socketFdUDP); }
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
-  memset(responseMessage, 0, maxBytes + 1);
+  if (memset(responseMessage, 0, maxBytes + 1) == NULL) {
+    std::cerr << UDP_SEND_MESSAGE_ERROR << std::endl;
+    disconnectUDP();
+    exit(EXIT_FAILURE);
+  }
+
   struct protocolMessage response;
   int ret = exchangeUDPMessages(message, responseMessage, maxBytes, serverInfoUDP, socketFdUDP);
+  if (ret == -1) {
+    std::cerr << UDP_SEND_MESSAGE_ERROR << std::endl;
+    disconnectUDP();
+    exit(EXIT_FAILURE);
+  }
   ret = parseUDPMessage(responseMessage, response);
   if (ret == -1) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
+    disconnectUDP();
+    exit(EXIT_FAILURE);
   }
   return handleUDPServerMessage[response.first](response);
 }
@@ -55,7 +66,6 @@ int handleRSG(struct protocolMessage response) {
     std::cout << RSG_NOK << std::endl;
     return 0;
   }
-
   return -1;
 }
 

@@ -178,6 +178,7 @@ public:
 #define TCP_RESPONSE_ERROR "[ERR]: Message does not match the TCP protocol."
 
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
+#define UDP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via UDP."
 #define UDP_PARSE_ERROR "[ERR]: Found error while parsing the message."
 #define UDP_RESPONSE_ERROR "[ERR]: Message does not match the UDP protocol."
 #define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."
