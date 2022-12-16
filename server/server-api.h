@@ -179,12 +179,14 @@ int setupWordList(std::string filePath);
  */
 bool isOngoingGame(std::string plid);
 
-/**
- * @brief Gets a new word-hint pair from the server's word list. 
- * 
- * @return The word-hint pair.
- */
-std::pair<std::string, std::string> getWordHintPair();
+// clang-format off
+// TODO: add documentation
+std::pair<std::string, std::string> retrieveWordHintPair(
+  std::vector<std::string> &arguments,
+  std::vector<std::string>::iterator &word,
+  std::string &response
+);
+// clang-format on
 
 /**
  * @brief Gets the number of occurrences of a given letter in a given word.
@@ -304,7 +306,6 @@ int getState(std::string plid, std::string &response, std::string &filePath);
 
 // In production, a compiler flag (PRODUCTION) will be used in order to tell that
 // the RRV command should answer with RRV OK, not RRV with the actual word.
-// For that, we'll define a macro that will be used in the code.
 #ifdef PRODUCTION
 #define RRV_OK(word) "OK"
 #else

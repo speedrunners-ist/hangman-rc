@@ -9,10 +9,10 @@ SCORE PLAYER  WORD      GOOD TRIALS  TOTAL TRIALS
 100 100001 barracuda 1 1
 100 100003 chlorobenzylidenemalononitrile 15 15
 100 100003 chlorobenzylidenemalononitrile 15 15
+100 099207 barracuda 2 2
+100 099123 chlorobenzylidenemalononitrile 2 2
+100 099123 abracadabra 1 1
 083 099207 island 5 6
 083 099207 island 5 6
 075 099241 island 3 4
-066 099207 island 2 3
-066 099207 island 2 3
-066 099207 island 2 3
-066 099207 island 2 3
+068 021344 decarbonization 11 16
