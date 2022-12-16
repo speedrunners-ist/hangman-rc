@@ -3,6 +3,7 @@
 struct addrinfo *serverInfoUDP;
 struct addrinfo hintsUDP;
 int socketFdUDP;
+struct sigaction actUDP;
 
 // clang-format off
 responseHandler handleUDPServerMessage = {
@@ -28,6 +29,16 @@ int createSocketUDP(struct peerInfo peer) {
 
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
+
+  memset(&actUDP, 0, sizeof(actUDP));
+  actUDP.sa_handler = SIG_IGN;
+
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectUDP();
+    return -1;
+  }
   return socketFdUDP;
 }
 
