@@ -310,15 +310,11 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
   size_t bytesRead = 0;
   int readArgs = 0;
   char c;
-  if (turnOnSocketTimer(fd) == -1) {
-    return -1;
-  }
   do {
     // FIXME: there will be a problem if the response is "ERR\n"?
     bytesReceived = read(fd, &c, 1);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
-      turnOffSocketTimer(fd);
       return -1;
     } else if (c == ' ' || c == '\n') {
       readArgs++;
@@ -327,9 +323,6 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
     bytesRead += (size_t)bytesReceived;
   } while (bytesReceived != 0 && readArgs < args);
 
-  if (turnOffSocketTimer(fd) == -1) {
-    return -1;
-  }
   return (int)bytesRead;
 }
 
@@ -351,9 +344,6 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
   }
   // read from socket and write to file until file size is reached, in chunks
   char buffer[TCP_CHUNK_SIZE];
-  if (turnOnSocketTimer(fd) == -1) {
-    return -1;
-  }
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
     bytesReceived = read(fd, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
@@ -368,9 +358,6 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
     bytesLeft -= (size_t)bytesReceived;
   } while (bytesReceived != 0 && bytesLeft > 0);
 
-  if (turnOffSocketTimer(fd) == -1) {
-    return -1;
-  }
   file.close();
   return (int)bytesRead;
 }
