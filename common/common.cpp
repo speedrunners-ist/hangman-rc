@@ -138,6 +138,15 @@ int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct add
     std::cout << BIND_ERROR << std::endl;
     return -1;
   }
+
+  struct timeval tv;
+  memset(&tv, 0, sizeof(tv));
+
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
+    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    return -1;
+  }
+
   return fd;
 }
 
@@ -472,9 +481,7 @@ void continueReading(char *buffer) {
 
 void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
 
-bool hasPLIDFormat(std::string plid) {
-  return plid.length() == 6 && isNumber(plid);
-}
+bool hasPLIDFormat(std::string plid) { return plid.length() == 6 && isNumber(plid); }
 
 bool isNumber(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }
 
