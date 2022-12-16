@@ -61,5 +61,9 @@ client/hints/
 state/
 server/games/
 
+# Test suite files
+*.html
+*.log
+
 
 .vscode
