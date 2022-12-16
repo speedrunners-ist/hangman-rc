@@ -75,9 +75,7 @@ int generalTCPHandler(peerInfo peer) {
 
   // Listening for incoming connections
   while (true) {
-    std::cout << "[INFO]: Waiting for connections..." << std::endl;
-    newConnectionFd = accept(socketFdTCP, (struct sockaddr *)&peer.addr, (socklen_t *)sizeof(peer.addr));
-    std::cout << "[INFO]: Connection accepted" << std::endl;
+    newConnectionFd = accept(socketFdTCP, resTCP->ai_addr, &resTCP->ai_addrlen);
     if (newConnectionFd == -1) {
       std::cerr << TCP_ACCEPT_ERROR << std::endl;
       return -1;
