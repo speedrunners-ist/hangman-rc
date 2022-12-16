@@ -1,0 +1,40 @@
+#!/bin/sh
+
+MY_IP=$(curl -s http://ipecho.net/plain)
+TEJO="nc tejo.tecnico.ulisboa.pt 59000"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+function run_server() {
+  server/GS server/word_eng.txt -v > tests/tmp/server.log
+}
+
+function run_command() {
+    echo "Testing $1"
+    TEST=$(echo $FILE | cut -d'_' -f2)
+    COMMAND=$(echo "$MY_IP 58001 $TEST" | $TEJO > tests/tmp/report-$TEST.html)
+    if grep -q error tests/tmp/report-$FILE.html; then
+        echo -e "${RED}Test failed${NC}"
+    else
+        echo -e "${GREEN}Test passed${NC}"
+    fi
+}
+
+function handle_test() {
+    run_server &
+    run_command $1
+    killall GS
+}
+
+# Script core
+
+echo "You can find the results of each test in the tests/tmp folder"
+
+rm -rf tests/tmp/*
+
+for test in tests/scripts/*.txt
+do
+    handle_test $test
+done
