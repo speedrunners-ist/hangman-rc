@@ -17,7 +17,7 @@ function run_command() {
     TEST=$(echo $FILE_NAME | cut -d'_' -f2)
     echo "Test: $TEST"
     COMMAND=$(echo "$MY_IP 58001 $TEST" | $TEJO > tests/tmp/report-$TEST.html)
-    if grep -q error tests/tmp/report-$FILE.html; then
+    if [ ! -s tests/tmp/report-$TEST.html ] || grep -q "error" tests/tmp/report-$TEST.html; then
         echo -e "${RED}Test failed${NC}"
     else
         echo -e "${GREEN}Test passed${NC}"
