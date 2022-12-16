@@ -146,10 +146,15 @@ int disconnectSocket(struct addrinfo *res, int fd) {
   memset(&tv, 0, sizeof(tv));
   freeaddrinfo(res);
   if (turnOffSocketTimer(fd) == -1) {
-    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    std::cerr << SOCKET_TIMER_RESET_ERROR << std::endl;
     if (close(fd) == -1) {
       std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
     }
+    return -1;
+  }
+  // TODO: fix only needed for TCP
+  if (shutdown(fd, SHUT_RDWR) == -1) {
+    std::cerr << SHUTDOWN_ERROR << std::endl;
     return -1;
   }
 

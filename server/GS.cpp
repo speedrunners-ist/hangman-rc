@@ -21,10 +21,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (GSIP.compare(DEFAULT_GSIP) == 0) {
-    std::cout << "Could not find IP address, using default IP: " << DEFAULT_GSIP << std::endl;
-  }
-
   if (GSport.compare(DEFAULT_GSPORT) == 0) {
     std::cout << "Could not find Gsport number, using default port: " << DEFAULT_GSPORT << std::endl;
   }
