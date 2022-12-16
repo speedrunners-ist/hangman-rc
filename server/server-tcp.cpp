@@ -92,6 +92,8 @@ int generalTCPHandler(peerInfo peer) {
       if (close(socketFdTCP) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
+      } else if (turnOnSocketTimer(newConnectionFd) == -1) {
+        return -1;
       }
 
       std::cout << "[INFO]: New connection" << std::endl;
@@ -100,6 +102,9 @@ int generalTCPHandler(peerInfo peer) {
         return -1;
       }
 
+      if (turnOffSocketTimer(newConnectionFd) == -1) {
+        return -1;
+      }
       std::cout << "[INFO]: Received message: " << bufferTCP;
       if (verboseTCP) {
         displayVerbose(peer, hostTCP, serviceTCP, "TCP");
