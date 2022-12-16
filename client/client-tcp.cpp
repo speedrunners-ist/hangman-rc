@@ -95,10 +95,8 @@ int generalTCPHandler(std::string message, struct peerInfo peer) {
   if (exchangeTCPMessage(message, serverMessage, TCP_DEFAULT_ARGS) == -1) {
     return -1;
   }
-  if (disconnectTCP() == -1) {
-    return -1;
-  }
-  return parseTCPResponse(serverMessage);
+  parseTCPResponse(serverMessage);
+  return disconnectTCP();
 }
 
 int handleRSB(struct protocolMessage response) {
