@@ -139,6 +139,15 @@ int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo *
     std::cout << BIND_ERROR << std::endl;
     return -1;
   }
+
+  struct timeval tv;
+  memset(&tv, 0, sizeof(tv));
+
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
+    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    return -1;
+  }
+
   return fd;
 }
 
