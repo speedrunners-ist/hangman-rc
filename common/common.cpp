@@ -138,6 +138,15 @@ int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct add
     std::cout << BIND_ERROR << std::endl;
     return -1;
   }
+
+  struct timeval tv;
+  memset(&tv, 0, sizeof(tv));
+
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
+    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    return -1;
+  }
+
   return fd;
 }
 
@@ -168,10 +177,6 @@ int turnOnSocketTimer(int fd) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     return -1;
   }
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
-    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
-    return -1;
-  }
   return 0;
 }
 
@@ -179,10 +184,6 @@ int turnOffSocketTimer(int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
-    return -1;
-  }
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
     std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
     return -1;
   }
