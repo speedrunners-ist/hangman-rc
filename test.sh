@@ -28,6 +28,7 @@ function handle_test() {
     run_server &
     run_command $1
     killall GS
+    sleep 5 # to avoid being timed out ;-;
 }
 
 # Script core
