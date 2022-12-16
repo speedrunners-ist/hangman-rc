@@ -6,10 +6,10 @@ SCORE PLAYER  WORD      GOOD TRIALS  TOTAL TRIALS
 100 099207 island 3 3
 100 099207 island 3 3
 100 099207 abracadabra 1 1
+100 099207 abracadabra 3 3
 083 099207 island 5 6
 083 099207 island 5 6
 075 099241 island 3 4
-066 099207 island 2 3
 066 099207 island 2 3
 066 099207 island 2 3
 066 099207 island 2 3

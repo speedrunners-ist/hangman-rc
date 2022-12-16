@@ -219,36 +219,21 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
   return 0;
 }
 
-int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd) {
+int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int fd) {
   if (res == NULL) {
     std::cerr << GETADDRINFO_ERROR << std::endl;
     return -1;
   }
 
-  int triesLeft = UDP_TRIES;
-  do {
-    if (sendUDPMessage(message, res, fd) == -1) {
-      return -1;
-    }
-
-    const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
-    if (bytesReceived == -1) {
-      if (triesLeft == 0 && !(errno == EAGAIN || errno == EWOULDBLOCK)) {
-        break;
-      }
-      continue;
-    }
-
-    if (response[bytesReceived - 1] != '\n') {
-      std::cerr << UDP_RESPONSE_ERROR << std::endl;
-      return -1;
-    }
-    return 0;
-
-  } while (--triesLeft > 0);
-
-  std::cerr << RECVFROM_ERROR << std::endl;
-  return -1;
+  const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
+  if (bytesReceived == -1) {
+    std::cerr << RECVFROM_ERROR << std::endl;
+    return -1;
+  } else if (response[bytesReceived - 1] != '\n') {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return -1;
+  }
+  return 0;
 }
 
 /*** TCP message parsing/sending implementation ***/
@@ -472,9 +457,7 @@ void continueReading(char *buffer) {
 
 void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
 
-bool hasPLIDFormat(std::string plid) {
-  return plid.length() == 6 && isNumber(plid);
-}
+bool hasPLIDFormat(std::string plid) { return plid.length() == 6 && isNumber(plid); }
 
 bool isNumber(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }
 

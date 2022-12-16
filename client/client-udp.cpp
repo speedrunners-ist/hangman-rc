@@ -37,9 +37,11 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
   memset(responseMessage, 0, maxBytes + 1);
   struct protocolMessage response;
-  int ret = exchangeUDPMessages(message, responseMessage, maxBytes, serverInfoUDP, socketFdUDP);
-  ret = parseUDPMessage(responseMessage, response);
-  if (ret == -1) {
+  if (sendUDPMessage(message, serverInfoUDP, socketFdUDP) == -1) {
+    return -1;
+  } else if (receiveUDPMessage(responseMessage, maxBytes, serverInfoUDP, socketFdUDP) == -1) {
+    return -1;
+  } else if (parseUDPMessage(responseMessage, response) == -1) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }

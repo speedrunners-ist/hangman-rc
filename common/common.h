@@ -152,8 +152,6 @@ public:
 // When exiting the program (i.e using "exit" vs "quit"), the client's UDP handler will return this value.
 #define EXIT_HANGMAN 1
 
-// Maximum number of tries to send a UDP message.
-#define UDP_TRIES 3
 // Default socket timeout value (in seconds).
 #define SOCKET_TIMEOUT 5
 
@@ -166,7 +164,7 @@ public:
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info."
 #define BIND_ERROR "[ERR]: Failed to bind socket."
 #define SENDTO_ERROR "[ERR]: Failed to send message."
-#define RECVFROM_ERROR "[ERR]: Failed to receive message."
+#define RECVFROM_ERROR "[ERR]: Failed to receive UDP message."
 
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
@@ -235,8 +233,8 @@ int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
 
 // UDP utils functions
-int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd);
 int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
+int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int fd);
 int parseUDPMessage(std::string message, struct protocolMessage &response);
 
 // TCP utils functions
@@ -307,11 +305,11 @@ bool validPlayerID(std::string id);
 
 /**
  * @brief Checks if a given response is valid (considering expected args amount and valid arguments).
- * 
+ *
  * @param body: Response body to be checked.
  * @param args: To-be-stored argument list.
  * @param expectedArgs: Expected amount of arguments.
- * @return True if the response is valid, false otherwise. 
+ * @return True if the response is valid, false otherwise.
  */
 bool validResponse(std::string body, std::vector<int> &args, int expectedArgs);
 

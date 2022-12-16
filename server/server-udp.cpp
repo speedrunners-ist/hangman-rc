@@ -68,16 +68,19 @@ int generalUDPHandler(struct peerInfo peer) {
   // Listen for incoming connections
   while (true) {
     memset(bufferUDP, 0, UDP_RECV_SIZE);
-
-    addrlenUDP = sizeof(resUDP->ai_addr);
-    if (recvfrom(socketFdUDP, bufferUDP, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlenUDP) == -1) {
-      exit(EXIT_FAILURE); // TODO: exit gracefully here
+    if (receiveUDPMessage(bufferUDP, UDP_RECV_SIZE, resUDP, socketFdUDP) == -1) {
+      continue;
     }
 
-    std::cout << "[INFO]: Received message: " << bufferUDP;
     if (verboseUDP) {
-      int errcode =
-          getnameinfo(resUDP->ai_addr, addrlenUDP, hostUDP, sizeof hostUDP, serviceUDP, sizeof serviceUDP, 0);
+      addrlenUDP = sizeof(resUDP->ai_addr);
+      // clang-format off
+      int errcode = getnameinfo(
+        resUDP->ai_addr, addrlenUDP,
+        hostUDP, sizeof(hostUDP),
+        serviceUDP, sizeof(serviceUDP),
+      0);
+      // clang-format on
       if (errcode != 0) {
         std::cerr << VERBOSE_ERROR(errcode) << std::endl;
       } else {
@@ -206,7 +209,6 @@ int handlePLG(struct protocolMessage message) {
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RLG", "ERR"});
   }
-
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
@@ -272,7 +274,6 @@ int handlePWG(struct protocolMessage message) {
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RWG", "ERR"});
   }
-
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
