@@ -14,7 +14,7 @@ responseHandler handleUDPServerMessage = {
 };
 // clang-format on
 
-int createSocketUDP(struct peerInfo peer) {
+int createSocketUDP(peerInfo peer) {
   socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
   if (socketFdUDP == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
@@ -36,7 +36,7 @@ int disconnectUDP() { return disconnectSocket(serverInfoUDP, socketFdUDP); }
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
   memset(responseMessage, 0, maxBytes + 1);
-  struct protocolMessage response;
+  protocolMessage response;
   if (sendUDPMessage(message, serverInfoUDP, socketFdUDP) == -1) {
     return -1;
   } else if (receiveUDPMessage(responseMessage, maxBytes, serverInfoUDP, socketFdUDP) == -1) {
@@ -45,16 +45,20 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
-  return handleUDPServerMessage[response.first](response);
+
+  return messageUDPHandler(socketFdUDP, serverInfoUDP, response, handleUDPServerMessage);
 }
 
-// Server response handlers
-int handleRSG(struct protocolMessage response) {
+/**
+ * Server response handlers
+ */
+
+int handleRSG(protocolMessage response) {
   if (response.second == "OK") {
     std::string body = response.body.substr(response.secondPos + 1);
     body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
     std::vector<int> args;
-    if (!validResponse(body, args, 2)) {
+    if (!validResponse(body, args, RSG_ARGS)) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
@@ -74,12 +78,12 @@ int handleRSG(struct protocolMessage response) {
   return -1;
 }
 
-int handleRLG(struct protocolMessage response) {
+int handleRLG(protocolMessage response) {
   if (response.second == "OK") {
     std::string body = response.body.substr(response.secondPos + 1);
     body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
     std::vector<int> args;
-    if (!validResponse(body, args, 2)) {
+    if (!validResponse(body, args, RLG_ARGS)) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
@@ -116,15 +120,15 @@ int handleRLG(struct protocolMessage response) {
   return -1;
 }
 
-int handleRWG(struct protocolMessage response) {
-  std::string body = response.body.substr(response.secondPos + 1);
-  body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
-  std::vector<int> args;
-  if (!validResponse(body, args, 1)) {
-    std::cerr << RWG_ERROR << std::endl;
-    return -1;
-  }
+int handleRWG(protocolMessage response) {
   if (response.second == "WIN") {
+    std::string body = response.body.substr(response.secondPos + 1);
+    body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    std::vector<int> args;
+    if (!validResponse(body, args, RWG_ARGS)) {
+      std::cerr << RWG_ERROR << std::endl;
+      return -1;
+    }
     playCorrectFinalWordGuess();
     resetGame();
     std::cout << RWG_WIN(getWord()) << std::endl;
@@ -148,7 +152,7 @@ int handleRWG(struct protocolMessage response) {
   return -1;
 }
 
-int handleRQT(struct protocolMessage response) {
+int handleRQT(protocolMessage response) {
   if (response.second == "OK") {
     std::cout << RQT_OK << std::endl;
     return 0;
@@ -161,16 +165,20 @@ int handleRQT(struct protocolMessage response) {
   return -1;
 }
 
-int handleRRV(struct protocolMessage response) {
-  std::cout << "[REV]: Word is " << response.second << std::endl;
+int handleRRV(protocolMessage response) {
+  std::cout << RRV_OK(response.second) << std::endl;
   return 0;
 }
 
-// handlers: player requests
-int sendSNG(struct messageInfo info) {
+/**
+ * Client request handlers
+ */
+
+int sendSNG(messageInfo info) {
   if (!validArgsAmount(info.input, START_ARGS)) {
     return -1;
   }
+
   const size_t pos1 = info.input.find(' ');
   std::string plid = info.input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
@@ -182,10 +190,10 @@ int sendSNG(struct messageInfo info) {
   return generalUDPHandler(message, RSG_BYTES);
 }
 
-int sendPLG(struct messageInfo info) {
+int sendPLG(messageInfo info) {
   if (!validArgsAmount(info.input, PLAY_ARGS)) {
     return -1;
-  } else if (getPlayerID() == "") {
+  } else if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
@@ -203,13 +211,14 @@ int sendPLG(struct messageInfo info) {
   return generalUDPHandler(message, RLG_BYTES);
 }
 
-int sendPWG(struct messageInfo info) {
+int sendPWG(messageInfo info) {
   if (!validArgsAmount(info.input, GUESS_ARGS)) {
     return -1;
-  } else if (getPlayerID() == "") {
+  } else if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
+
   const size_t pos1 = info.input.find(' ');
   std::string guess = info.input.substr(pos1 + 1);
   guess.erase(std::remove(guess.begin(), guess.end(), '\n'), guess.end());
@@ -223,13 +232,14 @@ int sendPWG(struct messageInfo info) {
   return generalUDPHandler(message, RWG_BYTES);
 }
 
-int sendQUT(struct messageInfo info) {
+int sendQUT(messageInfo info) {
   if (!validArgsAmount(info.input, QUIT_ARGS)) {
     return -1;
-  } else if (getPlayerID() == "") {
+  } else if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
+
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitStringNewline({"QUT", getPlayerID()});
   if (command == "quit") {
@@ -238,13 +248,14 @@ int sendQUT(struct messageInfo info) {
   return generalUDPHandler(message, RQT_BYTES) == 0 ? EXIT_HANGMAN : -1;
 }
 
-int sendREV(struct messageInfo info) {
+int sendREV(messageInfo info) {
   if (!validArgsAmount(info.input, REVEAL_ARGS)) {
     return -1;
-  } else if (getPlayerID() == "") {
+  } else if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
+
   const std::string message = buildSplitStringNewline({"REV", getPlayerID()});
   return generalUDPHandler(message, RRV_BYTES);
 }

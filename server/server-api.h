@@ -163,6 +163,9 @@ void playIncorrectWordGuess(GameState &state, std::string word);
  */
 void setHint(GameState &state, std::string hint);
 
+// TODO: add documentation
+void displayVerbose(peerInfo peer, char *host, char *service, std::string connection);
+
 /**
  * @brief Sets up the server for the retrieval of a word-hint pair from a word list.
  *
@@ -180,8 +183,8 @@ int setupWordList(std::string filePath);
 bool isOngoingGame(std::string plid);
 
 /**
- * @brief Gets a new word-hint pair from the server's word list. 
- * 
+ * @brief Gets a new word-hint pair from the server's word list.
+ *
  * @return The word-hint pair.
  */
 std::pair<std::string, std::string> getWordHintPair();

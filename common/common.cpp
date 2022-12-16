@@ -105,7 +105,7 @@ std::string GameState::getPlayerID() { return playerID; }
 
 /*** Socket functions implementation ***/
 
-int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
+int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
   int fd = socket(AF_INET, type, 0);
   if (fd == -1) {
     std::cout << SOCKET_ERROR << std::endl;
@@ -118,6 +118,7 @@ int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct add
   std::cout << "[DEBUG]: Connecting to " << peer.addr << ":" << peer.port << std::endl;
   int status;
   if (!peer.addr.empty()) {
+    // if we're dealing with a client, we need to resolve the address
     status = getaddrinfo(peer.addr.c_str(), peer.port.c_str(), hints, serverInfo);
     if (status != 0) {
       std::cerr << GETADDRINFO_ERROR << std::endl;
@@ -183,7 +184,7 @@ int turnOffSocketTimer(int fd) {
 
 /*** UDP message parsing/sending implementation ***/
 
-int parseUDPMessage(std::string message, struct protocolMessage &response) {
+int parseUDPMessage(std::string message, protocolMessage &response) {
   std::cout << "[DEBUG]: Parsing message: " << message;
   const size_t pos1 = message.find(' ');
   if (pos1 == std::string::npos) {
@@ -236,9 +237,35 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
   return 0;
 }
 
+int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler) {
+  try {
+    return handler[message.first](message);
+  } catch (const std::bad_function_call &e) {
+    std::cerr << UDP_RESPONSE_ERROR << std::endl;
+    return sendUDPMessage(buildSplitStringNewline({"ERR"}), res, fd);
+  }
+}
+
 /*** TCP message parsing/sending implementation ***/
 
-int sendTCPMessage(std::string message, int fd) {
+int parseTCPMessage(std::string request, protocolMessage &serverMessage) {
+  std::string responseBegin = request;
+  const std::string command = responseBegin.substr(0, 3);
+  responseBegin.erase(0, 4);
+  const std::string plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  serverMessage.first = command;
+  serverMessage.second = plid;
+  serverMessage.body = request;
+  return 0;
+}
+
+int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
+  if (res == NULL) {
+    std::cerr << GETADDRINFO_ERROR << std::endl;
+    return -1;
+  }
+
+  std::cout << "[INFO]: Sending message: " << message;
   if (write(fd, message.c_str(), message.length()) == -1) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;
@@ -246,17 +273,8 @@ int sendTCPMessage(std::string message, int fd) {
   return 0;
 }
 
-int sendFileInfo(struct fileInfo info, int fd) {
-  std::string message =
-      buildSplitString({info.fileName, std::to_string(info.fileSize), std::string(1, info.delimiter)});
-  if (sendTCPMessage(message, fd) == -1) {
-    return -1;
-  }
-  return 0;
-}
-
-int sendTCPFile(std::string message, int fd, std::string filePath) {
-  if (sendTCPMessage(message, fd) == -1) {
+int sendTCPFile(std::string info, struct addrinfo *res, int fd, std::string filePath) {
+  if (sendTCPMessage(info, res, fd) == -1) {
     return -1;
   }
 
@@ -282,7 +300,6 @@ int sendTCPFile(std::string message, int fd, std::string filePath) {
   } while (bytesLeft > 0);
 
   file.close();
-
   // in the end, we must send the final delimiter, \n
   // if (sendTCPMessage("\n", fd) == -1) {
   //   return -1;
@@ -296,7 +313,7 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
   int readArgs = 0;
   char c;
   do {
-    // FIXME: there will be a problem if the response is "ERR\n"?
+    // FIXME: will there be a problem if the response is "ERR\n"?
     bytesReceived = read(fd, &c, 1);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
@@ -311,7 +328,11 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
   return (int)bytesRead;
 }
 
-int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
+int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
+  if (parseFileArgs(info, fd) == -1) {
+    return -1;
+  }
+
   ssize_t bytesReceived = 0;
   size_t bytesRead = 0;
   size_t bytesLeft = (size_t)info.fileSize;
@@ -334,10 +355,8 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
     bytesReceived = read(fd, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
-      turnOffSocketTimer(fd);
       return -1;
     }
-    // print buffer
     file.write(buffer, bytesReceived);
     bytesRead += (size_t)bytesReceived;
     bytesLeft -= (size_t)bytesReceived;
@@ -345,6 +364,34 @@ int receiveTCPFile(struct fileInfo &info, std::string dir, int fd) {
 
   file.close();
   return (int)bytesRead;
+}
+
+int messageTCPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler) {
+  try {
+    return handler[message.first](message);
+  } catch (const std::bad_function_call &e) {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    return sendTCPMessage(buildSplitStringNewline({"ERR"}), res, fd);
+  }
+}
+
+int parseFileArgs(fileInfo &info, int fd) {
+  std::string fileArgs;
+  const int ret = receiveTCPMessage(fileArgs, TCP_FILE_ARGS, fd);
+  if (ret == -1) {
+    std::cerr << TCP_FILE_ARGS_ERROR << std::endl;
+    return -1;
+  }
+  info.fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
+  fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
+  info.fileSize = std::stoi(fileArgs.substr(0, fileArgs.find_first_of(' ')));
+  fileArgs.erase(0, fileArgs.find_first_of(' '));
+  info.delimiter = fileArgs[0];
+  if (info.delimiter == ' ') {
+    return 0;
+  }
+  std::cerr << INVALID_FILE_ARGS << std::endl;
+  return -1;
 }
 
 /*** Misc functions implementation ***/
@@ -413,22 +460,6 @@ bool validArgsAmount(std::string input, int n) {
   return std::count(input.begin(), input.end(), ' ') == n - 1;
 }
 
-bool validPlayerID(std::string id) {
-  // TODO: DEPRECATED
-  if (id.length() != 6) {
-    std::cerr << INVALID_PLID_LEN_ERROR << std::endl;
-    return false;
-  }
-
-  for (size_t i = 0; i < id.length(); i++) {
-    if (!isdigit(id[i])) {
-      std::cerr << INVALID_PLID_CHAR_ERROR << std::endl;
-      return false;
-    }
-  }
-  return true;
-}
-
 bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
   std::stringstream ss(body);
   std::vector<std::string> tokens;
@@ -457,7 +488,7 @@ void continueReading(char *buffer) {
 
 void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
 
-bool hasPLIDFormat(std::string plid) { return plid.length() == 6 && isNumber(plid); }
+bool validPlayerID(std::string plid) { return plid.length() == 6 && isNumber(plid); }
 
 bool isNumber(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }
 

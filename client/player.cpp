@@ -14,7 +14,7 @@ commandHandler handlePlayerMessage = {
 // clang-format on
 
 void signalHandler(int signum) {
-  std::cout << "\nInterrupt signal (" << signum << ") received." << std::endl;
+  std::cout << std::endl << SIGNAL(signum) << std::endl;
   disconnectUDP();
   disconnectTCP();
   std::cout << EXIT_PROGRAM << std::endl;
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  const struct peerInfo peer = {GSIP, GSport};
+  const peerInfo peer = {GSIP, GSport};
   if (createSocketUDP(peer) == -1) {
     exit(EXIT_FAILURE);
   }

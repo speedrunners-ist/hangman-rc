@@ -32,23 +32,26 @@
 // Maximum amount of Bytes that can be sent by the server in a RSG message.
 #define RSG_BYTES 3 + 1 + 3 + 1 + 2 + 1 + 1 + 1
 
+// Expected amount of arguments (not including command and status) for the RSG message.
+#define RSG_ARGS 2
+
 // Maximum amount of Bytes that can be sent by the server in a RLG message.
 #define RLG_BYTES 3 + 1 + 3 + 1 + 1 + 2 + 2 * 30 + 1
 
+// Expected amount of arguments (not including command and status) for the RLG message.
+#define RLG_ARGS 2
+
 // Maximum amount of Bytes that can be sent by the server in a RWG message.
 #define RWG_BYTES 3 + 1 + 3 + 1 + 1 + 1
+
+// Expected amount of arguments (not including command and status) for the RWG message.
+#define RWG_ARGS 1
 
 // Maximum amount of Bytes that can be sent by the server in a RQT message.
 #define RQT_BYTES 3 + 1 + 3 + 1
 
 // Maximum amount of Bytes that can be sent by the server in a RRV message.
 #define RRV_BYTES 3 + 1 + 30 + 1
-
-// Amount of expected arguments in a TCP server response.
-#define TCP_DEFAULT_ARGS 2
-
-// Amount of expected file information arguments in a TCP server response.
-#define TCP_FILE_ARGS 2
 
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from general incorrect input usage to command-specific errors.
@@ -64,7 +67,8 @@
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
-#define RSG_NOK "Failed to start a new game - a game is currently ongoing. Use quit to leave the current game."
+#define RSG_NOK                                                                                              \
+  "Failed to start a new game - a game is currently ongoing. Use quit to leave the current game."
 #define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
 #define RSG_ERR "Message was sent in an invalid format. Try again."
 #define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
@@ -85,6 +89,8 @@
 
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game. Try again later."
+
+#define RRV_OK(word) "[REV]: Word is " + word
 
 #define RSB_FAIL "[INFO]: The server hasn't held any games yet."
 #define RHL_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
@@ -115,7 +121,7 @@
  * @param peer The peerInfo struct containing the server's IP and port.
  * @return The socket's file descriptor.
  */
-int createSocketUDP(struct peerInfo peer);
+int createSocketUDP(peerInfo peer);
 
 /**
  * @brief Creates a socket for TCP communication with the server.
@@ -123,7 +129,7 @@ int createSocketUDP(struct peerInfo peer);
  * @param peer The peerInfo struct containing the server's IP and port.
  * @return The socket's file descriptor.
  */
-int createSocketTCP(struct peerInfo peer);
+int createSocketTCP(peerInfo peer);
 
 /**
  * @brief Ends the UDP communication with the server.
@@ -150,31 +156,12 @@ int disconnectTCP();
 int generalUDPHandler(std::string message, size_t maxBytes);
 
 /**
- * @brief Perform message sending and retrieval (TCP) with the server.
- *
- * @param message The message to be sent to the server.
- * @param serverMessage The struct that will hold the server's response.
- * @param args The amount of arguments expected in the server's response.
- *
- * @return 0 if the communication was successful, -1 otherwise.
- */
-int exchangeTCPMessage(std::string message, struct protocolMessage &serverMessage, int args);
-
-/**
  * @brief Parses the server's TCP response
  *
  * @param serverMessage The struct that holds the server's response.
  * @return 0 if the response was successfully parsed and handled, -1 otherwise.
  */
-int parseTCPResponse(struct protocolMessage &serverMessage);
-
-/**
- * @brief Parses the server-sent file information for the following file transfer.
- *
- * @param info The struct that will hold the file information.
- * @return 0 if the file information was successfully parsed, -1 otherwise.
- */
-int parseFileArgs(struct fileInfo &info);
+int parseTCPResponse(protocolMessage &serverMessage);
 
 /**
  * @brief Centralized TCP communication handler with the server.
@@ -184,7 +171,7 @@ int parseFileArgs(struct fileInfo &info);
  *
  * @return 0 if the communication was successful, -1 otherwise.
  */
-int generalTCPHandler(std::string message, struct peerInfo peer);
+int generalTCPHandler(std::string message, peerInfo peer);
 
 /**
  * @brief Handles RSG responses from the server.
@@ -192,7 +179,7 @@ int generalTCPHandler(std::string message, struct peerInfo peer);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRSG(struct protocolMessage response);
+int handleRSG(protocolMessage response);
 
 /**
  * @brief Handles RLG responses from the server.
@@ -200,7 +187,7 @@ int handleRSG(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRLG(struct protocolMessage response);
+int handleRLG(protocolMessage response);
 
 /**
  * @brief Handles RWG responses from the server.
@@ -208,7 +195,7 @@ int handleRLG(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRWG(struct protocolMessage response);
+int handleRWG(protocolMessage response);
 
 /**
  * @brief Handles RQT responses from the server.
@@ -216,7 +203,7 @@ int handleRWG(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRQT(struct protocolMessage response);
+int handleRQT(protocolMessage response);
 
 /**
  * @brief Handles RRV responses from the server.
@@ -224,7 +211,7 @@ int handleRQT(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRRV(struct protocolMessage response);
+int handleRRV(protocolMessage response);
 
 /**
  * @brief Handles RSB responses from the server.
@@ -232,7 +219,7 @@ int handleRRV(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRSB(struct protocolMessage response);
+int handleRSB(protocolMessage response);
 
 /**
  * @brief Handles RHL responses from the server.
@@ -240,7 +227,7 @@ int handleRSB(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRHL(struct protocolMessage response);
+int handleRHL(protocolMessage response);
 
 /**
  * @brief Handles RST responses from the server.
@@ -248,7 +235,7 @@ int handleRHL(struct protocolMessage response);
  * @param response The response from the server.
  * @return 0 if the response was handled successfully, -1 otherwise.
  */
-int handleRST(struct protocolMessage response);
+int handleRST(protocolMessage response);
 
 /**
  * @brief Sends SNG messages to the server.
@@ -256,7 +243,7 @@ int handleRST(struct protocolMessage response);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendSNG(struct messageInfo info);
+int sendSNG(messageInfo info);
 
 /**
  * @brief Sends PLG messages to the server.
@@ -264,7 +251,7 @@ int sendSNG(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendPLG(struct messageInfo info);
+int sendPLG(messageInfo info);
 
 /**
  * @brief Sends PWG messages to the server.
@@ -272,7 +259,7 @@ int sendPLG(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendPWG(struct messageInfo info);
+int sendPWG(messageInfo info);
 
 /**
  * @brief Sends QUT messages to the server.
@@ -280,7 +267,7 @@ int sendPWG(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendQUT(struct messageInfo info);
+int sendQUT(messageInfo info);
 
 /**
  * @brief Sends REV messages to the server.
@@ -288,7 +275,7 @@ int sendQUT(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendREV(struct messageInfo info);
+int sendREV(messageInfo info);
 
 /**
  * @brief Sends GSB messages to the server.
@@ -296,7 +283,7 @@ int sendREV(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendGSB(struct messageInfo info);
+int sendGSB(messageInfo info);
 
 /**
  * @brief Sends GHL messages to the server.
@@ -304,7 +291,7 @@ int sendGSB(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendGHL(struct messageInfo info);
+int sendGHL(messageInfo info);
 
 /**
  * @brief Sends STA messages to the server.
@@ -312,6 +299,6 @@ int sendGHL(struct messageInfo info);
  * @param info The messageInfo struct containing the message's parameters.
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
-int sendSTA(struct messageInfo info);
+int sendSTA(messageInfo info);
 
 #endif /* CLIENT_PROTOCOL_H */

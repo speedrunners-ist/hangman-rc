@@ -77,6 +77,18 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 
 /*** General util methods ***/
 
+void displayVerbose(peerInfo peer, char *host, char *service, std::string connection) {
+  const socklen_t addrlen = sizeof(peer.addr);
+  const struct sockaddr *addr = (struct sockaddr *)&peer.addr;
+  const int errcode = getnameinfo(addr, addrlen, host, sizeof host, service, sizeof service, 0);
+  if (errcode != 0) {
+    std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+    return;
+  }
+
+  std::cout << VERBOSE_SUCCESS(connection, host, service) << std::endl;
+}
+
 int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
   readFile(lines, filePath);
@@ -166,7 +178,7 @@ int createGameSession(std::string plid, std::string &arguments) {
     if (retrieveGame(plid, state) != 0) {
       return CREATE_GAME_ERROR;
     }
-    
+
     if (state.getTrials() != 1) {
       // If a game is ongoing, the player is not allowed to start a new one
       return GAME_ONGOING;
