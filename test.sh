@@ -13,7 +13,9 @@ function run_server() {
 
 function run_command() {
     echo "Testing $1"
-    TEST=$(echo $FILE | cut -d'_' -f2)
+    FILE_NAME=$(basename $1 .txt)
+    TEST=$(echo $FILE_NAME | cut -d'_' -f2)
+    echo "Test: $TEST"
     COMMAND=$(echo "$MY_IP 58001 $TEST" | $TEJO > tests/tmp/report-$TEST.html)
     if grep -q error tests/tmp/report-$FILE.html; then
         echo -e "${RED}Test failed${NC}"
@@ -32,6 +34,9 @@ function handle_test() {
 
 echo "You can find the results of each test in the tests/tmp folder"
 
+# create the tests/tmp folder if it doesn't exist
+mkdir -p tests/tmp
+# clear it
 rm -rf tests/tmp/*
 
 for test in tests/scripts/*.txt
