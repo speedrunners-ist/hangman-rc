@@ -152,10 +152,16 @@ int disconnectSocket(struct addrinfo *res, int fd) {
     }
     return -1;
   }
-  // TODO: fix only needed for TCP
-  if (shutdown(fd, SHUT_RDWR) == -1) {
-    std::cerr << SHUTDOWN_ERROR << std::endl;
-    return -1;
+
+  int type;
+  getsockopt(fd, SOL_SOCKET, SO_TYPE, &type, (socklen_t *)sizeof(type));
+
+  // Only TCP sockets need to be shutdown
+  if (type == SOCK_STREAM) {
+    if (shutdown(fd, SHUT_RDWR) == -1) {
+      std::cerr << SHUTDOWN_ERROR << std::endl;
+      return -1;
+    }
   }
 
   if (close(fd) == -1) {
@@ -167,11 +173,9 @@ int disconnectSocket(struct addrinfo *res, int fd) {
 
 int turnOnSocketTimer(int fd) {
   struct timeval tv;
-  if (memset(&tv, 0, sizeof(tv)) == NULL) {
-    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
-    return -1;
-  }
+  memset(&tv, 0, sizeof(tv));
   tv.tv_sec = SOCKET_TIMEOUT;
+
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     return -1;

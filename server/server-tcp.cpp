@@ -53,11 +53,7 @@ int createSocketTCP(struct peerInfo peer) {
   signal(SIGINT, signalHandlerTCP);
   signal(SIGTERM, signalHandlerTCP);
 
-  if (memset(&actTCP, 0, sizeof(actTCP)) == NULL) {
-    std::cerr << MEMSET_ERROR << std::endl;
-    disconnectTCP();
-    exit(EXIT_FAILURE);
-  }
+  memset(&actTCP, 0, sizeof(actTCP));
   actTCP.sa_handler = SIG_IGN;
 
   // Ignore SIGCHLD to avoid zombie processes

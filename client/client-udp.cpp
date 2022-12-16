@@ -38,11 +38,7 @@ int disconnectUDP() {
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
-  if (memset(responseMessage, 0, maxBytes + 1) == NULL) {
-    std::cerr << UDP_SEND_MESSAGE_ERROR << std::endl;
-    disconnectUDP();
-    exit(EXIT_FAILURE);
-  }
+  memset(responseMessage, 0, maxBytes + 1);
 
   struct protocolMessage response;
   int ret = exchangeUDPMessages(message, responseMessage, maxBytes, serverInfoUDP, socketFdUDP);

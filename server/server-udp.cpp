@@ -44,11 +44,7 @@ int createSocketUDP(struct peerInfo peer) {
   signal(SIGINT, signalHandlerUDP);
   signal(SIGTERM, signalHandlerUDP);
 
-  if (memset(&actUDP, 0, sizeof(actUDP)) == NULL) {
-    std::cerr << SIGACTION_ERROR << std::endl;
-    disconnectUDP();
-    exit(EXIT_FAILURE);
-  }
+  memset(&actUDP, 0, sizeof(actUDP));
   actUDP.sa_handler = SIG_IGN;
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
@@ -70,20 +66,12 @@ int disconnectUDP() {
 
 int generalUDPHandler(struct peerInfo peer) {
   struct protocolMessage request;
-  if (memset(lastMessage, 0, UDP_RECV_SIZE) == NULL) {
-    std::cerr << MEMSET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
+  memset(lastMessage, 0, UDP_RECV_SIZE);
   createSocketUDP(peer);
 
   // Listen for incoming connections
   while (true) {
-    if (memset(bufferUDP, 0, UDP_RECV_SIZE) == NULL) {
-      std::cerr << MEMSET_ERROR << std::endl;
-      disconnectUDP();
-      exit(EXIT_FAILURE);
-    }
+    memset(bufferUDP, 0, UDP_RECV_SIZE);
 
     addrlenUDP = sizeof(resUDP->ai_addr);
     if (recvfrom(socketFdUDP, bufferUDP, UDP_RECV_SIZE, 0, resUDP->ai_addr, &addrlenUDP) == -1) {
@@ -107,17 +95,9 @@ int generalUDPHandler(struct peerInfo peer) {
       continue;
     }
 
-    if (memset(lastMessage, 0, UDP_RECV_SIZE) == NULL) {
-      std::cerr << MEMSET_ERROR << std::endl;
-      disconnectUDP();
-      exit(EXIT_FAILURE);
-    }
+    memset(lastMessage, 0, UDP_RECV_SIZE);
 
-    if (memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1)) {
-      std::cerr << MEMSET_ERROR << std::endl;
-      disconnectUDP();
-      exit(EXIT_FAILURE);
-    }
+    memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1);
 
     if (parseUDPMessage(std::string(bufferUDP), request) == -1) {
       std::cerr << UDP_PARSE_ERROR << std::endl;
