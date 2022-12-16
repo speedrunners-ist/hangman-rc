@@ -70,6 +70,7 @@ enum {
 #define WRONG_WORD "Wrong guess (word):"
 #define WRONG_FINAL_LETTER "Wrong final guess (letter):"
 #define WRONG_FINAL_WORD "Wrong final guess (word):"
+#define HINT "Received hint file:"
 #define QUIT_GAME "Game quit by player."
 
 // Below, a series of wrapper functions which allow the server not to be aware of any
@@ -153,6 +154,14 @@ void playIncorrectLetterGuess(GameState &state, std::string letter);
  * @param word The guessed word.
  */
 void playIncorrectWordGuess(GameState &state, std::string word);
+
+/**
+ * @brief Handles the case in a hint is retrieved.
+ *
+ * @param state The game state.
+ * @param hint The hint.
+ */
+void setHint(GameState &state, std::string hint);
 
 /**
  * @brief Sets up the server for the retrieval of a word-hint pair from a word list.
