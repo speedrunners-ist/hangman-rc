@@ -5,11 +5,14 @@
 GameState state;
 std::string plid;
 
-void createGame(int length, int mistakes, std::string playerID) {
-  state = GameState(length, mistakes, playerID);
+void createGame(std::vector<int> args, std::string playerID) {
+  state = GameState(args[0], args[1], playerID);
 }
 
 int playCorrectGuess(std::string positions, int n) {
+  if (n == 0) {
+    return -1;
+  }
   int ret = state.correctGuess(positions, n);
   if (ret == 0) {
     state.incrementTrials();

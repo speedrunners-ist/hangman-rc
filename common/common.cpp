@@ -438,13 +438,7 @@ int displayFile(std::string filePath) {
 }
 
 bool validArgsAmount(std::string input, int n) {
-  const long int argCount = std::count(input.begin(), input.end(), ' ');
-  // argCount will find every space in the string - ideally, one space less than the args amount
-  if (argCount != n - 1 || input.back() != '\n') {
-    std::cerr << DIFF_ARGS_ERROR << std::endl;
-    return false;
-  }
-  return true;
+  return std::count(input.begin(), input.end(), ' ') == n - 1;
 }
 
 bool validPlayerID(std::string id) {
@@ -463,6 +457,25 @@ bool validPlayerID(std::string id) {
   return true;
 }
 
+bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
+  std::stringstream ss(body);
+  std::vector<std::string> tokens;
+  std::string token;
+  int readArgs = 0;
+  int arg;
+  while (ss >> token && readArgs++ < expectedArgs) {
+    try {
+      arg = std::stoi(token);
+      args.push_back(arg);
+      tokens.push_back(token);
+    } catch (std::invalid_argument &e) {
+      std::cout << "[ERR]: Invalid argument: " << token << std::endl;
+      return false;
+    }
+  }
+  return true; // TODO: check if this is right?
+}
+
 bool forceExit(GameState state, std::string command) { return command == "exit" && !state.isActive(); }
 
 void continueReading(char *buffer) {
@@ -473,9 +486,9 @@ void continueReading(char *buffer) {
 void toLower(std::string &str) { std::transform(str.begin(), str.end(), str.begin(), ::tolower); }
 
 bool hasPLIDFormat(std::string plid) {
-  return plid.length() == 6 && std::all_of(plid.begin(), plid.end(), ::isdigit);
+  return plid.length() == 6 && isNumber(plid);
 }
 
-bool hasTrialFormat(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }
+bool isNumber(std::string trial) { return std::all_of(trial.begin(), trial.end(), ::isdigit); }
 
 bool hasWordFormat(std::string word) { return std::all_of(word.begin(), word.end(), ::isalpha); }

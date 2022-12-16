@@ -306,6 +306,16 @@ bool validArgsAmount(std::string input, int n);
 bool validPlayerID(std::string id);
 
 /**
+ * @brief Checks if a given response is valid (considering expected args amount and valid arguments).
+ * 
+ * @param body: Response body to be checked.
+ * @param args: To-be-stored argument list.
+ * @param expectedArgs: Expected amount of arguments.
+ * @return True if the response is valid, false otherwise. 
+ */
+bool validResponse(std::string body, std::vector<int> &args, int expectedArgs);
+
+/**
  * @brief Forces the exit of the program.
  *
  * @param state: To-be-checked state of the program.
@@ -344,12 +354,12 @@ void toLower(std::string &str);
 bool hasPLIDFormat(std::string plid);
 
 /*
- * @brief Checks if a given string has the TRIAL format.
+ * @brief Checks if a given string has a number format.
  *
  * @param trial: String to be checked.
- * @return True if the string has the TRIAL format, false otherwise.
+ * @return True if the string has a number format, false otherwise.
  */
-bool hasTrialFormat(std::string trial);
+bool isNumber(std::string trial);
 
 /*
  * @brief Checks if a given string has the WORD format.
