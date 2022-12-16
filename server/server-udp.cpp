@@ -172,7 +172,7 @@ int handlePLG(struct protocolMessage message) {
   }
 
   const std::string trial = args.substr(2);
-  if (!hasTrialFormat(trial)) {
+  if (!isNumber(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
@@ -241,7 +241,7 @@ int handlePWG(struct protocolMessage message) {
   }
 
   const std::string trial = args.substr(args.find(' ') + 1);
-  if (!hasTrialFormat(trial)) {
+  if (!isNumber(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }

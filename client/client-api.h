@@ -6,11 +6,10 @@
 /**
  * @brief Creates a GameState instance, with the given parameters.
  *
- * @param length The length of the word to be guessed.
- * @param mistakes The number of mistakes allowed.
+ * @param args The arguments (length and mistakes) required to create a new game state.
  * @param playerID The player's ID.
  */
-void createGame(int length, int mistakes, std::string playerID);
+void createGame(std::vector<int> args, std::string playerID);
 
 /**
  * @brief Alters the GameState instance to reflect a correct letter guess.
