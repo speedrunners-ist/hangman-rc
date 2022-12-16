@@ -9,7 +9,8 @@ std::vector<std::pair<std::string, std::string>>::iterator currentPair;
 std::map<std::string, std::function<void(GameState &state, std::string value)>> handleLineRetrieval = {
   {CORRECT_LETTER, playCorrectLetterGuess},
   {WRONG_LETTER, playIncorrectLetterGuess},
-  {WRONG_WORD, playIncorrectWordGuess}
+  {WRONG_WORD, playIncorrectWordGuess},
+  {HINT, setHint},
 };
 // clang-format on
 
@@ -71,6 +72,8 @@ void playIncorrectWordGuess(GameState &state, std::string word) {
   state.addGuessedWord(word);
   state.incrementTrials();
 }
+
+void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 
 /*** General util methods ***/
 

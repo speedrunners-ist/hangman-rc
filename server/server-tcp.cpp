@@ -191,12 +191,14 @@ int handleGHL(struct protocolMessage message) {
   std::string file;
   std::string response;
 
-  int ret = getHint(plid, response, file);
+  const int ret = getHint(plid, response, file);
+  const std::string fileName = std::filesystem::path(file).filename();
   switch (ret) {
     case HINT_ERROR:
       response = buildSplitStringNewline({"RHL", "NOK"});
       break;
     case HINT_SUCCESS:
+      appendGameFile(plid, HINT, fileName);
       response = buildSplitString({"RHL", "OK", response});
       return sendTCPFile(response.append(" "), newConnectionFd, file);
       break;
