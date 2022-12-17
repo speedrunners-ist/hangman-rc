@@ -180,10 +180,11 @@ int setupWordList(std::string filePath);
 bool isOngoingGame(std::string plid);
 
 /**
- * @brief Gets a new word-hint pair from the server's word list. 
+ * @brief Returns a word-hint pair from the given word list, according to
+ * compilation-defined rules (randomly or sequential).
  * 
- * @return The word-hint pair.
- */
+ * @return The word-hint pair according to previously defined rules.
+*/
 std::pair<std::string, std::string> getWordHintPair();
 
 /**
@@ -304,7 +305,6 @@ int getState(std::string plid, std::string &response, std::string &filePath);
 
 // In production, a compiler flag (PRODUCTION) will be used in order to tell that
 // the RRV command should answer with RRV OK, not RRV with the actual word.
-// For that, we'll define a macro that will be used in the code.
 #ifdef PRODUCTION
 #define RRV_OK(word) "OK"
 #else
