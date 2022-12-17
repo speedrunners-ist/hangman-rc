@@ -50,7 +50,8 @@ int createSocketUDP(peerInfo peer) {
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    exit(EXIT_FAILURE); // TODO: exit gracefully here
+    disconnectUDP();
+    return -1;
   }
 
   return socketFdUDP;

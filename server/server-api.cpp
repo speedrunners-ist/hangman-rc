@@ -100,13 +100,20 @@ int setupWordList(std::string filePath) {
     const std::string hint = line.substr(wordPos + 1);
     wordsList.push_back(std::make_pair(word, hint));
   }
-  currentPair = wordsList.begin();
+  currentPair = wordsList.begin(); // The first word will be the first one in the list
   return 0;
 }
 
 bool isOngoingGame(std::string plid) { return std::filesystem::exists(ONGOING_GAMES_PATH(plid)); }
 
 std::pair<std::string, std::string> getWordHintPair() {
+#ifdef PRODUCTION
+  // Random in production mode
+  const int randomIndex = rand() % (int)wordsList.size();
+  std::advance(currentPair, randomIndex);
+  return *currentPair;
+#endif
+  // Sequential in development mode
   if (currentPair == wordsList.end()) {
     currentPair = wordsList.begin();
   }

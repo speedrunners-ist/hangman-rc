@@ -28,6 +28,7 @@ CXXFLAGS += -DPRODUCTION
 all: $(TARGET_EXECS)
 
 # In development, we want the rev command to be answered with the actual word
+# Moreover, in dev mode, the file read order (server-side) will be sequential
 dev: CXXFLAGS := $(filter-out -DPRODUCTION,$(CXXFLAGS))
 dev: all
 
