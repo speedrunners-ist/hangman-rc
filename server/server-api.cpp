@@ -4,8 +4,6 @@ std::vector<std::pair<std::string, std::string>> wordsList;
 std::vector<std::pair<std::string, std::string>>::iterator currentPair;
 
 // clang-format off
-// Note that there's no need to handle correct guesses, since in that case
-// the game would not be ongoing anymore
 std::map<std::string, std::function<void(GameState &state, std::string value)>> handleLineRetrieval = {
   {CORRECT_LETTER, playCorrectLetterGuess},
   {WRONG_LETTER, playIncorrectLetterGuess},
