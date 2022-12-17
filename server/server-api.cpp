@@ -379,7 +379,7 @@ int getScoreboard(std::string &response) {
 }
 
 int getHint(std::string plid, std::string &response, std::string &filePath) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return HINT_ERROR;
   }
 
@@ -401,10 +401,6 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
 }
 
 int getState(std::string plid, std::string &response, std::string &filePath) {
-  if (!validPlayerID(plid)) {
-    return STATE_ERROR;
-  }
-
   const bool isFinished = !isOngoingGame(plid);
   std::string mostRecentGame;
 

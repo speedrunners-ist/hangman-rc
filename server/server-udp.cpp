@@ -91,6 +91,9 @@ int generalUDPHandler(peerInfo peer) {
       continue;
     }
 
+    if (verboseUDP) {
+      std::cout << "[INFO]: Received the following message: " << request.body;
+    }
     messageUDPHandler(socketFdUDP, resUDP, request, handleUDPClientMessage);
   }
 
@@ -99,8 +102,7 @@ int generalUDPHandler(peerInfo peer) {
 
 // Server message handlers
 int handleSNG(protocolMessage message) {
-  std::cout << "[INFO]: Received SNG message" << std::endl;
-  if (!message.body.substr(message.secondPos + 1).empty() || !validPlayerID(message.second)) {
+  if (!validArgsAmount(message.body, SNG_ARGS) || !validPlayerID(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"RSG, ERR"}), resUDP, socketFdUDP);
   }
@@ -122,49 +124,28 @@ int handleSNG(protocolMessage message) {
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"ERR"});
   }
-  std::cout << "[INFO]: Sending RSG message" << std::endl;
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
 int handlePLG(protocolMessage message) {
-  std::cout << "[INFO]: Received PLG message" << std::endl;
-
   const std::string plid = message.second;
-  // Check PLID
-  if (!validPlayerID(plid)) {
+  if (!validArgsAmount(message.body, PLG_ARGS) || !validPlayerID(plid)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
-  // Remove newline from body
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
-
-  if (message.body.size() <= message.secondPos) {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-
-  std::string args = message.body.substr(message.secondPos + 1);
-  if (args.size() < 3) {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-
+  const std::string args = message.body.substr(message.secondPos + 1);
   const std::string letter = args.substr(0, 1);
-  if (isdigit(letter[0]) || args[1] != ' ') {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-
   const std::string trial = args.substr(2);
-  if (!isNumber(trial)) {
+
+  if (isdigit(letter[0]) || args[1] != ' ' || !isNumber(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
   std::string guessInfo;
   const int ret = playLetter(plid, letter, trial, guessInfo);
-
   switch (ret) {
     case SUCCESS_GUESS:
       response = buildSplitStringNewline({"RLG", "OK", guessInfo});
@@ -195,44 +176,23 @@ int handlePLG(protocolMessage message) {
 }
 
 int handlePWG(protocolMessage message) {
-  std::cout << "[INFO]: Received PWG message" << std::endl;
-
   const std::string plid = message.second;
-  // Check PLID
-  if (!validPlayerID(plid)) {
+  if (!validArgsAmount(message.body, PWG_ARGS) || !validPlayerID(plid)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
-  // Remove newline from body
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
-
-  if (message.body.size() <= message.secondPos) {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-
-  std::string args = message.body.substr(message.secondPos + 1);
-  if (args.size() < 3 || args.find(' ') == std::string::npos) {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-
+  const std::string args = message.body.substr(message.secondPos + 1);
   const std::string word = args.substr(0, args.find(' '));
-  if (!hasWordFormat(word)) {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
-  }
-
   const std::string trial = args.substr(args.find(' ') + 1);
-  if (!isNumber(trial)) {
+  if (!hasWordFormat(word) || !isNumber(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
 
   std::string guessInfo;
   const int ret = guessWord(plid, word, trial, guessInfo);
-
   switch (ret) {
     case SUCCESS_GUESS:
       response = buildSplitStringNewline({"RWG", "WIN", guessInfo});
@@ -260,14 +220,13 @@ int handlePWG(protocolMessage message) {
 }
 
 int handleQUT(protocolMessage message) {
-  std::cout << "[INFO]: Received QUT message" << std::endl;
-  if (!message.body.substr(message.secondPos + 1).empty() || !validPlayerID(message.second)) {
+  if (!validArgsAmount(message.body, QUT_ARGS) || !validPlayerID(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"RQT", "ERR"}), resUDP, socketFdUDP);
   }
+
   const std::string plid = message.second;
   const int ret = closeGameSession(plid);
-
   switch (ret) {
     case CLOSE_GAME_SUCCESS:
       response = buildSplitStringNewline({"RQT", "OK"});
@@ -283,8 +242,7 @@ int handleQUT(protocolMessage message) {
 }
 
 int handleREV(protocolMessage message) {
-  std::cout << "[INFO]: Received REV message" << std::endl;
-  if (!message.body.substr(message.secondPos + 1).empty() || !validPlayerID(message.second)) {
+  if (!validArgsAmount(message.body, REV_ARGS) || !validPlayerID(message.second)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
   }
@@ -292,7 +250,6 @@ int handleREV(protocolMessage message) {
   const std::string plid = message.second;
   std::string word;
   const int ret = revealWord(plid, word);
-
   switch (ret) {
     case REVEAL_SUCCESS:
       response = buildSplitStringNewline({"RRV", word});

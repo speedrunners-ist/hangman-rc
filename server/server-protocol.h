@@ -12,6 +12,30 @@
 #define SIGACTION_ERROR "[ERR]: Failed to set action."
 #define FORK_ERROR "[ERR]: Failed to fork process."
 
+// Expected amount of arguments for the SNG command.
+#define SNG_ARGS 2
+
+// Expected amount of arguments for the PLG command.
+#define PLG_ARGS 4
+
+// Expected amount of arguments for the PWG command.
+#define PWG_ARGS 4
+
+// Expected amount of arguments for the QUT command.
+#define QUT_ARGS 2
+
+// Expected amount of arguments for the REV command.
+#define REV_ARGS 2
+
+// Expected amount of arguments for the GSB command.
+#define GSB_ARGS 1
+
+// Expected amount of arguments for the GHL command.
+#define GHL_ARGS 2
+
+// Expected amount of arguments for the STA command.
+#define STA_ARGS 2
+
 // Maximum number of pending TCP connection requests
 #define MAX_TCP_CONNECTION_REQUESTS 5
 
