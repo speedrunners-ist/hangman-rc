@@ -167,6 +167,7 @@ public:
 #define BIND_ERROR "[ERR]: Failed to bind socket."
 #define SENDTO_ERROR "[ERR]: Failed to send message."
 #define RECVFROM_ERROR "[ERR]: Failed to receive message."
+#define SIGACTION_ERROR "[ERR]: Failed to set action."
 
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
@@ -307,11 +308,11 @@ bool validPlayerID(std::string id);
 
 /**
  * @brief Checks if a given response is valid (considering expected args amount and valid arguments).
- * 
+ *
  * @param body: Response body to be checked.
  * @param args: To-be-stored argument list.
  * @param expectedArgs: Expected amount of arguments.
- * @return True if the response is valid, false otherwise. 
+ * @return True if the response is valid, false otherwise.
  */
 bool validResponse(std::string body, std::vector<int> &args, int expectedArgs);
 

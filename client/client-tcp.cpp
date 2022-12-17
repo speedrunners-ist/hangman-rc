@@ -4,6 +4,7 @@ struct addrinfo *serverInfoTCP;
 struct addrinfo hintsTCP;
 int socketFdTCP;
 bool isTCPConnected = false;
+struct sigaction actTCP;
 
 // clang-format off
 responseHandler handleTCPServerMessage = {
@@ -28,6 +29,16 @@ int createSocketTCP(struct peerInfo peer) {
   isTCPConnected = true;
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
+
+  memset(&actTCP, 0, sizeof(actTCP));
+  actTCP.sa_handler = SIG_IGN;
+
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectTCP();
+    return -1;
+  }
   return socketFdTCP;
 }
 
