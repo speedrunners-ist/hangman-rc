@@ -221,7 +221,6 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[INFO]: Sending message: " << message;
   if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
@@ -274,7 +273,6 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[INFO]: Sending message: " << message;
   if (write(fd, message.c_str(), message.length()) == -1) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;
