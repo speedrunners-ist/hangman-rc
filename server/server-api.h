@@ -179,14 +179,13 @@ int setupWordList(std::string filePath);
  */
 bool isOngoingGame(std::string plid);
 
-// clang-format off
-// TODO: add documentation
-std::pair<std::string, std::string> retrieveWordHintPair(
-  std::vector<std::string> &arguments,
-  std::vector<std::string>::iterator &word,
-  std::string &response
-);
-// clang-format on
+/**
+ * @brief Returns a word-hint pair from the given word list, according to
+ * compilation-defined rules (randomly or sequential).
+ * 
+ * @return The word-hint pair according to previously defined rules.
+*/
+std::pair<std::string, std::string> getWordHintPair();
 
 /**
  * @brief Gets the number of occurrences of a given letter in a given word.
