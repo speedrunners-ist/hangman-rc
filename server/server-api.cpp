@@ -77,10 +77,8 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 
 /*** General util methods ***/
 
-void displayVerbose(peerInfo peer, char *host, char *service, std::string connection) {
-  const socklen_t addrlen = sizeof(peer.addr);
-  const struct sockaddr *addr = (struct sockaddr *)&peer.addr;
-  const int errcode = getnameinfo(addr, addrlen, host, sizeof host, service, sizeof service, 0);
+void displayPeerInfo(struct addrinfo *res, char *host, char *service, std::string connection) {
+  const int errcode = getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, 0);
   if (errcode != 0) {
     std::cerr << VERBOSE_ERROR(errcode) << std::endl;
     return;

@@ -107,7 +107,7 @@ int generalTCPHandler(peerInfo peer) {
       }
       std::cout << "[INFO]: Received message: " << bufferTCP;
       if (verboseTCP) {
-        displayVerbose(peer, hostTCP, serviceTCP, "TCP");
+        displayPeerInfo(resTCP, hostTCP, serviceTCP, "TCP");
       }
 
       if (parseTCPMessage(std::string(bufferTCP), message) == -1) {

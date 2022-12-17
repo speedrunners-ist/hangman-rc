@@ -73,7 +73,7 @@ int generalUDPHandler(peerInfo peer) {
     }
 
     if (verboseUDP) {
-      displayVerbose(peer, hostUDP, serviceUDP, "UDP");
+      displayPeerInfo(resUDP, hostUDP, serviceUDP, "UDP");
     }
 
     // Check if message is the same as the last one
