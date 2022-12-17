@@ -209,7 +209,7 @@ int createGameSession(std::string plid, std::string &arguments) {
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
   }
@@ -265,7 +265,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 }
 
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return SYNTAX_ERROR;
   }
 
@@ -313,7 +313,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 }
 
 int closeGameSession(std::string plid) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return CLOSE_GAME_ERROR;
   }
 
@@ -323,7 +323,7 @@ int closeGameSession(std::string plid) {
 }
 
 int revealWord(std::string plid, std::string &word) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return REVEAL_ERROR;
   }
 
