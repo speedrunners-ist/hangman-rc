@@ -196,6 +196,9 @@ public:
 #define DIFF_POSITIONS_ERROR "[ERR]: Expected a different amount of positions than the ones given."
 #define EXPECTED_POSITIONS(n, m) "[ERR]: Expected " << n << " positions, but got " << m << "."
 
+#define DEFALUT_GSIP_STR "Could not find IP address, using default IP: " << DEFAULT_GSIP
+#define DEFALUT_GSPORT_STR "Could not find Gsport number, using default port: " << DEFAULT_GSPORT
+
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 #define CORRECT_GUESS(word) "[INFO]: Correct guess. Word is now: " << word
 
