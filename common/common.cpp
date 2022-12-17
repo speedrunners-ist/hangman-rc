@@ -141,10 +141,9 @@ int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo *
     return -1;
   }
 
-  struct timeval tv;
-  memset(&tv, 0, sizeof(tv));
+  const int flag = 1;
 
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(int)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     return -1;
   }

@@ -57,7 +57,7 @@ int disconnectTCP() {
 }
 
 int parseTCPResponse(protocolMessage &serverMessage) {
-  if (&serverMessage == nullptr || serverMessage.body.empty()) {
+  if (serverMessage.body.empty()) {
     std::cerr << TCP_PARSE_ERROR << std::endl;
     return -1;
   }
