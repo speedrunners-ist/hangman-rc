@@ -34,13 +34,13 @@
  * @param secondPos The position of the space after the status in the message.
  * @param body The body of the message.
  */
-struct protocolMessage {
+typedef struct {
   std::string first;
   size_t firstPos;
   std::string second;
   size_t secondPos;
   std::string body;
-};
+} protocolMessage;
 
 /**
  * @brief Struct that represents a file, containing associated relevant information.
@@ -49,11 +49,11 @@ struct protocolMessage {
  * @param fileSize The size of the file.
  * @param delimiter The delimiter used in the protocol's message after displaying the file's arguments.
  */
-struct fileInfo {
+typedef struct {
   std::string fileName;
   int fileSize;
   char delimiter;
-};
+} fileInfo;
 
 /**
  * @brief Struct that represents a peer, containing associated relevant information.
@@ -61,10 +61,10 @@ struct fileInfo {
  * @param addr The IP address of the peer.
  * @param port The port of the peer.
  */
-struct peerInfo {
+typedef struct {
   std::string addr;
   std::string port;
-};
+} peerInfo;
 
 /**
  * @brief Struct utilized in order to store the core information needed in order
@@ -73,14 +73,14 @@ struct peerInfo {
  * @param input The message to be sent.
  * @param peer The peer to which the message will be sent.
  */
-struct messageInfo {
+typedef struct {
   std::string input;
-  struct peerInfo peer;
-};
+  peerInfo peer;
+} messageInfo;
 
 // Handler maps, used to store the functions that will handle the commands and responses.
-typedef std::map<std::string, std::function<int(struct messageInfo info)>> commandHandler;
-typedef std::map<std::string, std::function<int(struct protocolMessage response)>> responseHandler;
+typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
+typedef std::map<std::string, std::function<int(protocolMessage response)>> responseHandler;
 
 /**
  * @brief Class that represents a game state.
@@ -152,13 +152,13 @@ public:
 // When exiting the program (i.e using "exit" vs "quit"), the client's UDP handler will return this value.
 #define EXIT_HANGMAN 1
 
-// Maximum number of tries to send a UDP message.
-#define UDP_TRIES 3
 // Default socket timeout value (in seconds).
 #define SOCKET_TIMEOUT 5
 
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from socket creation and handling, TCP/UDP connections to file handling.
+
+#define SIGNAL(signum) "[INFO]: Interrupt signal (" << signum << ") received."
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket."
 #define SOCKET_TIMER_SET_ERROR "[ERR]: Failed to set socket timeout."
@@ -179,7 +179,7 @@ public:
 #define TCP_RESPONSE_ERROR "[ERR]: Message does not match the TCP protocol."
 
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
-#define UDP_PARSE_ERROR "[ERR]: Found error while parsing the message."
+#define PARSE_ERROR "[ERR]: Found error while parsing the message."
 #define UDP_RESPONSE_ERROR "[ERR]: Message does not match the UDP protocol."
 #define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."
 
@@ -199,6 +199,12 @@ public:
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 #define CORRECT_GUESS(word) "[INFO]: Correct guess. Word is now: " << word
 
+// Amount of expected arguments in a TCP server response.
+#define TCP_DEFAULT_ARGS 2
+
+// Amount of expected file information arguments in a TCP server response.
+#define TCP_FILE_ARGS 2
+
 /**
  * @brief Handle creation of a new socket.
  *
@@ -208,7 +214,7 @@ public:
  * @param serverInfo Pointer to a struct addrinfo that will be filled with the server's address info.
  * @return The socket's file descriptor.
  */
-int newSocket(int type, struct peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
+int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
 
 /**
  * @brief Handle graceful disconnection of a socket.
@@ -236,16 +242,28 @@ int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
 
 // UDP utils functions
-int exchangeUDPMessages(std::string message, char *response, size_t maxBytes, struct addrinfo *res, int fd);
 int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
-int parseUDPMessage(std::string message, struct protocolMessage &response);
+int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int fd);
+int parseUDPMessage(std::string message, protocolMessage &response);
+int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler);
 
 // TCP utils functions
-int generalTCPHandler(std::string message, struct peerInfo peer);
-int sendTCPMessage(std::string message, int fd);
-int sendTCPFile(std::string message, int fd, std::string filePath);
+int generalTCPHandler(std::string message, peerInfo peer);
+int parseTCPMessage(std::string message, protocolMessage &serverMessage);
+int sendTCPMessage(std::string message, struct addrinfo *res, int fd);
+int sendTCPFile(std::string info, struct addrinfo *res, int fd, std::string filePath);
 int receiveTCPMessage(std::string &message, int args, int fd);
-int receiveTCPFile(struct fileInfo &info, std::string dir, int fd);
+int receiveTCPFile(fileInfo &info, std::string dir, int fd);
+int messageTCPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler);
+
+/**
+ * @brief Parses the server-sent file information for the following file transfer.
+ *
+ * @param info The struct that will hold the file information.
+ * @param fd The socket's file descriptor.
+ * @return 0 if the file information was successfully parsed, -1 otherwise.
+ */
+int parseFileArgs(fileInfo &info, int fd);
 
 /**
  * @brief Amount of wrong guesses a player can make before failing.
@@ -299,14 +317,6 @@ int displayFile(std::string filePath);
 bool validArgsAmount(std::string input, int n);
 
 /**
- * @brief Checks if a string is a valid player ID - a string of 6 digits.
- *
- * @param id: String to be checked.
- * @return True if the string is a valid player ID, false otherwise.
- */
-bool validPlayerID(std::string id);
-
-/**
  * @brief Checks if a given response is valid (considering expected args amount and valid arguments).
  *
  * @param body: Response body to be checked.
@@ -346,15 +356,15 @@ void signalHandler(int signum);
  */
 void toLower(std::string &str);
 
-/*
+/**
  * @brief Checks if a given string has the PLID format.
  *
  * @param plid: String to be checked.
  * @return True if the string has the PLID format, false otherwise.
  */
-bool hasPLIDFormat(std::string plid);
+bool validPlayerID(std::string plid);
 
-/*
+/**
  * @brief Checks if a given string has a number format.
  *
  * @param trial: String to be checked.
@@ -362,7 +372,7 @@ bool hasPLIDFormat(std::string plid);
  */
 bool isNumber(std::string trial);
 
-/*
+/**
  * @brief Checks if a given string has the WORD format.
  *
  * @param word: String to be checked.

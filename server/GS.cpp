@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
   setServerTCPParameters(verbose);
 
-  const struct peerInfo peer = {"", GSport};
+  const peerInfo peer = {"", GSport};
   pid_t pid = fork();
 
   if (pid == 0) {

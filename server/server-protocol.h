@@ -11,6 +11,30 @@
 #define TCP_READ_ERROR "[ERR]: Failed to read from TCP socket."
 #define FORK_ERROR "[ERR]: Failed to fork process."
 
+// Expected amount of arguments for the SNG command.
+#define SNG_ARGS 2
+
+// Expected amount of arguments for the PLG command.
+#define PLG_ARGS 4
+
+// Expected amount of arguments for the PWG command.
+#define PWG_ARGS 4
+
+// Expected amount of arguments for the QUT command.
+#define QUT_ARGS 2
+
+// Expected amount of arguments for the REV command.
+#define REV_ARGS 2
+
+// Expected amount of arguments for the GSB command.
+#define GSB_ARGS 1
+
+// Expected amount of arguments for the GHL command.
+#define GHL_ARGS 2
+
+// Expected amount of arguments for the STA command.
+#define STA_ARGS 2
+
 // Maximum number of pending TCP connection requests
 #define MAX_TCP_CONNECTION_REQUESTS 5
 
@@ -27,7 +51,7 @@ int setServerUDPParameters(std::string filepath, bool vParam);
  *
  * @param vParam Whether or not the server should operate in a verbose manner.
  */
-int setServerTCPParameters(bool vParam);
+void setServerTCPParameters(bool vParam);
 
 /**
  * @brief Closes the UDP socket and exits the program.
@@ -55,14 +79,14 @@ void signalHandlerTCPchild(int signum);
  *
  * @return 0 if the setup was successful, -1 otherwise.
  */
-int createSocketUDP(struct peerInfo peer);
+int createSocketUDP(peerInfo peer);
 
 /**
  * @brief Sets up the server's TCP socket.
  *
  * @return 0 if the setup was successful, -1 otherwise.
  */
-int createSocketTCP(struct peerInfo peer);
+int createSocketTCP(peerInfo peer);
 
 /**
  * @brief Disconnects the server from the UDP socket.
@@ -91,7 +115,7 @@ int disconnectTCPchild();
  * @param peer Peer information.
  * @return 0 if the communication was successful, -1 otherwise.
  */
-int generalUDPHandler(struct peerInfo peer);
+int generalUDPHandler(peerInfo peer);
 
 /**
  * @brief Centralized TCP communication handler with the client.
@@ -99,7 +123,7 @@ int generalUDPHandler(struct peerInfo peer);
  * @param peer Peer information.
  * @return 0 if the communication was successful, -1 otherwise.
  */
-int generalTCPHandler(struct peerInfo peer);
+int generalTCPHandler(peerInfo peer);
 
 /**
  * @brief Parses a TCP message and sends it to the appropriate handler.
@@ -115,7 +139,7 @@ int parseTCPMessage(std::string request);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handleSNG(struct protocolMessage message);
+int handleSNG(protocolMessage message);
 
 /**
  * @brief Handles PLG request from the client.
@@ -123,7 +147,7 @@ int handleSNG(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handlePLG(struct protocolMessage message);
+int handlePLG(protocolMessage message);
 
 /**
  * @brief Handles PWG request from the client.
@@ -131,7 +155,7 @@ int handlePLG(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handlePWG(struct protocolMessage message);
+int handlePWG(protocolMessage message);
 
 /**
  * @brief Handles QUT request from the client.
@@ -139,7 +163,7 @@ int handlePWG(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handleQUT(struct protocolMessage message);
+int handleQUT(protocolMessage message);
 
 /**
  * @brief Handles REV request from the client.
@@ -147,7 +171,7 @@ int handleQUT(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handleREV(struct protocolMessage message);
+int handleREV(protocolMessage message);
 
 /**
  * @brief Handles GSB request from the client.
@@ -155,7 +179,7 @@ int handleREV(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handleGSB(struct protocolMessage message);
+int handleGSB(protocolMessage message);
 
 /**
  * @brief Handles GHL request from the client.
@@ -163,7 +187,7 @@ int handleGSB(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handleGHL(struct protocolMessage message);
+int handleGHL(protocolMessage message);
 
 /**
  * @brief Handles GWD request from the client.
@@ -171,6 +195,6 @@ int handleGHL(struct protocolMessage message);
  * @param message The message from the client.
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
-int handleSTA(struct protocolMessage message);
+int handleSTA(protocolMessage message);
 
 #endif /* SERVER_PROTOCOL_H */

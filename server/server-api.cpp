@@ -4,8 +4,6 @@ std::vector<std::pair<std::string, std::string>> wordsList;
 std::vector<std::pair<std::string, std::string>>::iterator currentPair;
 
 // clang-format off
-// Note that there's no need to handle correct guesses, since in that case
-// the game would not be ongoing anymore
 std::map<std::string, std::function<void(GameState &state, std::string value)>> handleLineRetrieval = {
   {CORRECT_LETTER, playCorrectLetterGuess},
   {WRONG_LETTER, playIncorrectLetterGuess},
@@ -77,6 +75,16 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 
 /*** General util methods ***/
 
+void displayPeerInfo(struct addrinfo *res, char *host, char *service, std::string connection) {
+  const int errcode = getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, 0);
+  if (errcode != 0) {
+    std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+    return;
+  }
+
+  std::cout << VERBOSE_SUCCESS(connection, host, service) << std::endl;
+}
+
 int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
   readFile(lines, filePath);
@@ -102,6 +110,7 @@ std::pair<std::string, std::string> getWordHintPair() {
 #ifdef PRODUCTION
   // Random in production mode
   const int randomIndex = rand() % (int)wordsList.size();
+  currentPair = wordsList.begin();
   std::advance(currentPair, randomIndex);
   return *currentPair;
 #endif
@@ -206,7 +215,7 @@ int createGameSession(std::string plid, std::string &arguments) {
 }
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
   }
@@ -262,7 +271,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 }
 
 int guessWord(std::string plid, std::string word, std::string trial, std::string &arguments) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return SYNTAX_ERROR;
   }
 
@@ -310,7 +319,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 }
 
 int closeGameSession(std::string plid) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return CLOSE_GAME_ERROR;
   }
 
@@ -320,7 +329,7 @@ int closeGameSession(std::string plid) {
 }
 
 int revealWord(std::string plid, std::string &word) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return REVEAL_ERROR;
   }
 
@@ -376,7 +385,7 @@ int getScoreboard(std::string &response) {
 }
 
 int getHint(std::string plid, std::string &response, std::string &filePath) {
-  if (!validPlayerID(plid) || !isOngoingGame(plid)) {
+  if (!isOngoingGame(plid)) {
     return HINT_ERROR;
   }
 
@@ -398,10 +407,6 @@ int getHint(std::string plid, std::string &response, std::string &filePath) {
 }
 
 int getState(std::string plid, std::string &response, std::string &filePath) {
-  if (!validPlayerID(plid)) {
-    return STATE_ERROR;
-  }
-
   const bool isFinished = !isOngoingGame(plid);
   std::string mostRecentGame;
 
