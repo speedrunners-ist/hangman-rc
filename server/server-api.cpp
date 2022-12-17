@@ -110,6 +110,7 @@ std::pair<std::string, std::string> getWordHintPair() {
 #ifdef PRODUCTION
   // Random in production mode
   const int randomIndex = rand() % (int)wordsList.size();
+  currentPair = wordsList.begin();
   std::advance(currentPair, randomIndex);
   return *currentPair;
 #endif
