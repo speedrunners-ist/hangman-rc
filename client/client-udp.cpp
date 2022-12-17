@@ -50,13 +50,14 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
   protocolMessage response;
   if (sendUDPMessage(message, serverInfoUDP, socketFdUDP) == -1) {
     return -1;
-  } else if (receiveUDPMessage(responseMessage, maxBytes, serverInfoUDP, socketFdUDP) == -1) {
+  }
+  if (receiveUDPMessage(responseMessage, maxBytes, serverInfoUDP, socketFdUDP) == -1) {
     return -1;
-  } else if (parseUDPMessage(responseMessage, response) == -1) {
+  }
+  if (parseUDPMessage(responseMessage, response) == -1) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
   }
-
   return messageUDPHandler(socketFdUDP, serverInfoUDP, response, handleUDPServerMessage);
 }
 
@@ -66,8 +67,14 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
 
 int handleRSG(protocolMessage response) {
   if (response.second == "OK") {
-    std::string body = response.body.substr(response.secondPos + 1);
-    body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    std::string body;
+    try {
+      body = response.body.substr(response.secondPos + 1);
+      body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    } catch (std::exception &e) {
+      std::cerr << RSG_ERROR << std::endl;
+      return -1;
+    }
     std::vector<int> args;
     if (!validResponse(body, args, RSG_ARGS)) {
       std::cerr << RSG_ERROR << std::endl;
@@ -78,21 +85,28 @@ int handleRSG(protocolMessage response) {
     const std::string word = getWord();
     std::cout << RSG_OK(availableMistakes, word) << std::endl;
     return 0;
-  } else if (response.second == "NOK") {
+  }
+  if (response.second == "NOK") {
     std::cout << RSG_NOK << std::endl;
     return 0;
-  } else if (response.second == "ERR") {
+  }
+  if (response.second == "ERR") {
     std::cout << RSG_ERR << std::endl;
     return 0;
   }
-
   return -1;
 }
 
 int handleRLG(protocolMessage response) {
   if (response.second == "OK") {
-    std::string body = response.body.substr(response.secondPos + 1);
-    body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    std::string body;
+    try {
+      body = response.body.substr(response.secondPos + 1);
+      body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    } catch (std::exception &e) {
+      std::cerr << RLG_ERROR << std::endl;
+      return -1;
+    }
     std::vector<int> args;
     if (!validResponse(body, args, RLG_ARGS)) {
       std::cerr << RLG_ERROR << std::endl;
@@ -104,27 +118,33 @@ int handleRLG(protocolMessage response) {
       body = body.substr(body.find(' ') + 1);
     }
     return playCorrectGuess(body, n);
-  } else if (response.second == "WIN") {
+  }
+  if (response.second == "WIN") {
     playCorrectFinalGuess();
     resetGame();
     std::cout << RLG_WIN(getWord()) << std::endl;
     return 0;
-  } else if (response.second == "DUP") {
+  }
+  if (response.second == "DUP") {
     std::cout << RLG_DUP << std::endl;
     return 0;
-  } else if (response.second == "NOK") {
+  }
+  if (response.second == "NOK") {
     playIncorrectGuess();
     std::cout << RLG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
-  } else if (response.second == "OVR") {
+  }
+  if (response.second == "OVR") {
     playIncorrectGuess();
     resetGame();
     std::cout << RLG_OVR << std::endl;
     return 0;
-  } else if (response.second == "INV") {
+  }
+  if (response.second == "INV") {
     std::cout << RLG_INV << std::endl;
     return 0;
-  } else if (response.second == "ERR") {
+  }
+  if (response.second == "ERR") {
     std::cout << RLG_ERR << std::endl;
     return 0;
   }
@@ -133,8 +153,14 @@ int handleRLG(protocolMessage response) {
 
 int handleRWG(protocolMessage response) {
   if (response.second == "WIN") {
-    std::string body = response.body.substr(response.secondPos + 1);
-    body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    std::string body;
+    try {
+      body = response.body.substr(response.secondPos + 1);
+      body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
+    } catch (std::exception &e) {
+      std::cerr << RWG_ERROR << std::endl;
+      return -1;
+    }
     std::vector<int> args;
     if (!validResponse(body, args, RWG_ARGS)) {
       std::cerr << RWG_ERROR << std::endl;
@@ -144,19 +170,23 @@ int handleRWG(protocolMessage response) {
     resetGame();
     std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
-  } else if (response.second == "NOK") {
+  }
+  if (response.second == "NOK") {
     playIncorrectGuess();
     std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
-  } else if (response.second == "OVR") {
+  }
+  if (response.second == "OVR") {
     playIncorrectGuess();
     resetGame();
     std::cout << RWG_OVR << std::endl;
     return 0;
-  } else if (response.second == "INV") {
+  }
+  if (response.second == "INV") {
     std::cout << RWG_INV << std::endl;
     return 0;
-  } else if (response.second == "ERR") {
+  }
+  if (response.second == "ERR") {
     std::cout << RWG_ERR << std::endl;
     return 0;
   }
@@ -204,7 +234,8 @@ int sendSNG(messageInfo info) {
 int sendPLG(messageInfo info) {
   if (!validArgsAmount(info.input, PLAY_ARGS)) {
     return -1;
-  } else if (getPlayerID().empty()) {
+  }
+  if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
@@ -225,7 +256,8 @@ int sendPLG(messageInfo info) {
 int sendPWG(messageInfo info) {
   if (!validArgsAmount(info.input, GUESS_ARGS)) {
     return -1;
-  } else if (getPlayerID().empty()) {
+  }
+  if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
@@ -246,7 +278,8 @@ int sendPWG(messageInfo info) {
 int sendQUT(messageInfo info) {
   if (!validArgsAmount(info.input, QUIT_ARGS)) {
     return -1;
-  } else if (getPlayerID().empty()) {
+  }
+  if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
@@ -262,7 +295,8 @@ int sendQUT(messageInfo info) {
 int sendREV(messageInfo info) {
   if (!validArgsAmount(info.input, REVEAL_ARGS)) {
     return -1;
-  } else if (getPlayerID().empty()) {
+  }
+  if (getPlayerID().empty()) {
     std::cerr << NO_PLAYER_ERROR << std::endl;
     return -1;
   }
