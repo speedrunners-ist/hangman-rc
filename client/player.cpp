@@ -41,6 +41,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (GSIP.compare(DEFAULT_GSIP) == 0) {
+    std::cout << DEFAULT_GSIP_STR << std::endl;
+  }
+
+  if (GSport.compare(DEFAULT_GSPORT) == 0) {
+    std::cout << DEFAULT_GSPORT_STR << std::endl;
+  }
+
   const peerInfo peer = {GSIP, GSport};
   if (createSocketUDP(peer) == -1) {
     exit(EXIT_FAILURE);

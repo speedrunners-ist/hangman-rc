@@ -87,7 +87,9 @@ void displayPeerInfo(struct addrinfo *res, char *host, char *service, std::strin
 
 int setupWordList(std::string filePath) {
   std::vector<std::string> lines;
-  readFile(lines, filePath);
+  if (readFile(lines, filePath) < 0) {
+    return -1;
+  }
   if (lines.size() == 0) {
     std::cerr << EMPTY_FILE(filePath) << std::endl;
     return -1;
@@ -373,7 +375,8 @@ int getScoreboard(std::string &response) {
 
   if (ret == -1) {
     return SCOREBOARD_ERROR;
-  } else if (ret == -2 || lines.empty()) {
+  }
+  if (ret == -2 || lines.empty()) {
     // if the file did not exist or was empty
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
