@@ -4,6 +4,7 @@ struct addrinfo *serverInfoUDP;
 struct addrinfo hintsUDP;
 int socketFdUDP;
 struct sigaction actUDP;
+std::string expectedMessageUDP;
 
 // clang-format off
 responseHandler handleUDPServerMessage = {
@@ -65,6 +66,11 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
  */
 
 int handleRSG(protocolMessage response) {
+  if (response.first != expectedMessageUDP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "OK") {
     std::string body = response.body.substr(response.secondPos + 1);
     body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
@@ -90,6 +96,11 @@ int handleRSG(protocolMessage response) {
 }
 
 int handleRLG(protocolMessage response) {
+  if (response.first != expectedMessageUDP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "OK") {
     std::string body = response.body.substr(response.secondPos + 1);
     body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
@@ -132,6 +143,11 @@ int handleRLG(protocolMessage response) {
 }
 
 int handleRWG(protocolMessage response) {
+  if (response.first != expectedMessageUDP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "WIN") {
     std::string body = response.body.substr(response.secondPos + 1);
     body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
@@ -164,6 +180,11 @@ int handleRWG(protocolMessage response) {
 }
 
 int handleRQT(protocolMessage response) {
+  if (response.first != expectedMessageUDP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "OK") {
     resetGame();
     std::cout << RQT_OK << std::endl;
@@ -178,6 +199,11 @@ int handleRQT(protocolMessage response) {
 }
 
 int handleRRV(protocolMessage response) {
+  if (response.first != expectedMessageUDP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   std::cout << RRV_OK(response.second) << std::endl;
   return 0;
 }
@@ -199,6 +225,7 @@ int sendSNG(messageInfo info) {
   }
   setPlayerID(plid);
   const std::string message = buildSplitStringNewline({"SNG", plid});
+  expectedMessageUDP = "RSG";
   return generalUDPHandler(message, RSG_BYTES);
 }
 
@@ -220,6 +247,7 @@ int sendPLG(messageInfo info) {
   const std::string message =
       buildSplitStringNewline({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
+  expectedMessageUDP = "RLG";
   return generalUDPHandler(message, RLG_BYTES);
 }
 
@@ -241,6 +269,7 @@ int sendPWG(messageInfo info) {
   const std::string message =
       buildSplitStringNewline({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   setLastWordGuess(guess);
+  expectedMessageUDP = "RWG";
   return generalUDPHandler(message, RWG_BYTES);
 }
 
@@ -254,6 +283,7 @@ int sendQUT(messageInfo info) {
 
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitStringNewline({"QUT", getPlayerID()});
+  expectedMessageUDP = "RQT";
   if (command == "quit") {
     return generalUDPHandler(message, RQT_BYTES);
   }
@@ -269,5 +299,6 @@ int sendREV(messageInfo info) {
   }
 
   const std::string message = buildSplitStringNewline({"REV", getPlayerID()});
+  expectedMessageUDP = "RRV";
   return generalUDPHandler(message, RRV_BYTES);
 }

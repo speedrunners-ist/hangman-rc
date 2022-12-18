@@ -5,6 +5,7 @@ struct addrinfo hintsTCP;
 int socketFdTCP;
 bool isTCPConnected = false;
 struct sigaction actTCP;
+std::string expectedMessageTCP;
 
 // clang-format off
 responseHandler handleTCPServerMessage = {
@@ -78,6 +79,11 @@ int generalTCPHandler(std::string message, peerInfo peer) {
 }
 
 int handleRSB(protocolMessage response) {
+  if (response.first != expectedMessageTCP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "OK") {
     fileInfo info;
     if (receiveTCPFile(info, SB_DIR, socketFdTCP) == -1) {
@@ -93,6 +99,11 @@ int handleRSB(protocolMessage response) {
 }
 
 int handleRHL(protocolMessage response) {
+  if (response.first != expectedMessageTCP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "OK") {
     fileInfo info;
     const int bytesRead = receiveTCPFile(info, H_DIR, socketFdTCP);
@@ -110,6 +121,11 @@ int handleRHL(protocolMessage response) {
 }
 
 int handleRST(protocolMessage response) {
+  if (response.first != expectedMessageTCP) {
+    std::cerr << UNEXPECTED_MESSAGE << std::endl;
+    return -1;
+  }
+
   if (response.second == "NOK") {
     std::cout << RST_NOK << std::endl;
     return 0;
@@ -139,6 +155,7 @@ int sendGSB(messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GSB"});
+  expectedMessageTCP = "RSB";
   return generalTCPHandler(message, info.peer);
 }
 
@@ -147,6 +164,7 @@ int sendGHL(messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GHL", getPlayerID()});
+  expectedMessageTCP = "RHL";
   return generalTCPHandler(message, info.peer);
 }
 
@@ -155,5 +173,6 @@ int sendSTA(messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"STA", getPlayerID()});
+  expectedMessageTCP = "RST";
   return generalTCPHandler(message, info.peer);
 }
