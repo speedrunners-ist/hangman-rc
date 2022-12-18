@@ -416,7 +416,7 @@ int initialAvailableMistakes(int wordLength) {
   if (wordLength <= 6) {
     return 7;
   }
-  if (7 >= wordLength && wordLength <= 10) {
+  if (wordLength <= 10) {
     return 8;
   }
   return 9;
