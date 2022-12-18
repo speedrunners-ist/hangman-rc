@@ -43,7 +43,10 @@ int createSocketUDP(peerInfo peer) {
   return socketFdUDP;
 }
 
-int disconnectUDP() { return disconnectSocket(serverInfoUDP, socketFdUDP); }
+int disconnectUDP() {
+  sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), serverInfoUDP, socketFdUDP);
+  return disconnectSocket(serverInfoUDP, socketFdUDP);
+}
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
