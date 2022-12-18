@@ -427,7 +427,6 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
     }
   }
 
-  const std::string fileName = std::filesystem::path(filePath).filename();
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
     return STATE_ERROR;
@@ -438,6 +437,8 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
   }
 
   size_t fileSize = std::filesystem::file_size(filePath);
+  const std::string fileName = "STATE_" + plid + ".txt";
+
   response = buildSplitString({fileName, std::to_string(fileSize)});
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
 }
