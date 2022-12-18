@@ -43,8 +43,8 @@ void GameState::incorrectGuess() {
   guessedLetters[guess] = true;
   guessesMade++;
   mistakesLeft--;
-  if (mistakesLeft == 0) {
-    active = 0;
+  if (mistakesLeft < 0) {
+    active = false;
   }
 }
 

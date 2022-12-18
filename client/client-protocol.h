@@ -64,6 +64,7 @@
 #define UNEXPECTED_COMMAND_ERROR(commands)                                                                   \
   "[ERR]: Invalid input. Expected one of the following commands: " + commands
 #define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
+#define UNEXPECTED_MESSAGE "[ERR]: Unexpected message received from server."
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
