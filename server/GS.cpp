@@ -22,6 +22,11 @@ int main(int argc, char *argv[]) {
   }
 
   filePath = argv[optind];
+
+  if (GSport.compare(DEFAULT_GSPORT) == 0) {
+    std::cout << DEFAULT_GSPORT_STR << std::endl;
+  }
+
   std::cout << STARTING_SERVER << std::endl;
   if (setServerUDPParameters(filePath, verbose) == -1) {
     std::cerr << STARTING_SERVER_ERROR << std::endl;

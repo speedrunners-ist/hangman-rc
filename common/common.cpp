@@ -61,7 +61,8 @@ int GameState::correctGuess(std::string positions, int n) {
       std::cerr << INVALID_POSITIONS_ERROR << std::endl;
       setWord(initialWord);
       return -1;
-    } else if (word[posNum - 1] != '_') {
+    }
+    if (word[posNum - 1] != '_') {
       std::cerr << ALREADY_FILLED_ERROR << std::endl;
       setWord(initialWord);
       return -1;
@@ -140,10 +141,9 @@ int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo *
     return -1;
   }
 
-  struct timeval tv;
-  memset(&tv, 0, sizeof(tv));
+  const int flag = 1;
 
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &tv, sizeof(tv)) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(int)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     return -1;
   }
@@ -238,7 +238,8 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
   if (bytesReceived == -1) {
     std::cerr << RECVFROM_ERROR << std::endl;
     return -1;
-  } else if (response[bytesReceived - 1] != '\n') {
+  }
+  if (response[bytesReceived - 1] != '\n') {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return -1;
   }
@@ -257,10 +258,18 @@ int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, re
 /*** TCP message parsing/sending implementation ***/
 
 int parseTCPMessage(std::string request, protocolMessage &serverMessage) {
-  std::string responseBegin = request;
-  const std::string command = responseBegin.substr(0, 3);
-  responseBegin.erase(0, 4);
-  const std::string plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  std::string responseBegin;
+  std::string plid;
+  std::string command;
+  try {
+    responseBegin = request;
+    command = responseBegin.substr(0, 3);
+    responseBegin.erase(0, 4);
+    plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  } catch (const std::exception &e) {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    return -1;
+  }
   serverMessage.first = command;
   serverMessage.second = plid;
   serverMessage.body = request;
@@ -320,7 +329,7 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
   int readArgs = 0;
   char c;
   do {
-    // FIXME: will there be a problem if the response is "ERR\n"?
+    // TODO: will there be a problem if the response is "ERR\n"?
     bytesReceived = read(fd, &c, 1);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
@@ -406,7 +415,8 @@ int parseFileArgs(fileInfo &info, int fd) {
 int initialAvailableMistakes(int wordLength) {
   if (wordLength <= 6) {
     return 7;
-  } else if (7 >= wordLength && wordLength <= 10) {
+  }
+  if (wordLength <= 10) {
     return 8;
   }
   return 9;

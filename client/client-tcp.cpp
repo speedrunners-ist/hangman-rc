@@ -16,8 +16,15 @@ responseHandler handleTCPServerMessage = {
 
 int createSocketTCP(peerInfo peer) {
   socketFdTCP = newSocket(SOCK_STREAM, peer, &hintsTCP, &serverInfoTCP);
+  if (socketFdTCP == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    return -1;
+  }
+
+  isTCPConnected = true;
   if (connect(socketFdTCP, serverInfoTCP->ai_addr, serverInfoTCP->ai_addrlen) == -1) {
     std::cerr << TCP_SERVER_ERROR << std::endl;
+    disconnectTCP();
     return -1;
   }
 
@@ -26,7 +33,6 @@ int createSocketTCP(peerInfo peer) {
     return -1;
   }
 
-  isTCPConnected = true;
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
 
@@ -51,10 +57,22 @@ int disconnectTCP() {
 }
 
 int parseTCPResponse(protocolMessage &serverMessage) {
+  if (serverMessage.body.empty()) {
+    std::cerr << TCP_PARSE_ERROR << std::endl;
+    return -1;
+  }
   std::string responseBegin = serverMessage.body;
-  const std::string command = responseBegin.substr(0, 3);
-  responseBegin.erase(0, 4);
-  const std::string status = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  std::string command;
+  std::string status;
+
+  try {
+    command = responseBegin.substr(0, 3);
+    responseBegin.erase(0, 4);
+    status = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
+  } catch (const std::out_of_range &oor) {
+    std::cerr << TCP_PARSE_ERROR << std::endl;
+    return -1;
+  }
   serverMessage.first = command;
   serverMessage.second = status;
   return messageTCPHandler(socketFdTCP, serverInfoTCP, serverMessage, handleTCPServerMessage);
@@ -69,7 +87,8 @@ int generalTCPHandler(std::string message, peerInfo peer) {
   if (sendTCPMessage(message, serverInfoTCP, socketFdTCP) == -1) {
     disconnectTCP();
     return -1;
-  } else if (receiveTCPMessage(serverMessage.body, TCP_DEFAULT_ARGS, socketFdTCP) == -1) {
+  }
+  if (receiveTCPMessage(serverMessage.body, TCP_DEFAULT_ARGS, socketFdTCP) == -1) {
     disconnectTCP();
     return -1;
   }
@@ -85,7 +104,8 @@ int handleRSB(protocolMessage response) {
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
     return displayFile(SB_PATH(info.fileName));
-  } else if (response.second == "EMPTY") {
+  }
+  if (response.second == "EMPTY") {
     std::cout << RSB_FAIL << std::endl;
     return 0;
   }
@@ -102,7 +122,8 @@ int handleRHL(protocolMessage response) {
     std::cout << FILE_RECV_SUCCESS << std::endl;
     std::cout << RHL_SUCCESS(info.fileName, bytesRead) << std::endl;
     return 0;
-  } else if (response.second == "NOK") {
+  }
+  if (response.second == "NOK") {
     std::cout << RHL_FAIL << std::endl;
     return 0;
   }
@@ -130,8 +151,7 @@ int handleRST(protocolMessage response) {
   } else if (response.second == "FIN") {
     std::cout << RST_FIN << std::endl;
   }
-  displayFile(ST_PATH(info.fileName));
-  return 0;
+  return displayFile(ST_PATH(info.fileName));
 }
 
 int sendGSB(messageInfo info) {
