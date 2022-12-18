@@ -286,6 +286,7 @@ int sendQUT(messageInfo info) {
 
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitStringNewline({"QUT", getPlayerID()});
+  setPlayerID("");
   if (command == "quit") {
     return generalUDPHandler(message, RQT_BYTES);
   }
