@@ -181,7 +181,7 @@ int createPlaceholderState(std::string plid, std::string filePath) {
   }
 
   if (iterations == 0) {
-    newFile << "JOGO AINDA SEM JOGADAS" << std::endl;
+    newFile << "No guesses have been made yet." << std::endl;
   }
 
   newFile.close();
