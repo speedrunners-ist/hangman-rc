@@ -165,6 +165,7 @@ int handleRWG(protocolMessage response) {
 
 int handleRQT(protocolMessage response) {
   if (response.second == "OK") {
+    resetGame();
     std::cout << RQT_OK << std::endl;
     return 0;
   } else if (response.second == "ERR") {
