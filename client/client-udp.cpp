@@ -217,7 +217,6 @@ int handleRQT(protocolMessage response) {
 
   if (response.second == "OK") {
     resetGame();
-    setPlayerID("");
     std::cout << RQT_OK << std::endl;
     return 0;
   } else if (response.second == "ERR") {
