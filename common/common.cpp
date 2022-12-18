@@ -136,15 +136,15 @@ int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo *
     return -1;
   }
 
-  if (bind(fd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
-    std::cout << BIND_ERROR << std::endl;
-    return -1;
-  }
-
   const int flag = 1;
 
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(int)) < 0) {
     std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
+    return -1;
+  }
+
+  if (bind(fd, (*serverInfo)->ai_addr, (*serverInfo)->ai_addrlen) != 0) {
+    std::cout << BIND_ERROR << std::endl;
     return -1;
   }
 
