@@ -196,11 +196,14 @@ public:
 #define DIFF_POSITIONS_ERROR "[ERR]: Expected a different amount of positions than the ones given."
 #define EXPECTED_POSITIONS(n, m) "[ERR]: Expected " << n << " positions, but got " << m << "."
 
-#define DEFAULT_GSIP_STR "Could not find IP address, using default IP: " << DEFAULT_GSIP
-#define DEFAULT_GSPORT_STR "Could not find Gsport number, using default port: " << DEFAULT_GSPORT
+#define DEFAULT_GSIP_STR "[INFO] Could not find IP address, using default IP: " << DEFAULT_GSIP
+#define DEFAULT_GSPORT_STR "[INFO] Could not find Gsport number, using default port: " << DEFAULT_GSPORT
 
 #define EXIT_PROGRAM "[INFO]: Exiting program."
 #define CORRECT_GUESS(word) "[INFO]: Correct guess. Word is now: " << word
+
+#define DELETE_FILE_ERROR(filePath) "[ERR]: Failed to delete file " << filePath << "."
+#define DELETE_FILE_SUCCESS(filePath) "[INFO]: File " << filePath << " deleted successfully."
 
 // Amount of expected arguments in a TCP server response.
 #define TCP_DEFAULT_ARGS 2

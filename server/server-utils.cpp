@@ -174,8 +174,14 @@ int createPlaceholderState(std::string plid, std::string filePath) {
    */
   std::string line;
   std::getline(oldFile, line); // skip the first line
+  int iterations = 0;
   while (std::getline(oldFile, line)) {
     newFile << line << std::endl;
+    ++iterations;
+  }
+
+  if (iterations == 0) {
+    newFile << NO_GUESSES << std::endl;
   }
 
   newFile.close();

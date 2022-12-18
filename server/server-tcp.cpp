@@ -222,10 +222,11 @@ int handleSTA(protocolMessage message) {
   ret = sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
 
   std::string tmpFile = TMP_PATH(plid);
-  if (remove(tmpFile.c_str()) != 0) {
-    std::cerr << "[ERR]: Error deleting file" << std::endl;
-  } else {
-    std::cout << "[INFO]: Deleted temporary file " << tmpFile << std::endl;
+  if (!std::filesystem::remove(tmpFile)) {
+    std::cerr << DELETE_FILE_ERROR(tmpFile) << std::endl;
+    return -1;
   }
+
+  std::cout << DELETE_FILE_SUCCESS(tmpFile) << std::endl;
   return ret;
 }

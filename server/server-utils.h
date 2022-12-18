@@ -37,7 +37,10 @@
 #define TMP_DIR "server/state/"
 
 // Path to the temporary file for a player's game
-#define TMP_PATH(plid) TMP_DIR + plid + ".txt"
+#define TMP_PATH(plid) std::string(TMP_DIR) + "STATE_" + plid + ".txt"
+
+// Message to be written in the state temp file if there haven't been any plays yet
+#define NO_GUESSES "No guesses have been made yet."
 
 /**
  * @brief Creates a file for a player's game.
