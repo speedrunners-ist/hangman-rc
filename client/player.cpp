@@ -56,12 +56,13 @@ int main(int argc, char *argv[]) {
 
   char buffer[MAX_USER_INPUT];
   printHelpMenu();
+  continueReading(buffer);
 
   // Read the user input
   while (fgets(buffer, MAX_USER_INPUT, stdin) != NULL) {
-    continueReading(buffer);
     // if the user just pressed enter
     if (strlen(buffer) == 1 && buffer[0] == '\n') {
+      continueReading(buffer);
       continue;
     }
 
@@ -72,6 +73,7 @@ int main(int argc, char *argv[]) {
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
       const std::string allCommands = buildSplitStringNewline(getKeys(handlePlayerMessage));
       std::cerr << UNEXPECTED_COMMAND_ERROR(allCommands);
+      continueReading(buffer);
       continue;
     }
 
@@ -80,6 +82,7 @@ int main(int argc, char *argv[]) {
       break;
     }
     displayCurrentInformation();
+    continueReading(buffer);
   }
 
   std::cout << EXIT_PROGRAM << std::endl;
