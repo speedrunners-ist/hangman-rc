@@ -56,21 +56,21 @@ void setServerTCPParameters(bool vParam);
 /**
  * @brief Closes the UDP socket and exits the program.
  *
- * @param signum
+ * @param signum The signal's number.
  */
 void signalHandlerUDP(int signum);
 
 /**
  * @brief Closes the TCP socket and exits the program.
  *
- * @param signum
+ * @param signum The signal's number.
  */
 void signalHandlerTCP(int signum);
 
 /**
  * @brief Closes the TCP child socket and exits the program.
  *
- * @param signum
+ * @param signum The signal's number.
  */
 void signalHandlerTCPchild(int signum);
 
