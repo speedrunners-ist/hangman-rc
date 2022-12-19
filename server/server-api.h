@@ -163,7 +163,14 @@ void playIncorrectWordGuess(GameState &state, std::string word);
  */
 void setHint(GameState &state, std::string hint);
 
-// TODO: add documentation
+/**
+ * @brief Displays the peer's information (useful for verbose scenarios).
+ * 
+ * @param res The addrinfo structure containing the peer's information.
+ * @param host The peer's hostname.
+ * @param service The peer's port.
+ * @param connection The type of connection (TCP or UDP).
+ */
 void displayPeerInfo(struct addrinfo *res, char *host, char *service, std::string connection);
 
 /**
