@@ -15,9 +15,8 @@ function run_command() {
     echo "Testing $1"
     FILE_NAME=$(basename $1 .txt)
     TEST=$(echo $FILE_NAME | cut -d'_' -f2)
-    echo "Test: $TEST"
     COMMAND=$(echo "$MY_IP 58001 $TEST" | $TEJO > tests/tmp/report-$TEST.html)
-    if [ ! -s tests/tmp/report-$TEST.html ] || grep -q "error" tests/tmp/report-$TEST.html; then
+    if [ ! -s tests/tmp/report-$TEST.html ] || grep -q "color=\"red\"" tests/tmp/report-$TEST.html; then
         echo -e "${RED}Test failed${NC}"
     else
         echo -e "${GREEN}Test passed${NC}"
@@ -28,7 +27,7 @@ function handle_test() {
     run_server &
     run_command $1
     killall GS
-    sleep 5 # to avoid being timed out ;-;
+    sleep 3 # to avoid being timed out ;-;
 }
 
 # Script core

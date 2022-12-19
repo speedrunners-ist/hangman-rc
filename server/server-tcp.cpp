@@ -203,6 +203,7 @@ int handleSTA(protocolMessage message) {
   std::string file;
   std::string response;
   int ret = getState(plid, response, file);
+  const int sta = ret;
   switch (ret) {
     case STATE_ERROR:
       response = buildSplitStringNewline({"RST", "NOK"});
@@ -222,7 +223,7 @@ int handleSTA(protocolMessage message) {
   ret = sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
 
   std::string tmpFile = TMP_PATH(plid);
-  if (!std::filesystem::remove(tmpFile)) {
+  if (sta != STATE_FINISHED && !std::filesystem::remove(tmpFile)) {
     std::cerr << DELETE_FILE_ERROR(tmpFile) << std::endl;
     return -1;
   }

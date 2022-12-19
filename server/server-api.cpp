@@ -279,8 +279,8 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
 
   GameState state;
   if (retrieveGame(plid, state) != 0) {
-    return SYNTAX_ERROR;
     arguments = buildSplitString({std::to_string(getTrials(state))});
+    return SYNTAX_ERROR;
   }
 
   arguments = buildSplitString({std::to_string(getTrials(state))});
