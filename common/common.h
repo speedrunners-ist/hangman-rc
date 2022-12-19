@@ -161,6 +161,7 @@ public:
 #define SIGNAL(signum) "[INFO]: Interrupt signal (" << signum << ") received."
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket."
+#define SOCKET_REUSE_ERROR "[ERR]: Failed to set socket re-usage flag."
 #define SOCKET_TIMER_SET_ERROR "[ERR]: Failed to set socket timeout."
 #define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."
 #define GETADDRINFO_ERROR "[ERR]: Failed to get address info."
