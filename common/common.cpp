@@ -485,17 +485,18 @@ bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
   std::string token;
   int readArgs = 0;
   int arg;
-  while (ss >> token && readArgs++ < expectedArgs) {
+  while (readArgs < expectedArgs && ss >> token) {
     try {
       arg = std::stoi(token);
       args.push_back(arg);
       tokens.push_back(token);
+      readArgs++;
     } catch (std::invalid_argument &e) {
       std::cout << "[ERR]: Invalid argument: " << token << std::endl;
       return false;
     }
   }
-  return true; // TODO: check if this is right?
+  return readArgs == expectedArgs;
 }
 
 bool forceExit(GameState state, std::string command) { return command == "exit" && !state.isActive(); }
