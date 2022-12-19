@@ -44,6 +44,7 @@ enum {
   REVEAL_SUCCESS, // RRV OK
 
   // RSB return codes
+  SCOREBOARD_ERROR,   // ERR
   SCOREBOARD_EMPTY,   // RSB EMPTY
   SCOREBOARD_SUCCESS, // RSB OK
 
