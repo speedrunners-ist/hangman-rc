@@ -384,7 +384,7 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   return (int)bytesRead;
 }
 
-int messageTCPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler) {
+int messageTCPHandler(protocolMessage &message, responseHandler handler) {
   try {
     return handler[message.first](message);
   } catch (const std::bad_function_call &e) {

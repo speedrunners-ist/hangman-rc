@@ -80,7 +80,7 @@ int parseTCPResponse(protocolMessage &serverMessage) {
   }
   serverMessage.first = command;
   serverMessage.second = status;
-  return messageTCPHandler(socketFdTCP, serverInfoTCP, serverMessage, handleTCPServerMessage);
+  return messageTCPHandler(serverMessage, handleTCPServerMessage);
 }
 
 int generalTCPHandler(std::string message, peerInfo peer) {

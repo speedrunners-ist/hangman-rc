@@ -118,7 +118,7 @@ int generalTCPHandler(peerInfo peer) {
       if (verboseTCP) {
         std::cout << "[INFO]: Received the following message: " << request.body;
       }
-      messageTCPHandler(newConnectionFd, resTCP, request, handleTCPClientMessage);
+      messageTCPHandler(request, handleTCPClientMessage);
       if (close(newConnectionFd) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
