@@ -218,7 +218,6 @@ int createGameSession(std::string plid, std::string &arguments) {
 
 int playLetter(std::string plid, std::string letter, std::string trial, std::string &arguments) {
   if (!isOngoingGame(plid)) {
-    // FIXME: I don't think the name "SYNTAX_ERROR" is correct...
     return SYNTAX_ERROR;
   }
 
