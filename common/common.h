@@ -138,9 +138,9 @@ public:
 };
 
 // Default value for the server's IP address, if none is provided.
-#define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
+#define DEFAULT_GSIP "localhost"
 // Default value for the server's port, if none is provided.
-#define DEFAULT_GSPORT "58001" // TODO: change to the correct port
+#define DEFAULT_GSPORT "58045"
 
 // Maximum number of characters in a single user message (client-side, via stdin).
 #define MAX_USER_INPUT 1024
