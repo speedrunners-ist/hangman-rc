@@ -13,7 +13,7 @@ jobs:
     container: ubuntu
     services:
       ports: 
-      - 80:80 
+        - 80:80 
 
 
     steps:
