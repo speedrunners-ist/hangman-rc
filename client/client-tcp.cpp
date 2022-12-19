@@ -61,7 +61,11 @@ int parseTCPResponse(protocolMessage &serverMessage) {
   if (serverMessage.body.empty()) {
     std::cerr << TCP_PARSE_ERROR << std::endl;
     return -1;
+  } else if (serverMessage.body == ERR) {
+    std::cerr << DISPLAY_ERR << std::endl;
+    return -1;
   }
+
   std::string responseBegin = serverMessage.body;
   std::string command;
   std::string status;
