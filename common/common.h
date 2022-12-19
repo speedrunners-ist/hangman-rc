@@ -169,6 +169,8 @@ public:
 #define RECVFROM_ERROR "[ERR]: Failed to receive message."
 #define SIGACTION_ERROR "[ERR]: Failed to set action."
 
+#define ERR "ERR\n"
+
 #define TCP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close TCP socket."
 #define TCP_SEND_MESSAGE_ERROR "[ERR]: Failed to send message via TCP."
 #define TCP_RECV_MESSAGE_ERROR "[ERR]: Failed to receive message via TCP."

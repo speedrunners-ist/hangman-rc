@@ -329,7 +329,6 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
   int readArgs = 0;
   char c;
   do {
-    // TODO: will there be a problem if the response is "ERR\n"?
     bytesReceived = read(fd, &c, 1);
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
@@ -339,6 +338,9 @@ int receiveTCPMessage(std::string &message, int args, int fd) {
     }
     message.push_back(c);
     bytesRead += (size_t)bytesReceived;
+    if (message == ERR) {
+      return (int)bytesRead;
+    }
   } while (bytesReceived != 0 && readArgs < args);
 
   return (int)bytesRead;
@@ -387,7 +389,7 @@ int messageTCPHandler(int fd, struct addrinfo *res, protocolMessage &message, re
     return handler[message.first](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"ERR"}), res, fd);
+    return -1;
   }
 }
 

@@ -101,6 +101,8 @@
 #define RST_NOK "[INFO]: The server could not find any games (neither active nor finished)."
 #define RST_ERR "[ERR]: The server has encountered an error while processing your request."
 
+#define DISPLAY_ERR "[ERR]: An error has occurred. Please try again later."
+
 // Directory where the scoreboard file will be stored.
 #define SB_DIR "client/scoreboard/"
 
