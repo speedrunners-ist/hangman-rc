@@ -12,8 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu
     services:
-      ports: 
-        - 80:80 
+      redis:
+        image: redis
+        ports: 
+          - 80:80 
 
 
     steps:
