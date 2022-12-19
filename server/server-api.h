@@ -23,7 +23,7 @@
 enum {
   // RSG return codes
   CREATE_GAME_ERROR,   // RSG ERR
-  CREATE_GAME_ONGOING,        // RSG NOK
+  CREATE_GAME_ONGOING, // RSG NOK
   CREATE_GAME_SUCCESS, // RSG OK
 
   // RLG and RWG return codes
