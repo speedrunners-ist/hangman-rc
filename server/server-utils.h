@@ -12,6 +12,9 @@
 // File name of a player's ongoing game
 #define PLID_GAME(plid) "GAME_" + plid + ".txt"
 
+// File name of a player'game
+#define GAME_FILENAME(plid) "STATE_" + plid + ".txt"
+
 // Path to a player's ongoing game
 #define ONGOING_GAMES_PATH(plid) std::string(GAMES_DIR) + PLID_GAME(plid)
 
