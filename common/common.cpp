@@ -488,6 +488,10 @@ bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
   while (readArgs < expectedArgs && ss >> token) {
     try {
       arg = std::stoi(token);
+      if (arg < 0) {
+        std::cout << "[ERR]: Invalid argument: " << token << std::endl;
+        return false;
+      }
       args.push_back(arg);
       tokens.push_back(token);
       readArgs++;
