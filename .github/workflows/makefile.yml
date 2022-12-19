@@ -1,8 +1,5 @@
 name: Makefile CI
 
-EXPOSE 58001
-EXPOSE 59000
-
 on:
   push:
     branches: [ "master" ]
