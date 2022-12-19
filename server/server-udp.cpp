@@ -256,6 +256,7 @@ int handleREV(protocolMessage message) {
       response = buildSplitStringNewline({"RRV", word});
       break;
     case REVEAL_ERROR:
+    default:
       response = buildSplitStringNewline({"RRV", "ERR"});
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
