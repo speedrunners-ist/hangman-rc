@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu
     services:
-      ports: 80:80 
+      ports: 
+      - 80:80 
 
 
     steps:
