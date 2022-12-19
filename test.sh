@@ -1,3 +1,3 @@
 #!/bin/sh
 
-ping tejo.tecnico.ulisboa.pt
+PsPing tejo.tecnico.ulisboa.pt
