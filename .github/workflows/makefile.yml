@@ -21,6 +21,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - run: apt-get update -y
+    - run: apt-get install -y iputils-ping
+
     - name: Test
       run: |
         ping -c 5 google.com
