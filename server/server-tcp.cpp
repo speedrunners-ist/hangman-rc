@@ -144,12 +144,12 @@ int handleGSB(protocolMessage message) {
   std::string response;
   int ret = getScoreboard(response);
   switch (ret) {
-    case SCOREBOARD_SUCCESS:
-      response = buildSplitString({"RSB", "OK", response});
-      return sendTCPFile(response.append(" "), resTCP, newConnectionFd, SCORES_PATH);
     case SCOREBOARD_EMPTY:
       response = buildSplitStringNewline({"RSB", "EMPTY"});
       return sendTCPMessage(response, resTCP, newConnectionFd);
+    case SCOREBOARD_SUCCESS:
+      response = buildSplitString({"RSB", "OK", response});
+      return sendTCPFile(response.append(" "), resTCP, newConnectionFd, SCORES_PATH);
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
@@ -169,17 +169,18 @@ int handleGHL(protocolMessage message) {
   const int ret = getHint(plid, response, file);
   const std::string fileName = std::filesystem::path(file).filename();
   switch (ret) {
+    case HINT_NOK:
+      response = buildSplitStringNewline({"RHL", "NOK"});
+      return sendTCPMessage(response, resTCP, newConnectionFd);
     case HINT_SUCCESS:
       appendGameFile(plid, HINT, fileName);
       response = buildSplitString({"RHL", "OK", response});
       return sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
-    case HINT_NOK:
-      response = buildSplitStringNewline({"RHL", "NOK"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
   response = buildSplitStringNewline({"ERR"});
+  return sendTCPMessage(response, resTCP, newConnectionFd);
 }
 
 int handleSTA(protocolMessage message) {
@@ -195,15 +196,14 @@ int handleSTA(protocolMessage message) {
   int ret = getState(plid, response, file);
   const int sta = ret;
   switch (ret) {
+    case STATE_NOK:
+      response = buildSplitStringNewline({"RST", "NOK"});
+      return sendTCPMessage(response, resTCP, newConnectionFd);
     case STATE_ONGOING:
       response = buildSplitString({"RST", "ACT", response});
       break;
     case STATE_FINISHED:
       response = buildSplitString({"RST", "FIN", response});
-      break;
-    case STATE_NOK:
-      response = buildSplitStringNewline({"RST", "NOK"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
   ret = sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
