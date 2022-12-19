@@ -126,14 +126,6 @@ int generalUDPHandler(peerInfo peer);
 int generalTCPHandler(peerInfo peer);
 
 /**
- * @brief Parses a TCP message and sends it to the appropriate handler.
- *
- * @param request TCP message.
- * @return 0 if the message was parsed successfully, -1 otherwise.
- */
-int parseTCPMessage(std::string request);
-
-/**
  * @brief Handles SNG request from the client.
  *
  * @param message The message from the client.
