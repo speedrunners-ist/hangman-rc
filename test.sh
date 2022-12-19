@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 MY_IP=$(curl -s http://ipecho.net/plain)
 TEJO="nc tejo.tecnico.ulisboa.pt 59000"
