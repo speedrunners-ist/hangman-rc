@@ -257,10 +257,6 @@ int handleREV(protocolMessage message) {
       break;
     case REVEAL_ERROR:
       response = buildSplitStringNewline({"RRV", "ERR"});
-      break;
-    default:
-      std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RRV", "ERR"});
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
