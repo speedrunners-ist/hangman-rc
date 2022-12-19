@@ -44,16 +44,15 @@ enum {
   REVEAL_SUCCESS, // RRV OK
 
   // RSB return codes
-  SCOREBOARD_ERROR,   // RSB NOK
   SCOREBOARD_EMPTY,   // RSB EMPTY
   SCOREBOARD_SUCCESS, // RSB OK
 
   // RHL return codes
-  HINT_ERROR,   // RHL NOK
+  HINT_NOK,     // RHL NOK
   HINT_SUCCESS, // RHL OK
 
   // RST return codes
-  STATE_ERROR,    // RST NOK
+  STATE_NOK,      // RST NOK
   STATE_FINISHED, // RST FIN
   STATE_ONGOING   // RST ACT
 };

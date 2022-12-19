@@ -389,19 +389,19 @@ int getScoreboard(std::string &response) {
 
 int getHint(std::string plid, std::string &response, std::string &filePath) {
   if (!isOngoingGame(plid)) {
-    return HINT_ERROR;
+    return HINT_NOK;
   }
 
   GameState state;
   if (retrieveGame(plid, state) != 0) {
-    return HINT_ERROR;
+    return HINT_NOK;
   }
 
   const std::string fileName = state.getHint();
   filePath = HINTS_PATH(fileName);
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
-    return HINT_ERROR;
+    return HINT_NOK;
   }
 
   long fileSize = (long)std::filesystem::file_size(filePath);
@@ -414,22 +414,21 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
   std::string mostRecentGame;
 
   if (isFinished) {
-    int ret = getLastFinishedGame(plid, mostRecentGame);
-    if (ret != 0) {
-      return STATE_ERROR;
+    if (getLastFinishedGame(plid, mostRecentGame) != 0) {
+      return STATE_NOK;
     }
     filePath = PLID_GAMES_DIR(plid) + "/" + mostRecentGame;
   } else {
     filePath = ONGOING_GAMES_PATH(plid);
     int ret = createPlaceholderState(plid, filePath);
     if (ret != 0) {
-      return STATE_ERROR;
+      return STATE_NOK;
     }
   }
 
   std::vector<std::string> lines;
   if (readFile(lines, filePath) != 0) {
-    return STATE_ERROR;
+    return STATE_NOK;
   }
 
   if (!isFinished) {

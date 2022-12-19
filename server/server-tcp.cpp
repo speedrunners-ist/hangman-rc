@@ -149,10 +149,6 @@ int handleGSB(protocolMessage message) {
       return sendTCPFile(response.append(" "), resTCP, newConnectionFd, SCORES_PATH);
     case SCOREBOARD_EMPTY:
       response = buildSplitStringNewline({"RSB", "EMPTY"});
-      break;
-    case SCOREBOARD_ERROR:
-      std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"ERR"});
   }
   return sendTCPMessage(response, resTCP, newConnectionFd);
 }
@@ -174,7 +170,7 @@ int handleGHL(protocolMessage message) {
       appendGameFile(plid, HINT, fileName);
       response = buildSplitString({"RHL", "OK", response});
       return sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
-    case HINT_ERROR:
+    case HINT_NOK:
       response = buildSplitStringNewline({"RHL", "NOK"});
       break;
     default:
@@ -205,12 +201,8 @@ int handleSTA(protocolMessage message) {
     case STATE_FINISHED:
       response = buildSplitString({"RST", "FIN", response});
       break;
-    case STATE_ERROR:
+    case STATE_NOK:
       response = buildSplitStringNewline({"RST", "NOK"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
-    default:
-      std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"ERR"});
       return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
