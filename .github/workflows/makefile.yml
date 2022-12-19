@@ -1,5 +1,8 @@
 name: Makefile CI
 
+EXPOSE 58001
+EXPOSE 59000
+
 on:
   push:
     branches: [ "master" ]
@@ -10,18 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
-     # Service containers to run with `runner-job`
-    services:
-      # Label used to access the service container
-      redis:
-        # Docker Hub image
-        image: redis
-        #
-        ports:
-          # Opens tcp port 80 on the host and service container
-          - 59000:58001
-          - 59000:58001/udp
 
     steps:
     - uses: actions/checkout@v3
