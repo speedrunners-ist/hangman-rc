@@ -11,6 +11,18 @@ jobs:
 
     runs-on: ubuntu-latest
 
+     # Service containers to run with `runner-job`
+    services:
+      # Label used to access the service container
+      redis:
+        # Docker Hub image
+        image: redis
+        #
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 58001:80
+          - 58001:80/udp
+
     steps:
     - uses: actions/checkout@v3
 
