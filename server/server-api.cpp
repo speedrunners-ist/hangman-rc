@@ -437,7 +437,7 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
   }
 
   size_t fileSize = std::filesystem::file_size(filePath);
-  const std::string fileName = std::filesystem::path(filePath).filename();
+  const std::string fileName = GAME_FILENAME(plid);
 
   response = buildSplitString({fileName, std::to_string(fileSize)});
   return isFinished ? STATE_FINISHED : STATE_ONGOING;
