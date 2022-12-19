@@ -263,7 +263,7 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd);
 int sendTCPFile(std::string info, struct addrinfo *res, int fd, std::string filePath);
 int receiveTCPMessage(std::string &message, int args, int fd);
 int receiveTCPFile(fileInfo &info, std::string dir, int fd);
-int messageTCPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler);
+int messageTCPHandler(protocolMessage &message, responseHandler handler);
 
 /**
  * @brief Parses the server-sent file information for the following file transfer.
