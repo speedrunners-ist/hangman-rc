@@ -257,12 +257,12 @@ int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, re
 
 /*** TCP message parsing/sending implementation ***/
 
-int parseTCPMessage(std::string request, protocolMessage &serverMessage) {
+int parseTCPMessage(std::string message, protocolMessage &serverMessage) {
   std::string responseBegin;
   std::string plid;
   std::string command;
   try {
-    responseBegin = request;
+    responseBegin = message;
     command = responseBegin.substr(0, 3);
     responseBegin.erase(0, 4);
     plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
@@ -272,7 +272,7 @@ int parseTCPMessage(std::string request, protocolMessage &serverMessage) {
   }
   serverMessage.first = command;
   serverMessage.second = plid;
-  serverMessage.body = request;
+  serverMessage.body = message;
   return 0;
 }
 
