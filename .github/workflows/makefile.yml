@@ -20,8 +20,8 @@ jobs:
         #
         ports:
           # Opens tcp port 80 on the host and service container
-          - 58001:58001
-          - 58001:58001/udp
+          - 59000:58001
+          - 59000:58001/udp
 
     steps:
     - uses: actions/checkout@v3
