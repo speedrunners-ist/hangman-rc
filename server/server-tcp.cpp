@@ -144,20 +144,15 @@ int handleGSB(protocolMessage message) {
   std::string response;
   int ret = getScoreboard(response);
   switch (ret) {
-    case SCOREBOARD_ERROR:
-      // TODO: This doesn't exist
-      response = buildSplitStringNewline({"RSB", "NOK"});
-      break;
-    case SCOREBOARD_EMPTY:
-      response = buildSplitStringNewline({"RSB", "EMPTY"});
-      break;
     case SCOREBOARD_SUCCESS:
       response = buildSplitString({"RSB", "OK", response});
       return sendTCPFile(response.append(" "), resTCP, newConnectionFd, SCORES_PATH);
-    default:
-      std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RSB", "ERR"});
+    case SCOREBOARD_EMPTY:
+      response = buildSplitStringNewline({"RSB", "EMPTY"});
       break;
+    case SCOREBOARD_ERROR:
+      std::cerr << INTERNAL_ERROR << std::endl;
+      response = buildSplitStringNewline({"ERR"});
   }
   return sendTCPMessage(response, resTCP, newConnectionFd);
 }
@@ -175,17 +170,16 @@ int handleGHL(protocolMessage message) {
   const int ret = getHint(plid, response, file);
   const std::string fileName = std::filesystem::path(file).filename();
   switch (ret) {
-    case HINT_ERROR:
-      response = buildSplitStringNewline({"RHL", "NOK"});
-      break;
     case HINT_SUCCESS:
       appendGameFile(plid, HINT, fileName);
       response = buildSplitString({"RHL", "OK", response});
       return sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
+    case HINT_ERROR:
+      response = buildSplitStringNewline({"RHL", "NOK"});
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RHL", "ERR"});
+      response = buildSplitStringNewline({"ERR"});
       break;
   }
 
@@ -205,18 +199,18 @@ int handleSTA(protocolMessage message) {
   int ret = getState(plid, response, file);
   const int sta = ret;
   switch (ret) {
-    case STATE_ERROR:
-      response = buildSplitStringNewline({"RST", "NOK"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
     case STATE_ONGOING:
       response = buildSplitString({"RST", "ACT", response});
       break;
     case STATE_FINISHED:
       response = buildSplitString({"RST", "FIN", response});
       break;
+    case STATE_ERROR:
+      response = buildSplitStringNewline({"RST", "NOK"});
+      return sendTCPMessage(response, resTCP, newConnectionFd);
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RST", "ERR"});
+      response = buildSplitStringNewline({"ERR"});
       return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
