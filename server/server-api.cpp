@@ -187,7 +187,7 @@ int createGameSession(std::string plid, std::string &arguments) {
 
     if (state.getTrials() != 1) {
       // If a game is ongoing, the player is not allowed to start a new one
-      return GAME_ONGOING;
+      return CREATE_GAME_ONGOING;
     }
     const std::string word = state.getWord();
     const int wordLength = (int)word.length();
@@ -249,7 +249,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     if (state.getAvailableMistakes() == -1) {
       appendGameFile(plid, WRONG_FINAL_LETTER, letter);
       if (transferGameFile(plid) != 0) {
-        return -1; // TODO: specific macro for this
+        return GENERAL_ERROR;
       }
       return WRONG_FINAL_GUESS;
     }
@@ -261,7 +261,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   if (state.getSpotsLeft() == 0) {
     appendGameFile(plid, CORRECT_FINAL_LETTER, letter);
     if (transferGameFile(plid) != 0) {
-      return -1; // TODO: specific macro for this
+      return GENERAL_ERROR;
     }
     insertScore(plid, state);
     return SUCCESS_FINAL_GUESS;
@@ -301,7 +301,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   if (state.getWord() == word) {
     appendGameFile(plid, CORRECT_FINAL_WORD, word);
     if (transferGameFile(plid) != 0) {
-      return -1; // TODO: specific macro for this
+      return GENERAL_ERROR;
     }
     insertScore(plid, state);
     return SUCCESS_GUESS;
@@ -311,7 +311,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   if (state.getAvailableMistakes() == -1) {
     appendGameFile(plid, WRONG_FINAL_WORD, word);
     if (transferGameFile(plid) != 0) {
-      return -1; // TODO: specific macro for this
+      return GENERAL_ERROR;
     }
     return WRONG_FINAL_GUESS;
   }
