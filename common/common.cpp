@@ -485,7 +485,7 @@ bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
   std::string token;
   int readArgs = 0;
   int arg;
-  while (readArgs < expectedArgs && ss >> token) {
+  while (ss >> token) {
     try {
       arg = std::stoi(token);
       if (arg < 0) {
