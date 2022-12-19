@@ -23,7 +23,7 @@ CXXFLAGS += -Wno-sign-compare
 # Differentiate between dev and prod
 CXXFLAGS += -DPRODUCTION
 
-.PHONY: all dev clean fmt depend
+.PHONY: all dev clean fmt depend test
 
 all: $(TARGET_EXECS)
 
@@ -47,3 +47,6 @@ depend : $(SOURCES)
 
 client/player: client/client-api.o client/client-tcp.o client/client-udp.o common/common.o
 server/GS: server/server-utils.o server/server-api.o server/server-tcp.o server/server-udp.o common/common.o
+
+test: dev
+	./test.sh
