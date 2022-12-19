@@ -5,7 +5,11 @@ TEJO="nc tejo.tecnico.ulisboa.pt 59000"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+TOTAL_TESTS=$(ls tests/scripts/*.txt | wc -l)
+CORRECT_TESTS=0
 
 function run_server() {
   server/GS server/word_eng.txt -v > tests/tmp/server.log
@@ -20,6 +24,7 @@ function run_command() {
         echo -e "${RED}Test failed${NC}"
     else
         echo -e "${GREEN}Test passed${NC}"
+        CORRECT_TESTS=$((CORRECT_TESTS+1))
     fi
 }
 
@@ -43,3 +48,5 @@ for test in tests/scripts/*.txt
 do
     handle_test $test
 done
+
+echo "Passed ${GREEN}$CORRECT_TESTS${NC} out of ${BLUE}$TOTAL_TESTS${NC} tests"
