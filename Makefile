@@ -23,7 +23,7 @@ CXXFLAGS += -Wno-sign-compare
 # Differentiate between dev and prod
 CXXFLAGS += -DPRODUCTION
 
-.PHONY: all dev clean fmt depend
+.PHONY: all dev clean fmt depend test
 
 all: $(TARGET_EXECS)
 
@@ -34,6 +34,11 @@ dev: all
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXECS)
+	rm -rf server/games/*
+	rm -rf tests/tmp
+	rm -rf client/hints
+	rm -rf client/state
+	rm -rf client/scoreboard
 
 fmt: $(SOURCES) $(HEADERS)
 	clang-format -i $^
@@ -44,6 +49,8 @@ fmt: $(SOURCES) $(HEADERS)
 depend : $(SOURCES)
 	$(CC) $(INCLUDES) -MM $^ > autodep
 
+test: dev
+	./test.sh
 
 client/player: client/client-api.o client/client-tcp.o client/client-udp.o common/common.o
 server/GS: server/server-utils.o server/server-api.o server/server-tcp.o server/server-udp.o common/common.o

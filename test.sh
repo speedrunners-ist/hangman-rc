@@ -20,6 +20,7 @@ function run_command() {
         echo -e "${RED}Test failed${NC}"
     else
         echo -e "${GREEN}Test passed${NC}"
+        CORRECT_TESTS=$((CORRECT_TESTS+1))
     fi
 }
 
@@ -43,3 +44,12 @@ for test in tests/scripts/*.txt
 do
     handle_test $test
 done
+
+echo "Passed ${GREEN}$CORRECT_TESTS${NC} out of ${BLUE}$TOTAL_TESTS${NC} tests"
+
+if [ $CORRECT_TESTS -eq $TOTAL_TESTS ]; then
+    echo -e "${GREEN}All tests passed!${NC}"
+    exit 0
+else
+    echo -e "${RED}Some tests failed!${NC}"
+    exit -1
