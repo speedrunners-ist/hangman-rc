@@ -250,19 +250,104 @@ int turnOnSocketTimer(int socketFd);
  */
 int turnOffSocketTimer(int socketFd);
 
-// UDP utils functions
-int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
-int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int fd);
+/**
+ * @brief Handle parsing of a UDP message.
+ * 
+ * @param message Message to be parsed.
+ * @param response Struct to store the parsed message.
+ * @return 0 on success, -1 on error.
+ */
 int parseUDPMessage(std::string message, protocolMessage &response);
+
+/**
+ * @brief Handle sending of a UDP message.
+ * 
+ * @param message Message to be sent.
+ * @param res The socket's address info.
+ * @param fd The socket's file descriptor.
+ * @return 0 on success, -1 on error.
+ */
+int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
+
+/**
+ * @brief Handle receiving of a UDP message.
+ * 
+ * @param response Buffer to store the received message.
+ * @param maxBytes Maximum amount of bytes to be received.
+ * @param res The socket's address info.
+ * @param fd The socket's file descriptor.
+ * @return 0 on success, -1 on error.
+ */
+int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int fd);
+
+/**
+ * @brief Handle receiving of a parsed UDP message (with possible send of a response).
+ * 
+ * @param fd The socket's file descriptor.
+ * @param res The socket's address info.
+ * @param message The previously parsed message.
+ * @param handler The function to be called to handle the message.
+ * @return 0 on success, -1 on error.
+ */
 int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler);
 
-// TCP utils functions
-int generalTCPHandler(std::string message, peerInfo peer);
+/**
+ * @brief Handle parsing of a TCP message.
+ * 
+ * @param message Message to be parsed.
+ * @param serverMessage Struct to store the parsed message.
+ * @return 0 on success, -1 on error.
+ */
 int parseTCPMessage(std::string message, protocolMessage &serverMessage);
+
+/**
+ * @brief Handle sending of a TCP message.
+ * 
+ * @param message Message to be sent.
+ * @param res The socket's address info.
+ * @param fd The socket's file descriptor.
+ * @return 0 on success, -1 on error.
+ */
 int sendTCPMessage(std::string message, struct addrinfo *res, int fd);
+
+/**
+ * @brief Handle sending of a file via TCP.
+ * 
+ * @param info File information (name and size).
+ * @param res The socket's address info.
+ * @param fd The socket's file descriptor.
+ * @param filePath Path to the file to be sent.
+ * @return 0 on success, -1 on error.
+ */
 int sendTCPFile(std::string info, struct addrinfo *res, int fd, std::string filePath);
+
+/**
+ * @brief Handle receiving of a TCP message.
+ * 
+ * @param message Buffer to store the received message.
+ * @param args Amount of expected arguments in the message.
+ * @param fd The socket's file descriptor.
+ * @return 0 on success, -1 on error.
+ */
 int receiveTCPMessage(std::string &message, int args, int fd);
+
+/**
+ * @brief Handle receiving of a file via TCP.
+ * 
+ * @param info File information (name and size).
+ * @param dir Directory to store the received file.
+ * @param fd The socket's file descriptor.
+ * @return 0 on success, -1 on error.
+ */
 int receiveTCPFile(fileInfo &info, std::string dir, int fd);
+
+/**
+ * @brief Handle receiving of a parsed TCP message (with possible send of a response).
+ * 
+ * @param message The previously parsed message.
+ * @param handler The function to be called to handle the message.
+ * @return 0 on success, -1 on error.
+ */
 int messageTCPHandler(protocolMessage &message, responseHandler handler);
 
 /**
@@ -310,7 +395,6 @@ int readFile(std::vector<std::string> &lines, std::string filePath);
 /**
  * @brief Reads a given file's content line by line.
  *
- * @param lines: Vector of strings (lines) to be filled with the file's content.
  * @param filePath: Path to the file to be read.
  * @return 0 on success, -1 on error.
  */
@@ -366,10 +450,10 @@ void signalHandler(int signum);
 void toLower(std::string &str);
 
 /**
- * @brief Checks if a given string has the PLID format.
+ * @brief Checks if a given string is a valid PLID (exactly 6 digits).
  *
  * @param plid: String to be checked.
- * @return True if the string has the PLID format, false otherwise.
+ * @return True if the string has the correct PLID format, false otherwise.
  */
 bool validPlayerID(std::string plid);
 
@@ -382,10 +466,10 @@ bool validPlayerID(std::string plid);
 bool isNumber(std::string trial);
 
 /**
- * @brief Checks if a given string has the WORD format.
+ * @brief Checks if a given string is a valid word (all alphanumeric characters).
  *
  * @param word: String to be checked.
- * @return True if the string has the WORD format, false otherwise.
+ * @return True if the string is a valid word, false otherwise.
  */
 bool hasWordFormat(std::string word);
 
