@@ -23,10 +23,12 @@
 enum {
   // RSG return codes
   CREATE_GAME_ERROR,   // RSG ERR
-  GAME_ONGOING,        // RSG NOK
+  CREATE_GAME_ONGOING, // RSG NOK
   CREATE_GAME_SUCCESS, // RSG OK
 
   // RLG and RWG return codes
+  
+  GENERAL_ERROR,       // ERR
   SYNTAX_ERROR,        // RLG ERR/RWG ERR
   TRIAL_MISMATCH,      // RLG INV/RWG INV
   DUPLICATE_GUESS,     // RLG DUP

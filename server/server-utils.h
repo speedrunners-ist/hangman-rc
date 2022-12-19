@@ -33,6 +33,9 @@
 // Format for the player's games to be stored in
 #define TIME_FORMAT "%Y-%m-%d_%H-%M-%S"
 
+// Maximum amount of characters in a TIME_FORMAT string
+#define MAX_TIME_FORMAT 64
+
 // Path to the directory where hints are stored
 #define HINTS_PATH(filename) "server/hints/" + filename
 

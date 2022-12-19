@@ -32,7 +32,7 @@ int appendGameFile(std::string plid, std::string code, std::string play) {
 int transferGameFile(std::string plid) {
   time_t rawtime;
   struct tm *timeinfo;
-  char buffer[80]; // TODO: macro this
+  char buffer[MAX_TIME_FORMAT];
   time(&rawtime);
   timeinfo = localtime(&rawtime);
   strftime(buffer, sizeof(buffer), TIME_FORMAT, timeinfo);

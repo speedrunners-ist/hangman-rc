@@ -115,7 +115,7 @@ int handleSNG(protocolMessage message) {
     case CREATE_GAME_ERROR:
       response = buildSplitStringNewline({"RSG", "ERR"});
       break;
-    case GAME_ONGOING:
+    case CREATE_GAME_ONGOING:
       response = buildSplitStringNewline({"RSG", "NOK"});
       break;
     case CREATE_GAME_SUCCESS:
@@ -171,7 +171,7 @@ int handlePLG(protocolMessage message) {
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RLG", "ERR"});
+      response = buildSplitStringNewline({"ERR"});
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
@@ -215,7 +215,7 @@ int handlePWG(protocolMessage message) {
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"RWG", "ERR"});
+      response = buildSplitStringNewline({"ERR"});
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
