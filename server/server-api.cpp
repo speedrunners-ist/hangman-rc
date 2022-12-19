@@ -420,8 +420,7 @@ int getState(std::string plid, std::string &response, std::string &filePath) {
     filePath = PLID_GAMES_DIR(plid) + "/" + mostRecentGame;
   } else {
     filePath = ONGOING_GAMES_PATH(plid);
-    int ret = createPlaceholderState(plid, filePath);
-    if (ret != 0) {
+    if (createPlaceholderState(plid, filePath) != 0) {
       return STATE_NOK;
     }
   }
