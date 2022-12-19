@@ -24,7 +24,6 @@ function run_command() {
         echo -e "${GREEN}Test passed${NC}"
         CORRECT_TESTS=$((CORRECT_TESTS+1))
     fi
-    TOTAL_TESTS=$((TOTAL_TESTS+1))
 }
 
 function handle_test() {
