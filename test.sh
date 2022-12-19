@@ -2,6 +2,8 @@
 
 MY_IP=$(curl -s http://ipecho.net/plain)
 TEJO="nc tejo.tecnico.ulisboa.pt 59000"
+TOTAL_TESTS=$(ls tests/scripts/*.txt | wc -l)
+CORRECT_TESTS=0
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
