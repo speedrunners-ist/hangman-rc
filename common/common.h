@@ -138,7 +138,7 @@ public:
 };
 
 // Default value for the server's IP address, if none is provided.
-#define DEFAULT_GSIP "tejo.tecnico.ulisboa.pt"
+#define DEFAULT_GSIP "localhost"
 // Default value for the server's port, if none is provided.
 #define DEFAULT_GSPORT "58045"
 
