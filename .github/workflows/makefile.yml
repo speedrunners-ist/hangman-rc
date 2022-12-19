@@ -14,14 +14,16 @@ jobs:
 
     runs-on: ubuntu-latest
 
+
     steps:
     - uses: actions/checkout@v3
+
+    - name: Test
+      run: |
+        ping -c 5 google.com
 
     - name: Compile code
       run: make
 
     - name: Clean
       run: make clean
-    
-    - name: Test
-      run: make test
