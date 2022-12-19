@@ -17,5 +17,5 @@ jobs:
     - name: Compile code
       run: make
 
-    - test: Run Tests
+    - name: Run Tests
        run: ./test.sh
