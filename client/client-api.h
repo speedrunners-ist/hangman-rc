@@ -3,18 +3,6 @@
 
 #include "common/common.h"
 
-typedef struct {
-  std::string expectedMessage;
-  struct addrinfo *res;
-  struct addrinfo hints;
-  struct sigaction act;
-  bool isConnected;
-  __socket_type type;
-  int fd;
-} socketInfo;
-
-#define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
-
 /**
  * @brief Creates a GameState instance, with the given parameters.
  *

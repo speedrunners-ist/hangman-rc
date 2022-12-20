@@ -2,50 +2,23 @@
 
 socketInfo socketTCP, socketUDP;
 
-// Creation and retrieval of client socket information (both UDP and TCP)
+void signalHandler(int signum) {
+  std::cout << std::endl << SIGNAL(signum) << std::endl;
+  disconnect(getSocket(SOCK_DGRAM));
+  disconnect(getSocket(SOCK_STREAM));
+  std::cout << EXIT_PROGRAM << std::endl;
+  exit(signum);
+}
 
-int createSocket(__socket_type type, peerInfo peer) {
-  socketInfo socket;
-  socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
-  if (socket.fd == -1) {
-    std::cerr << SOCKET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
+int createSocket(__socket_type type, peerInfo peer, sighandler_t handler) {
+  socketInfo socket = handleSocketCreation(type, peer, handler);
+  if (type == SOCK_DGRAM) {
+    socketUDP = socket;
+    return socketUDP.fd;
   }
-
-  if (type == SOCK_STREAM) {
-    socket.isConnected = true;
-    if (connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
-      std::cerr << TCP_SERVER_ERROR << std::endl;
-      disconnect(socket);
-      return -1;
-    }
-  }
-
-  if (turnOnSocketTimer(socket.fd) == -1) {
-    disconnect(socket);
-    return -1;
-  }
-
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
-
-  memset(&socket.act, 0, sizeof(socket.act));
-  socket.act.sa_handler = SIG_IGN;
-
-  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
-  if (sigaction(SIGPIPE, &socket.act, NULL) == -1) {
-    std::cerr << SIGACTION_ERROR << std::endl;
-    disconnect(socket);
-    return -1;
-  }
-  socket.type = type;
-  if (type == SOCK_STREAM) {
-    socket.isConnected = true;
-    socketTCP = socket;
-    return socketTCP.fd;
-  }
-  socketUDP = socket;
-  return socket.fd;
+  socket.isConnected = true;
+  socketTCP = socket;
+  return socketTCP.fd;
 }
 
 int disconnect(socketInfo socket) {

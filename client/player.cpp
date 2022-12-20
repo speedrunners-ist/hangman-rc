@@ -13,14 +13,6 @@ commandHandler handlePlayerMessage = {
 };
 // clang-format on
 
-void signalHandler(int signum) {
-  std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnect(getSocket(SOCK_DGRAM));
-  disconnect(getSocket(SOCK_STREAM));
-  std::cout << EXIT_PROGRAM << std::endl;
-  exit(signum);
-}
-
 int main(int argc, char *argv[]) {
   int opt;
   std::string GSIP = DEFAULT_GSIP;
@@ -50,7 +42,7 @@ int main(int argc, char *argv[]) {
   }
 
   const peerInfo peer = {GSIP, GSport};
-  if (createSocket(SOCK_DGRAM, peer) == -1) {
+  if (createSocket(SOCK_DGRAM, peer, (sighandler_t)signalHandler) == -1) {
     exit(EXIT_FAILURE);
   }
 

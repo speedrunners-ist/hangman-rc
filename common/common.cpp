@@ -151,6 +151,46 @@ int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct 
   return fd;
 }
 
+socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler) {
+  socketInfo socket;
+  socket.created = false;
+  socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
+  if (socket.fd == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (type == SOCK_STREAM) {
+    socket.isConnected = true;
+    if (connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
+      std::cerr << CONNECTION_ERROR << std::endl;
+      disconnectSocket(socket.res, socket.fd);
+      return socket;
+    }
+  }
+
+  if (turnOnSocketTimer(socket.fd) == -1) {
+    disconnectSocket(socket.res, socket.fd);
+    return socket;
+  }
+
+  signal(SIGINT, handler);
+  signal(SIGTERM, handler);
+
+  memset(&socket.act, 0, sizeof(socket.act));
+  socket.act.sa_handler = SIG_IGN;
+
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &socket.act, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectSocket(socket.res, socket.fd);
+    return socket;
+  }
+  // Everything went well, we can return the socket as created
+  socket.created = true;
+  return socket;
+}
+
 int disconnectSocket(struct addrinfo *res, int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));

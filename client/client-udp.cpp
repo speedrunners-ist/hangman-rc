@@ -153,6 +153,9 @@ int handleRLG(protocolMessage response) {
   }
   if (response.status == "ERR") {
     std::cout << RLG_ERR << std::endl;
+    if (checkFinishedGame()) {
+      resetGame();
+    }
     return 0;
   }
   return -1;

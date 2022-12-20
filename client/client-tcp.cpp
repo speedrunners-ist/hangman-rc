@@ -11,7 +11,7 @@ responseHandler handleTCPServerMessage = {
 
 int generalTCPHandler(std::string message, peerInfo peer) {
   protocolMessage serverMessage;
-  if (createSocket(SOCK_STREAM, peer) == -1) {
+  if (createSocket(SOCK_STREAM, peer, (sighandler_t)signalHandler) == -1) {
     return -1;
   }
 

@@ -267,14 +267,18 @@ int sendSTA(messageInfo info);
 
 // UDP/TCP socket creation and retrieval functions
 
+// TODO: add docs
+void signalHandler(int signum);
+
 /**
  * @brief Creates a new UDP socket.
  *
  * @param type The type of socket to be created.
  * @param peer The peer to be connected to.
+ * @param handler The signal handler to be used.
  * @return The socket's file descriptor.
  */
-int createSocket(__socket_type type, peerInfo peer);
+int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
 
 // FIXME: add docs
 int disconnect(socketInfo socket);

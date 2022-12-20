@@ -78,6 +78,18 @@ typedef struct {
   peerInfo peer;
 } messageInfo;
 
+// TODO: add documentation
+typedef struct {
+  std::string expectedMessage;
+  struct addrinfo *res;
+  struct addrinfo hints;
+  struct sigaction act;
+  bool isConnected;
+  bool created;
+  __socket_type type;
+  int fd;
+} socketInfo;
+
 // Handler maps, used to store the functions that will handle the commands and responses.
 typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
 typedef std::map<std::string, std::function<int(protocolMessage response)>> responseHandler;
@@ -169,6 +181,7 @@ public:
 #define SENDTO_ERROR "[ERR]: Failed to send message."
 #define RECVFROM_ERROR "[ERR]: Failed to receive message."
 #define SIGACTION_ERROR "[ERR]: Failed to set action."
+#define CONNECTION_ERROR "[ERR]: Failed to connect to peer."
 
 #define ERR "ERR\n"
 
@@ -224,6 +237,9 @@ public:
  * @return The socket's file descriptor.
  */
 int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
+
+// TODO: add documentation
+socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler);
 
 /**
  * @brief Handle graceful disconnection of a socket.
@@ -429,13 +445,6 @@ bool forceExit(GameState state, std::string command);
  * @param buffer: Buffer to be cleared.
  */
 void continueReading(char *buffer);
-
-/**
- * @brief Gracefully handles a given signal.
- *
- * @param signum: Signal to be handled.
- */
-void signalHandler(int signum);
 
 /**
  * @brief Converts a given string to lowercase.
