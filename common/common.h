@@ -223,7 +223,7 @@ public:
  * @param serverInfo Pointer to a struct addrinfo that will be filled with the server's address info.
  * @return The socket's file descriptor.
  */
-int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
+int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
 
 /**
  * @brief Handle graceful disconnection of a socket.

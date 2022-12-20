@@ -56,7 +56,6 @@
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from general incorrect input usage to command-specific errors.
 
-#define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                                  \
@@ -117,36 +116,6 @@
 
 // File name for the state file
 #define ST_PATH(name) ST_DIR + name
-
-/**
- * @brief Creates a socket for UDP communication with the server.
- *
- * @param peer The peerInfo struct containing the server's IP and port.
- * @return The socket's file descriptor.
- */
-int createSocketUDP(peerInfo peer);
-
-/**
- * @brief Creates a socket for TCP communication with the server.
- *
- * @param peer The peerInfo struct containing the server's IP and port.
- * @return The socket's file descriptor.
- */
-int createSocketTCP(peerInfo peer);
-
-/**
- * @brief Ends the UDP communication with the server.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectUDP();
-
-/**
- * @brief Ends the TCP communication with the server.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectTCP();
 
 /**
  * @brief Centralized UDP communication handler with the server.

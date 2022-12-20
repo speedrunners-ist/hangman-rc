@@ -106,7 +106,7 @@ std::string GameState::getPlayerID() { return playerID; }
 
 /*** Socket functions implementation ***/
 
-int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
+int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
   int fd = socket(AF_INET, type, 0);
   if (fd == -1) {
     std::cout << SOCKET_ERROR << std::endl;

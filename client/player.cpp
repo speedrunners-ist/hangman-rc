@@ -15,8 +15,8 @@ commandHandler handlePlayerMessage = {
 
 void signalHandler(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectUDP();
-  disconnectTCP();
+  disconnect(getSocket(SOCK_DGRAM));
+  disconnect(getSocket(SOCK_STREAM));
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   }
 
   const peerInfo peer = {GSIP, GSport};
-  if (createSocketUDP(peer) == -1) {
+  if (createSocket(SOCK_DGRAM, peer) == -1) {
     exit(EXIT_FAILURE);
   }
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << EXIT_PROGRAM << std::endl;
-  if (disconnectUDP() == -1) {
+  if (disconnect(getSocket(SOCK_DGRAM)) == -1) {
     exit(EXIT_FAILURE);
   }
   exit(EXIT_SUCCESS);

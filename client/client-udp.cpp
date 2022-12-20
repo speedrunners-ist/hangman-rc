@@ -1,11 +1,5 @@
 #include "client-protocol.h"
 
-struct addrinfo *serverInfoUDP;
-struct addrinfo hintsUDP;
-int socketFdUDP;
-struct sigaction actUDP;
-std::string expectedMessageUDP;
-
 // clang-format off
 responseHandler handleUDPServerMessage = {
   {"RSG", handleRSG},
@@ -23,46 +17,32 @@ std::map<std::string, int> expectedResponseArgs = {
 };
 // clang-format on
 
-int createSocketUDP(peerInfo peer) {
-  socketFdUDP = newSocket(SOCK_DGRAM, peer, &hintsUDP, &serverInfoUDP);
-  if (socketFdUDP == -1) {
-    std::cerr << SOCKET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
+// Since the protocol may answer with ERR if the game is already finished and we try to guess the word again,
+// we need to send back a STA request to check if the game is over. If the answer is an RST FIN, we need to reset
+// the game.
+
+bool checkFinishedGame() {
+  if (sendTCPMessage(buildSplitStringNewline({"STA", getPlayerID()}), getServerInfoTCP(), getSocketFdTCP()) == -1) {
+    return false;
   }
-
-  if (turnOnSocketTimer(socketFdUDP) == -1) {
-    disconnectUDP();
-    return -1;
+  std::string responseMessage;
+  if (receiveTCPMessage(responseMessage, TCP_DEFAULT_ARGS, getSocketFdTCP()) == -1) {
+    return false;
   }
-
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
-
-  memset(&actUDP, 0, sizeof(actUDP));
-  actUDP.sa_handler = SIG_IGN;
-
-  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
-  if (sigaction(SIGPIPE, &actUDP, NULL) == -1) {
-    std::cerr << SIGACTION_ERROR << std::endl;
-    disconnectUDP();
-    return -1;
-  }
-  return socketFdUDP;
-}
-
-int disconnectUDP() {
-  sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), serverInfoUDP, socketFdUDP);
-  return disconnectSocket(serverInfoUDP, socketFdUDP);
+  const std::string expectedMessage = "RST FIN";
+  std::cout << "[DEBUG] Received message: -" << responseMessage << "-" << std::endl;
+  std::cout << "[DEBUG] Expected message: -" << expectedMessage << "-" << std::endl;
+  return responseMessage == expectedMessage;
 }
 
 int generalUDPHandler(std::string message, size_t maxBytes) {
   char responseMessage[maxBytes + 1];
   memset(responseMessage, 0, maxBytes + 1);
   protocolMessage response;
-  if (sendUDPMessage(message, serverInfoUDP, socketFdUDP) == -1) {
+  if (sendUDPMessage(message, getServerInfoUDP(), getSocketFdUDP()) == -1) {
     return -1;
   }
-  if (receiveUDPMessage(responseMessage, maxBytes, serverInfoUDP, socketFdUDP) == -1) {
+  if (receiveUDPMessage(responseMessage, maxBytes, getServerInfoUDP(), getSocketFdUDP()) == -1) {
     return -1;
   }
   if (parseMessage(responseMessage, response) == -1) {
@@ -70,7 +50,7 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
     return -1;
   }
 
-  if (response.command != "RLG OK") {
+  if (response.command != "RLG OK") { // edge case where the number of arguments is uncertain
     // FIXME: find out if there's a better way to handle the RLG OK edge case
     try {
       if (!validArgsAmount(response.body, expectedResponseArgs[response.command])) {
@@ -90,7 +70,7 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
  */
 
 int handleRSG(protocolMessage response) {
-  if (response.request != expectedMessageUDP) {
+  if (response.request != getExpectedMessageUDP()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -125,7 +105,7 @@ int handleRSG(protocolMessage response) {
 }
 
 int handleRLG(protocolMessage response) {
-  if (response.request != expectedMessageUDP) {
+  if (response.request != getExpectedMessageUDP()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -179,7 +159,7 @@ int handleRLG(protocolMessage response) {
 }
 
 int handleRWG(protocolMessage response) {
-  if (response.request != expectedMessageUDP) {
+  if (response.request != getExpectedMessageUDP()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -217,13 +197,16 @@ int handleRWG(protocolMessage response) {
   }
   if (response.status == "ERR") {
     std::cout << RWG_ERR << std::endl;
+    if (checkFinishedGame()) {
+      resetGame();
+    }
     return 0;
   }
   return -1;
 }
 
 int handleRQT(protocolMessage response) {
-  if (response.request != expectedMessageUDP) {
+  if (response.request != getExpectedMessageUDP()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -240,7 +223,7 @@ int handleRQT(protocolMessage response) {
 }
 
 int handleRRV(protocolMessage response) {
-  if (response.request != expectedMessageUDP) {
+  if (response.request != getExpectedMessageUDP()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -266,7 +249,7 @@ int sendSNG(messageInfo info) {
   }
   setPlayerID(plid);
   const std::string message = buildSplitStringNewline({"SNG", plid});
-  expectedMessageUDP = "RSG";
+  setExpectedMessageUDP("RSG");
   return generalUDPHandler(message, RSG_BYTES);
 }
 
@@ -289,7 +272,7 @@ int sendPLG(messageInfo info) {
   const std::string message =
       buildSplitStringNewline({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
-  expectedMessageUDP = "RLG";
+  setExpectedMessageUDP("RLG");
   return generalUDPHandler(message, RLG_BYTES);
 }
 
@@ -312,7 +295,7 @@ int sendPWG(messageInfo info) {
   const std::string message =
       buildSplitStringNewline({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   setLastWordGuess(guess);
-  expectedMessageUDP = "RWG";
+  setExpectedMessageUDP("RWG");
   return generalUDPHandler(message, RWG_BYTES);
 }
 
@@ -327,7 +310,7 @@ int sendQUT(messageInfo info) {
 
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitStringNewline({"QUT", getPlayerID()});
-  expectedMessageUDP = "RQT";
+  setExpectedMessageUDP("RQT");
   if (command == "quit") {
     return generalUDPHandler(message, RQT_BYTES);
   }
@@ -344,6 +327,6 @@ int sendREV(messageInfo info) {
   }
 
   const std::string message = buildSplitStringNewline({"REV", getPlayerID()});
-  expectedMessageUDP = "RRV";
+  setExpectedMessageUDP("RRV");
   return generalUDPHandler(message, RRV_BYTES);
 }
