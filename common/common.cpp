@@ -191,7 +191,6 @@ int turnOffSocketTimer(int fd) {
   return 0;
 }
 
-// TODO: fix header function
 int parseMessage(std::string message, protocolMessage &response, bool fullMessage) {
   std::cout << "[DEBUG]: Parsing message: " << message;
   std::string auxMessage = message.substr(message.find_first_of(" \n") + 1);

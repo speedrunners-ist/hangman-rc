@@ -250,6 +250,14 @@ int turnOnSocketTimer(int socketFd);
  */
 int turnOffSocketTimer(int socketFd);
 
+/**
+ * @brief Handle parsing of a message sent from a socket.
+ * 
+ * @param message Message to be parsed.
+ * @param response Struct to store the parsed message.
+ * @param fullMessage Whether the message being handled is a full message or not.
+ * @return 0 on success, -1 on error.
+*/
 int parseMessage(std::string message, protocolMessage &response, bool fullMessage=true);
 
 /**
