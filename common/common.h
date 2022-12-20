@@ -184,7 +184,7 @@ public:
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
 #define PARSE_ERROR "[ERR]: Found error while parsing the message."
 #define UDP_RESPONSE_ERROR "[ERR]: Message does not match the UDP protocol."
-#define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."
+#define UDP_HANGMAN_ERROR "[ERR]: Server message does not match any expected protocols."
 
 #define INVALID_FILE_ARGS "[ERR]: Arguments for file transfer are invalid."
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."

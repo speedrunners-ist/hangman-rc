@@ -213,8 +213,9 @@ int parseMessage(std::string message, protocolMessage &response, bool fullMessag
     }
     response.body = message;
   } catch (const std::out_of_range &e) {
-    // FIXME: handle "ERR\n"
-    std::cerr << PARSE_ERROR << std::endl;
+    if (message != ERR) {
+      std::cerr << PARSE_ERROR << std::endl;
+    }
     return -1;
   }
 
