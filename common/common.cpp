@@ -400,16 +400,19 @@ int parseFileArgs(fileInfo &info, int fd) {
     std::cerr << TCP_FILE_ARGS_ERROR << std::endl;
     return -1;
   }
-  info.fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
-  fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
-  info.fileSize = std::stoi(fileArgs.substr(0, fileArgs.find_first_of(' ')));
-  fileArgs.erase(0, fileArgs.find_first_of(' '));
-  info.delimiter = fileArgs[0];
-  if (info.delimiter == ' ') {
-    return 0;
+
+  try {
+    info.fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
+    fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
+    info.fileSize = std::stoul(fileArgs.substr(0, fileArgs.find_first_of(' ')));
+    fileArgs.erase(0, fileArgs.find_first_of(' '));
+    info.delimiter = (fileArgs[0] == ' ') ? ' ' : throw std::invalid_argument("Delimiter not found");
+  } catch (const std::exception &e) {
+    std::cerr << INVALID_FILE_ARGS << std::endl;
+    return -1;
   }
-  std::cerr << INVALID_FILE_ARGS << std::endl;
-  return -1;
+
+  return 0;
 }
 
 /*** Misc functions implementation ***/
@@ -487,11 +490,7 @@ bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
   int arg;
   while (ss >> token) {
     try {
-      arg = std::stoi(token);
-      if (arg < 0) {
-        std::cout << "[ERR]: Invalid argument: " << token << std::endl;
-        return false;
-      }
+      arg = std::stoul(token);
       args.push_back(arg);
       tokens.push_back(token);
       readArgs++;
