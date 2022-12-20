@@ -138,7 +138,7 @@ int handleRLG(protocolMessage response) {
     }
     const int trial = args[0];
     const int n = args[1];
-    if (trial != getTrials() + 1 || n <= 0 || n >= 100) {
+    if (trial != getTrials() + 1 || n <= 0 || n >= getWordLength()) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
