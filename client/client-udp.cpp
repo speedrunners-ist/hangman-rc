@@ -138,7 +138,7 @@ int handleRLG(protocolMessage response) {
     }
     const int trial = args[0];
     const int n = args[1];
-    if (trial <= 0 || trial != getTrials() + 1 || n <= 0 || n >= 100) {
+    if (trial != getTrials() + 1 || n <= 0 || n >= 100) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
@@ -191,7 +191,7 @@ int handleRWG(protocolMessage response) {
       return -1;
     }
     const int trial = args[0];
-    if (trial <= 0 || trial != getTrials() + 1) {
+    if (trial != getTrials() + 1) {
       std::cerr << RWG_ERROR << std::endl;
       return -1;
     }
