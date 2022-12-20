@@ -317,10 +317,7 @@ int sendTCPFile(std::string info, struct addrinfo *res, int fd, std::string file
 
   file.close();
   // in the end, we must send the final delimiter, \n
-  // if (sendTCPMessage("\n", fd) == -1) {
-  //   return -1;
-  // }
-  return 0;
+  return sendTCPMessage("\n", res, fd);
 }
 
 int receiveTCPMessage(std::string &message, int args, int fd) {
@@ -371,14 +368,24 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   do {
     memset(buffer, 0, TCP_CHUNK_SIZE);
     bytesReceived = read(fd, buffer, (TCP_CHUNK_SIZE > bytesLeft) ? bytesLeft : TCP_CHUNK_SIZE);
+    bytesRead += (size_t)bytesReceived;
+    bytesLeft -= (size_t)bytesReceived;
     if (bytesReceived == -1) {
       std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
       return -1;
     }
     file.write(buffer, bytesReceived);
-    bytesRead += (size_t)bytesReceived;
-    bytesLeft -= (size_t)bytesReceived;
   } while (bytesReceived != 0 && bytesLeft > 0);
+
+  // check if the final delimiter is a \n
+  char c;
+  if (read(fd, &c, 1) == -1) {
+    std::cerr << TCP_RECV_MESSAGE_ERROR << std::endl;
+    return -1;
+  } else if (c != '\n') {
+    std::cerr << TCP_RESPONSE_ERROR << std::endl;
+    return -1;
+  }
 
   file.close();
   return (int)bytesRead;
