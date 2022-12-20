@@ -82,7 +82,7 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
       return -1;
     }
   }
-  return messageUDPHandler(socketFdUDP, serverInfoUDP, response, handleUDPServerMessage);
+  return messageUDPHandler(response, handleUDPServerMessage);
 }
 
 /**

@@ -257,12 +257,15 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
   return 0;
 }
 
-int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler) {
+int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd, struct addrinfo *res) {
   try {
     return handler[message.request](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), res, fd);
+    if (fd == NULL || res == NULL) {
+      return -1;
+    }
+    return sendUDPMessage(ERR, res, fd);
   }
 }
 
@@ -384,12 +387,15 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   return (int)bytesRead;
 }
 
-int messageTCPHandler(protocolMessage &message, responseHandler handler) {
+int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd, struct addrinfo *res) {
   try {
     return handler[message.request](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return -1;
+    if (fd == NULL || res == NULL) {
+      return -1;
+    }
+    return sendTCPMessage(ERR, res, fd);
   }
 }
 

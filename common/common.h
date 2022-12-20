@@ -276,13 +276,13 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
 /**
  * @brief Handle receiving of a parsed UDP message (with possible send of a response).
  * 
- * @param fd The socket's file descriptor.
- * @param res The socket's address info.
  * @param message The previously parsed message.
  * @param handler The function to be called to handle the message.
+ * @param fd The socket's file descriptor.
+ * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler);
+int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd=NULL, struct addrinfo *res=NULL);
 
 /**
  * @brief Handle sending of a TCP message.
@@ -330,9 +330,11 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd);
  * 
  * @param message The previously parsed message.
  * @param handler The function to be called to handle the message.
+ * @param fd The socket's file descriptor.
+ * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageTCPHandler(protocolMessage &message, responseHandler handler);
+int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd=NULL, struct addrinfo *res=NULL);
 
 /**
  * @brief Parses the server-sent file information for the following file transfer.

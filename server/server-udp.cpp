@@ -95,7 +95,7 @@ int generalUDPHandler(peerInfo peer) {
     if (verboseUDP) {
       std::cout << "[INFO]: Received the following message: " << request.body << std::endl;
     }
-    messageUDPHandler(socketFdUDP, resUDP, request, handleUDPClientMessage);
+    messageUDPHandler(request, handleUDPClientMessage, socketFdUDP, resUDP);
   }
 
   return 0;
