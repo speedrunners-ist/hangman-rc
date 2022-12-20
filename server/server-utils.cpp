@@ -51,7 +51,7 @@ int transferGameFile(std::string plid) {
   try {
     std::filesystem::copy(oldFile, newFile);
     std::filesystem::remove(oldFile);
-  } catch (std::filesystem::filesystem_error &e) {
+  } catch (const std::filesystem::filesystem_error &e) {
     std::cerr << e.what() << std::endl; // something went wrong, macro this
     return -1;
   }
@@ -152,7 +152,7 @@ int createPlaceholderState(std::string plid, std::string filePath) {
   try {
     if (!std::filesystem::exists(dir))
       std::filesystem::create_directory(dir);
-  } catch (std::filesystem::filesystem_error &e) {
+  } catch (const std::filesystem::filesystem_error &e) {
     std::cerr << e.what() << std::endl;
     return -1;
   }

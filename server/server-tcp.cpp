@@ -109,16 +109,16 @@ int generalTCPHandler(peerInfo peer) {
         displayPeerInfo(resTCP, hostTCP, serviceTCP, "TCP");
       }
 
-      if (parseTCPMessage(std::string(bufferTCP), request) == -1) {
+      if (parseMessage(std::string(bufferTCP), request) == -1) {
         std::cerr << PARSE_ERROR << std::endl;
-        sendTCPMessage(buildSplitStringNewline({"ERR"}), resTCP, newConnectionFd);
+        sendTCPMessage(ERR, resTCP, newConnectionFd);
         continue;
       }
 
       if (verboseTCP) {
         std::cout << "[INFO]: Received the following message: " << request.body;
       }
-      messageTCPHandler(request, handleTCPClientMessage);
+      messageTCPHandler(request, handleTCPClientMessage, newConnectionFd, resTCP);
       if (close(newConnectionFd) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
@@ -137,7 +137,7 @@ int generalTCPHandler(peerInfo peer) {
 int handleGSB(protocolMessage message) {
   if (!validArgsAmount(message.body, GSB_ARGS)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitStringNewline({"ERR"});
+    std::string response = ERR;
     return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
@@ -154,14 +154,14 @@ int handleGSB(protocolMessage message) {
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
-  return sendTCPMessage(buildSplitStringNewline({"ERR"}), resTCP, newConnectionFd);
+  return sendTCPMessage(ERR, resTCP, newConnectionFd);
 }
 
 int handleGHL(protocolMessage message) {
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   if (!validArgsAmount(message.body, GHL_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitStringNewline({"ERR"});
+    std::string response = ERR;
     return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
@@ -181,12 +181,12 @@ int handleGHL(protocolMessage message) {
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
-  response = buildSplitStringNewline({"ERR"});
+  response = ERR;
   return sendTCPMessage(response, resTCP, newConnectionFd);
 }
 
 int handleSTA(protocolMessage message) {
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   if (!validArgsAmount(message.body, STA_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"RST", "NOK"});

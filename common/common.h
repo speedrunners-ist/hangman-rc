@@ -28,17 +28,17 @@
  * easily retrieve both the command and the status (and, if needed, the whole message's
  * body) from a given message.
  *
- * @param first The command of the message.
- * @param firstPos The position of the space after the command in the message.
- * @param second The status of the message.
- * @param secondPos The position of the space after the status in the message.
+ * @param command The message's command (e.g. "RSG OK").
+ * @param request The message's general request (e.g. "RSG").
+ * @param status The message's status (e.g. "OK").
+ * @param args The message's arguments (e.g. "5 10").
  * @param body The body of the message.
  */
 typedef struct {
-  std::string first;
-  size_t firstPos;
-  std::string second;
-  size_t secondPos;
+  std::string command;
+  std::string request;
+  std::string status;
+  std::string args;
   std::string body;
 } protocolMessage;
 
@@ -51,7 +51,7 @@ typedef struct {
  */
 typedef struct {
   std::string fileName;
-  int fileSize;
+  size_t fileSize;
   char delimiter;
 } fileInfo;
 
@@ -184,7 +184,7 @@ public:
 #define UDP_SOCKET_CLOSE_ERROR "[ERR]: Failed to close UDP socket."
 #define PARSE_ERROR "[ERR]: Found error while parsing the message."
 #define UDP_RESPONSE_ERROR "[ERR]: Message does not match the UDP protocol."
-#define UDP_HANGMAN_ERROR "[ERR]: Message body does not match any expected protocols."
+#define UDP_HANGMAN_ERROR "[ERR]: Server message does not match any expected protocols."
 
 #define INVALID_FILE_ARGS "[ERR]: Arguments for file transfer are invalid."
 #define FILE_OPEN_ERROR "[ERR]: Failed to open file."
@@ -251,13 +251,14 @@ int turnOnSocketTimer(int socketFd);
 int turnOffSocketTimer(int socketFd);
 
 /**
- * @brief Handle parsing of a UDP message.
+ * @brief Handle parsing of a message sent from a socket.
  * 
  * @param message Message to be parsed.
  * @param response Struct to store the parsed message.
+ * @param fullMessage Whether the message being handled is a full message or not.
  * @return 0 on success, -1 on error.
- */
-int parseUDPMessage(std::string message, protocolMessage &response);
+*/
+int parseMessage(std::string message, protocolMessage &response, bool fullMessage=true);
 
 /**
  * @brief Handle sending of a UDP message.
@@ -283,22 +284,13 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
 /**
  * @brief Handle receiving of a parsed UDP message (with possible send of a response).
  * 
- * @param fd The socket's file descriptor.
- * @param res The socket's address info.
  * @param message The previously parsed message.
  * @param handler The function to be called to handle the message.
+ * @param fd The socket's file descriptor.
+ * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler);
-
-/**
- * @brief Handle parsing of a TCP message.
- * 
- * @param message Message to be parsed.
- * @param serverMessage Struct to store the parsed message.
- * @return 0 on success, -1 on error.
- */
-int parseTCPMessage(std::string message, protocolMessage &serverMessage);
+int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd=-1, struct addrinfo *res=NULL);
 
 /**
  * @brief Handle sending of a TCP message.
@@ -346,9 +338,11 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd);
  * 
  * @param message The previously parsed message.
  * @param handler The function to be called to handle the message.
+ * @param fd The socket's file descriptor.
+ * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageTCPHandler(protocolMessage &message, responseHandler handler);
+int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd=-1, struct addrinfo *res=NULL);
 
 /**
  * @brief Parses the server-sent file information for the following file transfer.
@@ -410,14 +404,15 @@ int displayFile(std::string filePath);
 bool validArgsAmount(std::string input, int n);
 
 /**
- * @brief Checks if a given response is valid (considering expected args amount and valid arguments).
- *
- * @param body: Response body to be checked.
- * @param args: To-be-stored argument list.
+ * @brief Checks if a string has a given amount of arguments - strings split by spaces.
+ * If the string has the expected amount of arguments, the arguments are stored in a vector.
+ * 
+ * @param body: String to be checked.
+ * @param args: Vector of strings to be filled with the arguments.
  * @param expectedArgs: Expected amount of arguments.
- * @return True if the response is valid, false otherwise.
+ * @return True if the string has the expected amount of arguments, false otherwise.
  */
-bool validResponse(std::string body, std::vector<int> &args, int expectedArgs);
+bool gatherResponseArguments(std::string body, std::vector<int> &args, int expectedArgs);
 
 /**
  * @brief Forces the exit of the program.

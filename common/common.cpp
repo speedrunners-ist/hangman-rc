@@ -191,29 +191,34 @@ int turnOffSocketTimer(int fd) {
   return 0;
 }
 
-/*** UDP message parsing/sending implementation ***/
-
-int parseUDPMessage(std::string message, protocolMessage &response) {
+int parseMessage(std::string message, protocolMessage &response, bool fullMessage) {
   std::cout << "[DEBUG]: Parsing message: " << message;
-  const size_t pos1 = message.find(' ');
-  if (pos1 == std::string::npos) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
+  std::string auxMessage = message.substr(message.find_first_of(" \n") + 1);
+
+  try {
+    response.request = message.substr(0, message.find_first_of(" \n"));
+    response.status = auxMessage.substr(0, auxMessage.find_first_of(" \n"));
+    response.command = buildSplitString({response.request, response.status});
+    if (fullMessage && message.find_last_of("\n") != message.length() - 1) {
+      throw std::out_of_range("No newline at the end of the message");
+    }
+    message.erase(std::remove(message.begin(), message.end(), '\n'), message.end());
+    if (message.find(response.command) + response.command.length() < message.length()) {
+      response.args = message.substr(message.find(response.command) + response.command.length() + 1);
+    }
+    response.body = message;
+  } catch (const std::out_of_range &e) {
+    if (message != ERR) {
+      std::cerr << PARSE_ERROR << std::endl;
+    }
     return -1;
   }
 
-  const std::string code = message.substr(0, pos1);
-  const size_t pos2 = message.find_first_of(" \n", pos1 + 1);
-  const char delimiter = message[pos2];
-  if ((delimiter == ' ' && pos2 == std::string::npos) || (delimiter == '\n' && pos2 != message.size() - 1)) {
-    std::cerr << UDP_HANGMAN_ERROR << std::endl;
-    return -1;
-  }
-
-  const std::string status = message.substr(pos1 + 1, pos2 - pos1 - 1);
-  response = {code, pos1, status, pos2, message};
   std::cout << "[DEBUG]: Finished parsing message" << std::endl;
   return 0;
 }
+
+/*** UDP message parsing/sending implementation ***/
 
 int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
   if (res == NULL) {
@@ -221,6 +226,7 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
+  std::cout << "[DEBUG]: Sending UDP message: " << message;
   if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
@@ -239,42 +245,22 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
     std::cerr << RECVFROM_ERROR << std::endl;
     return -1;
   }
-  if (response[bytesReceived - 1] != '\n') {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return -1;
-  }
   return 0;
 }
 
-int messageUDPHandler(int fd, struct addrinfo *res, protocolMessage &message, responseHandler handler) {
+int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd, struct addrinfo *res) {
   try {
-    return handler[message.first](message);
+    return handler[message.request](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), res, fd);
+    if (fd == -1 || res == NULL) {
+      return -1;
+    }
+    return sendUDPMessage(ERR, res, fd);
   }
 }
 
 /*** TCP message parsing/sending implementation ***/
-
-int parseTCPMessage(std::string message, protocolMessage &serverMessage) {
-  std::string responseBegin;
-  std::string plid;
-  std::string command;
-  try {
-    responseBegin = message;
-    command = responseBegin.substr(0, 3);
-    responseBegin.erase(0, 4);
-    plid = responseBegin.substr(0, responseBegin.find_first_of(" \n"));
-  } catch (const std::exception &e) {
-    std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return -1;
-  }
-  serverMessage.first = command;
-  serverMessage.second = plid;
-  serverMessage.body = message;
-  return 0;
-}
 
 int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
   if (res == NULL) {
@@ -282,6 +268,7 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
+  std::cout << "[DEBUG]: Sending TCP message: " << message;
   if (write(fd, message.c_str(), message.length()) == -1) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;
@@ -350,7 +337,7 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
 
   ssize_t bytesReceived = 0;
   size_t bytesRead = 0;
-  size_t bytesLeft = (size_t)info.fileSize;
+  size_t bytesLeft = info.fileSize;
   // create directory if it doesn't exist
   std::filesystem::path dirPath(dir);
   if (!std::filesystem::exists(dirPath)) {
@@ -391,12 +378,15 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   return (int)bytesRead;
 }
 
-int messageTCPHandler(protocolMessage &message, responseHandler handler) {
+int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd, struct addrinfo *res) {
   try {
-    return handler[message.first](message);
+    return handler[message.request](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return -1;
+    if (fd == -1 || res == NULL) {
+      return -1;
+    }
+    return sendTCPMessage(ERR, res, fd);
   }
 }
 
@@ -407,16 +397,19 @@ int parseFileArgs(fileInfo &info, int fd) {
     std::cerr << TCP_FILE_ARGS_ERROR << std::endl;
     return -1;
   }
-  info.fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
-  fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
-  info.fileSize = std::stoi(fileArgs.substr(0, fileArgs.find_first_of(' ')));
-  fileArgs.erase(0, fileArgs.find_first_of(' '));
-  info.delimiter = fileArgs[0];
-  if (info.delimiter == ' ') {
-    return 0;
+
+  try {
+    info.fileName = fileArgs.substr(0, fileArgs.find_first_of(' '));
+    fileArgs.erase(0, fileArgs.find_first_of(' ') + 1);
+    info.fileSize = std::stoul(fileArgs.substr(0, fileArgs.find_first_of(' ')));
+    fileArgs.erase(0, fileArgs.find_first_of(' '));
+    info.delimiter = (fileArgs[0] == ' ') ? ' ' : throw std::invalid_argument("Delimiter not found");
+  } catch (const std::exception &e) {
+    std::cerr << INVALID_FILE_ARGS << std::endl;
+    return -1;
   }
-  std::cerr << INVALID_FILE_ARGS << std::endl;
-  return -1;
+
+  return 0;
 }
 
 /*** Misc functions implementation ***/
@@ -486,24 +479,25 @@ bool validArgsAmount(std::string input, int n) {
   return std::count(input.begin(), input.end(), ' ') == n - 1;
 }
 
-bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
+bool gatherResponseArguments(std::string body, std::vector<int> &args, int expectedArgs) {
   std::stringstream ss(body);
   std::vector<std::string> tokens;
   std::string token;
   int readArgs = 0;
-  int arg;
+  unsigned long arg;
   while (readArgs < expectedArgs && ss >> token) {
     try {
-      arg = std::stoi(token);
-      args.push_back(arg);
+      arg = std::stoul(token);
+      args.push_back((int)arg);
       tokens.push_back(token);
       readArgs++;
-    } catch (std::invalid_argument &e) {
-      std::cout << "[ERR]: Invalid argument: " << token << std::endl;
+    } catch (const std::exception &e) {
+      std::cerr << "[ERR]: Invalid argument: " << token << std::endl;
       return false;
     }
   }
-  return readArgs == expectedArgs;
+  
+  return true;
 }
 
 bool forceExit(GameState state, std::string command) { return command == "exit" && !state.isActive(); }

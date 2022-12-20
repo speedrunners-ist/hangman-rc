@@ -86,16 +86,16 @@ int generalUDPHandler(peerInfo peer) {
     memset(lastMessage, 0, UDP_RECV_SIZE);
     memcpy(lastMessage, bufferUDP, strlen(bufferUDP) + 1);
 
-    if (parseUDPMessage(std::string(bufferUDP), request) == -1) {
+    if (parseMessage(std::string(bufferUDP), request) == -1) {
       std::cerr << PARSE_ERROR << std::endl;
-      sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+      sendUDPMessage(ERR, resUDP, socketFdUDP);
       continue;
     }
 
     if (verboseUDP) {
-      std::cout << "[INFO]: Received the following message: " << request.body;
+      std::cout << "[INFO]: Received the following message: " << request.body << std::endl;
     }
-    messageUDPHandler(socketFdUDP, resUDP, request, handleUDPClientMessage);
+    messageUDPHandler(request, handleUDPClientMessage, socketFdUDP, resUDP);
   }
 
   return 0;
@@ -103,12 +103,12 @@ int generalUDPHandler(peerInfo peer) {
 
 // Server message handlers
 int handleSNG(protocolMessage message) {
-  if (!validArgsAmount(message.body, SNG_ARGS) || !validPlayerID(message.second)) {
+  if (!validArgsAmount(message.body, SNG_ARGS) || !validPlayerID(message.status)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"RSG, ERR"}), resUDP, socketFdUDP);
   }
 
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   std::string gameInfo;
   const int ret = createGameSession(plid, gameInfo);
   switch (ret) {
@@ -123,26 +123,26 @@ int handleSNG(protocolMessage message) {
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"ERR"});
+      response = ERR;
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
 int handlePLG(protocolMessage message) {
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   if (!validArgsAmount(message.body, PLG_ARGS) || !validPlayerID(plid)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(ERR, resUDP, socketFdUDP);
   }
 
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
-  const std::string args = message.body.substr(message.secondPos + 1);
+  const std::string args = message.args;
   const std::string letter = args.substr(0, 1);
   const std::string trial = args.substr(2);
 
   if (isdigit(letter[0]) || args[1] != ' ' || !isNumber(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(ERR, resUDP, socketFdUDP);
   }
 
   std::string guessInfo;
@@ -171,25 +171,25 @@ int handlePLG(protocolMessage message) {
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"ERR"});
+      response = ERR;
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
 int handlePWG(protocolMessage message) {
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   if (!validArgsAmount(message.body, PWG_ARGS) || !validPlayerID(plid)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(ERR, resUDP, socketFdUDP);
   }
 
   message.body.erase(std::remove(message.body.begin(), message.body.end(), '\n'), message.body.end());
-  const std::string args = message.body.substr(message.secondPos + 1);
+  const std::string args = message.args;
   const std::string word = args.substr(0, args.find(' '));
   const std::string trial = args.substr(args.find(' ') + 1);
   if (!hasWordFormat(word) || !isNumber(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(ERR, resUDP, socketFdUDP);
   }
 
   std::string guessInfo;
@@ -215,18 +215,18 @@ int handlePWG(protocolMessage message) {
       break;
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
-      response = buildSplitStringNewline({"ERR"});
+      response = ERR;
   }
   return sendUDPMessage(response, resUDP, socketFdUDP);
 }
 
 int handleQUT(protocolMessage message) {
-  if (!validArgsAmount(message.body, QUT_ARGS) || !validPlayerID(message.second)) {
+  if (!validArgsAmount(message.body, QUT_ARGS) || !validPlayerID(message.status)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"RQT", "ERR"}), resUDP, socketFdUDP);
   }
 
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   const int ret = closeGameSession(plid);
   switch (ret) {
     case CLOSE_GAME_SUCCESS:
@@ -243,12 +243,12 @@ int handleQUT(protocolMessage message) {
 }
 
 int handleREV(protocolMessage message) {
-  if (!validArgsAmount(message.body, REV_ARGS) || !validPlayerID(message.second)) {
+  if (!validArgsAmount(message.body, REV_ARGS) || !validPlayerID(message.status)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"ERR"}), resUDP, socketFdUDP);
+    return sendUDPMessage(ERR, resUDP, socketFdUDP);
   }
 
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   std::string word;
   const int ret = revealWord(plid, word);
   switch (ret) {

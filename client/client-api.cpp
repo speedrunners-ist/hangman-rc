@@ -78,6 +78,7 @@ void printHelpMenu() {
 }
 
 void displayCurrentInformation() {
+  std::cout << "----------------------------------------" << std::endl;
   if (state.isActive()) {
     std::cout << "Current game information:" << std::endl;
     std::cout << "  - Word (as currently guessed): " << getWord() << std::endl;
