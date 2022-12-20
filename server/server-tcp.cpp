@@ -109,7 +109,7 @@ int generalTCPHandler(peerInfo peer) {
         displayPeerInfo(resTCP, hostTCP, serviceTCP, "TCP");
       }
 
-      if (parseTCPMessage(std::string(bufferTCP), request) == -1) {
+      if (parseMessage(std::string(bufferTCP), request) == -1) {
         std::cerr << PARSE_ERROR << std::endl;
         sendTCPMessage(buildSplitStringNewline({"ERR"}), resTCP, newConnectionFd);
         continue;
@@ -158,7 +158,7 @@ int handleGSB(protocolMessage message) {
 }
 
 int handleGHL(protocolMessage message) {
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   if (!validArgsAmount(message.body, GHL_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"ERR"});
@@ -186,7 +186,7 @@ int handleGHL(protocolMessage message) {
 }
 
 int handleSTA(protocolMessage message) {
-  const std::string plid = message.second;
+  const std::string plid = message.status;
   if (!validArgsAmount(message.body, STA_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"RST", "NOK"});

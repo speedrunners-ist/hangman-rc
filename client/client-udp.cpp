@@ -14,6 +14,13 @@ responseHandler handleUDPServerMessage = {
   {"RQT", handleRQT},
   {"RRV", handleRRV}
 };
+
+std::map<std::string, int> expectedResponseArgs = {
+  {"RSG OK", 4},  {"RSG NOK", 2}, {"RSG ERR", 2},
+  {"RLG WIN", 3}, {"RLG DUP", 3}, {"RLG NOK", 3}, {"RLG OVR", 3}, {"RLG INV", 3}, {"RLG ERR", 2},
+  {"RWG WIN", 3}, {"RWG NOK", 3}, {"RWG OVR", 3}, {"RWG INV", 3}, {"RWG ERR", 2},
+  {"RQT OK", 2},  {"RQT NOK", 2}, {"RQT ERR", 2}
+};
 // clang-format on
 
 int createSocketUDP(peerInfo peer) {
@@ -58,9 +65,22 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
   if (receiveUDPMessage(responseMessage, maxBytes, serverInfoUDP, socketFdUDP) == -1) {
     return -1;
   }
-  if (parseUDPMessage(responseMessage, response) == -1) {
+  if (parseMessage(responseMessage, response) == -1) {
     std::cerr << UDP_HANGMAN_ERROR << std::endl;
     return -1;
+  }
+
+  if (response.command != "RLG OK") {
+    // FIXME: find out if there's a better way to handle the RLG OK edge case
+    try {
+      if (!validArgsAmount(response.body, expectedResponseArgs[response.command])) {
+        std::cerr << UDP_HANGMAN_ERROR << std::endl;
+        return -1;
+      }
+    } catch (std::exception &e) {
+      std::cerr << UDP_HANGMAN_ERROR << std::endl;
+      return -1;
+    }
   }
   return messageUDPHandler(socketFdUDP, serverInfoUDP, response, handleUDPServerMessage);
 }
@@ -70,22 +90,14 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
  */
 
 int handleRSG(protocolMessage response) {
-  if (response.first != expectedMessageUDP) {
+  if (response.request != expectedMessageUDP) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
 
-  if (response.second == "OK") {
-    std::string body;
-    try {
-      body = response.body.substr(response.secondPos + 1);
-      body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
-    } catch (std::exception &e) {
-      std::cerr << RSG_ERROR << std::endl;
-      return -1;
-    }
+  if (response.status == "OK") {
     std::vector<int> args;
-    if (!validResponse(body, args, RSG_ARGS)) {
+    if (!gatherResponseArguments(response.args, args, RSG_ARGS)) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
@@ -95,11 +107,11 @@ int handleRSG(protocolMessage response) {
     std::cout << RSG_OK(availableMistakes, word) << std::endl;
     return 0;
   }
-  if (response.second == "NOK") {
+  if (response.status == "NOK") {
     std::cout << RSG_NOK << std::endl;
     return 0;
   }
-  if (response.second == "ERR") {
+  if (response.status == "ERR") {
     std::cout << RSG_ERR << std::endl;
     return 0;
   }
@@ -107,58 +119,50 @@ int handleRSG(protocolMessage response) {
 }
 
 int handleRLG(protocolMessage response) {
-  if (response.first != expectedMessageUDP) {
+  if (response.request != expectedMessageUDP) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
 
-  if (response.second == "OK") {
-    std::string body;
-    try {
-      body = response.body.substr(response.secondPos + 1);
-      body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
-    } catch (std::exception &e) {
-      std::cerr << RLG_ERROR << std::endl;
-      return -1;
-    }
+  if (response.status == "OK") {
     std::vector<int> args;
-    if (!validResponse(body, args, RLG_ARGS)) {
+    if (!gatherResponseArguments(response.args, args, RLG_ARGS)) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
     const int n = args[1];
     for (int i = 0; i < 2; i++) {
-      // erase trial and n from body
-      body = body.substr(body.find(' ') + 1);
+      // erase trial and n from response.args
+      response.args = response.args.substr(response.args.find(' ') + 1);
     }
-    return playCorrectGuess(body, n);
+    return playCorrectGuess(response.args, n);
   }
-  if (response.second == "WIN") {
+  if (response.status == "WIN") {
     playCorrectFinalGuess();
     resetGame();
     std::cout << RLG_WIN(getWord()) << std::endl;
     return 0;
   }
-  if (response.second == "DUP") {
+  if (response.status == "DUP") {
     std::cout << RLG_DUP << std::endl;
     return 0;
   }
-  if (response.second == "NOK") {
+  if (response.status == "NOK") {
     playIncorrectGuess();
     std::cout << RLG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   }
-  if (response.second == "OVR") {
+  if (response.status == "OVR") {
     playIncorrectGuess();
     resetGame();
     std::cout << RLG_OVR << std::endl;
     return 0;
   }
-  if (response.second == "INV") {
+  if (response.status == "INV") {
     std::cout << RLG_INV << std::endl;
     return 0;
   }
-  if (response.second == "ERR") {
+  if (response.status == "ERR") {
     std::cout << RLG_ERR << std::endl;
     return 0;
   }
@@ -166,22 +170,14 @@ int handleRLG(protocolMessage response) {
 }
 
 int handleRWG(protocolMessage response) {
-  if (response.first != expectedMessageUDP) {
+  if (response.request != expectedMessageUDP) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
 
-  if (response.second == "WIN") {
-    std::string body;
-    try {
-      body = response.body.substr(response.secondPos + 1);
-      body.erase(std::remove(body.begin(), body.end(), '\n'), body.end());
-    } catch (std::exception &e) {
-      std::cerr << RWG_ERROR << std::endl;
-      return -1;
-    }
+  if (response.status == "WIN") {
     std::vector<int> args;
-    if (!validResponse(body, args, RWG_ARGS)) {
+    if (!gatherResponseArguments(response.args, args, RWG_ARGS)) {
       std::cerr << RWG_ERROR << std::endl;
       return -1;
     }
@@ -190,22 +186,22 @@ int handleRWG(protocolMessage response) {
     std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
   }
-  if (response.second == "NOK") {
+  if (response.status == "NOK") {
     playIncorrectGuess();
     std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
     return 0;
   }
-  if (response.second == "OVR") {
+  if (response.status == "OVR") {
     playIncorrectGuess();
     resetGame();
     std::cout << RWG_OVR << std::endl;
     return 0;
   }
-  if (response.second == "INV") {
+  if (response.status == "INV") {
     std::cout << RWG_INV << std::endl;
     return 0;
   }
-  if (response.second == "ERR") {
+  if (response.status == "ERR") {
     std::cout << RWG_ERR << std::endl;
     return 0;
   }
@@ -213,31 +209,29 @@ int handleRWG(protocolMessage response) {
 }
 
 int handleRQT(protocolMessage response) {
-  if (response.first != expectedMessageUDP) {
+  if (response.request != expectedMessageUDP) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
 
-  if (response.second == "OK") {
+  if (response.status == "OK") {
     resetGame();
     std::cout << RQT_OK << std::endl;
     return 0;
-  } else if (response.second == "ERR") {
-    if (response.first == "quit") {
-      std::cout << RQT_ERR << std::endl;
-    }
+  } else if (response.status == "ERR") {
+    std::cout << RQT_ERR << std::endl;
     return 0;
   }
   return -1;
 }
 
 int handleRRV(protocolMessage response) {
-  if (response.first != expectedMessageUDP) {
+  if (response.request != expectedMessageUDP) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
 
-  std::cout << RRV_OK(response.second) << std::endl;
+  std::cout << RRV_OK(response.status) << std::endl;
   return 0;
 }
 

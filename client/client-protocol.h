@@ -89,7 +89,7 @@
 #define RWG_ERR "Message was sent in an invalid format. Try again."
 
 #define RQT_OK "Game was successfully quit."
-#define RQT_ERR "Failed to quit game. Try again later."
+#define RQT_ERR "Failed to quit game."
 
 #define RRV_OK(word) "[REV]: Word is " + word
 
@@ -157,14 +157,6 @@ int disconnectTCP();
  * @return 0 if the communication was successful, -1 otherwise.
  */
 int generalUDPHandler(std::string message, size_t maxBytes);
-
-/**
- * @brief Parses the server's TCP response
- *
- * @param serverMessage The struct that holds the server's response.
- * @return 0 if the response was successfully parsed and handled, -1 otherwise.
- */
-int parseTCPResponse(protocolMessage &serverMessage);
 
 /**
  * @brief Centralized TCP communication handler with the server.
