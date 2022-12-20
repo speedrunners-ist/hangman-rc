@@ -35,23 +35,23 @@
 // Expected amount of arguments for the STA command.
 #define STA_ARGS 2
 
-// Maximum number of pending TCP connection requests
-#define MAX_TCP_CONNECTION_REQUESTS 5
+// TODO: add docs
+int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
+int disconnect(socketInfo socket);
+socketInfo getSocket(__socket_type type);
+struct addrinfo *getResUDP();
+struct addrinfo *getResTCP();
+int getSocketFdUDP();
+int getSocketFdTCP();
+bool checkVerbose();
 
 /**
- * @brief Sets up the server's UDP parameters, according to the program's parameters.
+ * @brief Sets up the server's parameters, according to the program's parameters.
  *
- * @param filepath Path to the file containing the game's words.
+ * @param filePath Path to the file containing the game's words.
  * @param vParam Whether or not the server should operate in a verbose manner.
  */
-int setServerUDPParameters(std::string filepath, bool vParam);
-
-/**
- * @brief Sets up the server's TCP parameters, according to the program's parameters.
- *
- * @param vParam Whether or not the server should operate in a verbose manner.
- */
-void setServerTCPParameters(bool vParam);
+int setServerParameters(std::string filePath, bool vParam);
 
 /**
  * @brief Closes the UDP socket and exits the program.
@@ -73,41 +73,6 @@ void signalHandlerTCP(int signum);
  * @param signum The signal's number.
  */
 void signalHandlerTCPchild(int signum);
-
-/**
- * @brief Sets up the server's UDP socket.
- *
- * @return 0 if the setup was successful, -1 otherwise.
- */
-int createSocketUDP(peerInfo peer);
-
-/**
- * @brief Sets up the server's TCP socket.
- *
- * @return 0 if the setup was successful, -1 otherwise.
- */
-int createSocketTCP(peerInfo peer);
-
-/**
- * @brief Disconnects the server from the UDP socket.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectUDP();
-
-/**
- * @brief Disconnects the server from the TCP socket.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectTCP();
-
-/**
- * @brief Disconnects the server from the TCP child socket.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectTCPchild();
 
 /**
  * @brief Centralized UDP communication handler with the client.

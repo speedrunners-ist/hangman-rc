@@ -28,12 +28,10 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << STARTING_SERVER << std::endl;
-  if (setServerUDPParameters(filePath, verbose) == -1) {
+  if (setServerParameters(filePath, verbose) == -1) {
     std::cerr << STARTING_SERVER_ERROR << std::endl;
     exit(EXIT_FAILURE);
   }
-
-  setServerTCPParameters(verbose);
 
   const peerInfo peer = {"", GSport};
   pid_t pid = fork();

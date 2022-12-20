@@ -1,23 +1,18 @@
 #include "server-protocol.h"
 
-// TCP related socket variables
-struct addrinfo hintsTCP, *resTCP;
-int socketFdTCP, newConnectionFd;
-bool verboseTCP;
-char hostTCP[NI_MAXHOST], serviceTCP[NI_MAXSERV]; // consts in <netdb.h>
+int childConnectionFd;
 char bufferTCP[TCP_CHUNK_SIZE];
-struct sigaction actTCP;
 
 void signalHandlerTCP(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectTCP();
+  disconnectSocket(getResTCP(), getSocketFdTCP());
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
 
 void signalHandlerTCPchild(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectTCPchild();
+  disconnectSocket(getResTCP(), childConnectionFd);
   exit(signum);
 }
 
@@ -29,54 +24,18 @@ responseHandler handleTCPClientMessage = {
 };
 // clang-format on
 
-void setServerTCPParameters(bool vParam) { verboseTCP = vParam; }
-
-int createSocketTCP(peerInfo peer) {
-  socketFdTCP = newSocket(SOCK_STREAM, peer, &hintsTCP, &resTCP);
-  if (socketFdTCP == -1) {
-    std::cerr << SOCKET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  if (listen(socketFdTCP, MAX_TCP_CONNECTION_REQUESTS) == -1) {
-    std::cerr << TCP_LISTEN_ERROR << std::endl;
-    return -1;
-  }
-
-  signal(SIGINT, signalHandlerTCP);
-  signal(SIGTERM, signalHandlerTCP);
-
-  // Ignore SIGCHLD to avoid zombie processes
-  memset(&actTCP, 0, sizeof(actTCP));
-  actTCP.sa_handler = SIG_IGN;
-  if (sigaction(SIGCHLD, &actTCP, NULL) == -1) {
-    std::cerr << SIGACTION_ERROR << std::endl;
-    return -1;
-  }
-
-  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
-  if (sigaction(SIGPIPE, &actTCP, NULL) == -1) {
-    std::cerr << SIGACTION_ERROR << std::endl;
-    return -1;
-  }
-
-  return socketFdTCP;
-}
-
-int disconnectTCP() { return disconnectSocket(resTCP, socketFdTCP); }
-int disconnectTCPchild() { return disconnectSocket(resTCP, newConnectionFd); }
-
 int generalTCPHandler(peerInfo peer) {
+  const bool verbose = checkVerbose();
   protocolMessage request;
   pid_t pid;
-  if (createSocketTCP(peer) == -1) {
+  if (createSocket(SOCK_STREAM, peer, signalHandlerTCP) == -1) {
     return -1;
   }
 
   // Listening for incoming connections
   while (true) {
-    newConnectionFd = accept(socketFdTCP, resTCP->ai_addr, &resTCP->ai_addrlen);
-    if (newConnectionFd == -1) {
+    childConnectionFd = accept(getSocketFdTCP(), getResTCP()->ai_addr, &getResTCP()->ai_addrlen);
+    if (childConnectionFd == -1) {
       std::cerr << TCP_ACCEPT_ERROR << std::endl;
       return -1;
     }
@@ -89,44 +48,44 @@ int generalTCPHandler(peerInfo peer) {
 
     if (pid == 0) { // Child process
       signal(SIGINT, signalHandlerTCPchild);
-      if (close(socketFdTCP) == -1) {
+      if (close(getSocketFdTCP()) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
-      } else if (turnOnSocketTimer(newConnectionFd) == -1) {
+      } else if (turnOnSocketTimer(childConnectionFd) == -1) {
         return -1;
       }
 
-      if (read(newConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
+      if (read(childConnectionFd, bufferTCP, TCP_CHUNK_SIZE) == -1) {
         std::cerr << TCP_READ_ERROR << std::endl;
         return -1;
       }
 
-      if (turnOffSocketTimer(newConnectionFd) == -1) {
+      if (turnOffSocketTimer(childConnectionFd) == -1) {
         return -1;
       }
 
-      if (verboseTCP) {
-        displayPeerInfo(resTCP, hostTCP, serviceTCP, "TCP");
+      if (verbose) {
+        displayPeerInfo(getResTCP(), "TCP");
       }
 
       if (parseMessage(std::string(bufferTCP), request) == -1) {
         std::cerr << PARSE_ERROR << std::endl;
-        sendTCPMessage(ERR, resTCP, newConnectionFd);
+        sendTCPMessage(ERR, getResTCP(), childConnectionFd);
         continue;
       }
 
-      if (verboseTCP) {
+      if (verbose) {
         std::cout << "[INFO]: Received the following message: " << request.body;
       }
-      messageTCPHandler(request, handleTCPClientMessage, newConnectionFd, resTCP);
-      if (close(newConnectionFd) == -1) {
+      messageTCPHandler(request, handleTCPClientMessage, childConnectionFd, getResTCP());
+      if (close(childConnectionFd) == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
       }
       exit(EXIT_SUCCESS);
     }
 
-    if (close(newConnectionFd) == -1) {
+    if (close(childConnectionFd) == -1) {
       std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
       return -1;
     }
@@ -138,7 +97,7 @@ int handleGSB(protocolMessage message) {
   if (!validArgsAmount(message.body, GSB_ARGS)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = ERR;
-    return sendTCPMessage(response, resTCP, newConnectionFd);
+    return sendTCPMessage(response, getResTCP(), childConnectionFd);
   }
 
   std::string response;
@@ -146,15 +105,15 @@ int handleGSB(protocolMessage message) {
   switch (ret) {
     case SCOREBOARD_EMPTY:
       response = buildSplitStringNewline({"RSB", "EMPTY"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
+      return sendTCPMessage(response, getResTCP(), childConnectionFd);
     case SCOREBOARD_SUCCESS:
     default:
       response = buildSplitString({"RSB", "OK", response});
-      return sendTCPFile(response.append(" "), resTCP, newConnectionFd, SCORES_PATH);
+      return sendTCPFile(response.append(" "), getResTCP(), childConnectionFd, SCORES_PATH);
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
-  return sendTCPMessage(ERR, resTCP, newConnectionFd);
+  return sendTCPMessage(ERR, getResTCP(), childConnectionFd);
 }
 
 int handleGHL(protocolMessage message) {
@@ -162,7 +121,7 @@ int handleGHL(protocolMessage message) {
   if (!validArgsAmount(message.body, GHL_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = ERR;
-    return sendTCPMessage(response, resTCP, newConnectionFd);
+    return sendTCPMessage(response, getResTCP(), childConnectionFd);
   }
 
   std::string file;
@@ -172,17 +131,17 @@ int handleGHL(protocolMessage message) {
   switch (ret) {
     case HINT_NOK:
       response = buildSplitStringNewline({"RHL", "NOK"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
+      return sendTCPMessage(response, getResTCP(), childConnectionFd);
     case HINT_SUCCESS:
     default:
       appendGameFile(plid, HINT, fileName);
       response = buildSplitString({"RHL", "OK", response});
-      return sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
+      return sendTCPFile(response.append(" "), getResTCP(), childConnectionFd, file);
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
   response = ERR;
-  return sendTCPMessage(response, resTCP, newConnectionFd);
+  return sendTCPMessage(response, getResTCP(), childConnectionFd);
 }
 
 int handleSTA(protocolMessage message) {
@@ -190,7 +149,7 @@ int handleSTA(protocolMessage message) {
   if (!validArgsAmount(message.body, STA_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
     std::string response = buildSplitStringNewline({"RST", "NOK"});
-    return sendTCPMessage(response, resTCP, newConnectionFd);
+    return sendTCPMessage(response, getResTCP(), childConnectionFd);
   }
 
   std::string file;
@@ -200,7 +159,7 @@ int handleSTA(protocolMessage message) {
   switch (ret) {
     case STATE_NOK:
       response = buildSplitStringNewline({"RST", "NOK"});
-      return sendTCPMessage(response, resTCP, newConnectionFd);
+      return sendTCPMessage(response, getResTCP(), childConnectionFd);
     case STATE_ONGOING:
       response = buildSplitString({"RST", "ACT", response});
       break;
@@ -209,7 +168,7 @@ int handleSTA(protocolMessage message) {
       response = buildSplitString({"RST", "FIN", response});
   }
 
-  ret = sendTCPFile(response.append(" "), resTCP, newConnectionFd, file);
+  ret = sendTCPFile(response.append(" "), getResTCP(), childConnectionFd, file);
 
   std::string tmpFile = TMP_PATH(plid);
   if (sta != STATE_FINISHED && !std::filesystem::remove(tmpFile)) {

@@ -151,7 +151,7 @@ int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct 
   return fd;
 }
 
-socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler) {
+socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient) {
   socketInfo socket;
   socket.created = false;
   socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
@@ -160,25 +160,36 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
     exit(EXIT_FAILURE);
   }
 
-  if (type == SOCK_STREAM) {
-    socket.isConnected = true;
-    if (connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
+  socket.isConnected = true;
+  if (isClient) {
+    if (turnOnSocketTimer(socket.fd) == -1) {
+      disconnectSocket(socket.res, socket.fd);
+      return socket;
+    } else if (type == SOCK_DGRAM && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
+      std::cerr << CONNECTION_ERROR << std::endl;
+      disconnectSocket(socket.res, socket.fd);
+      return socket;
+    }
+  } else {
+    if (type == SOCK_STREAM && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1) {
       std::cerr << CONNECTION_ERROR << std::endl;
       disconnectSocket(socket.res, socket.fd);
       return socket;
     }
   }
 
-  if (turnOnSocketTimer(socket.fd) == -1) {
-    disconnectSocket(socket.res, socket.fd);
-    return socket;
-  }
 
   signal(SIGINT, handler);
   signal(SIGTERM, handler);
 
   memset(&socket.act, 0, sizeof(socket.act));
   socket.act.sa_handler = SIG_IGN;
+
+  // Ignore SIGCHLD to avoid zombies
+  if (sigaction(SIGCHLD, &socket.act, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    return socket;
+  }
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &socket.act, NULL) == -1) {
@@ -309,6 +320,7 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
   }
 
   std::cout << "[DEBUG]: Sending TCP message: " << message;
+  std::cout << "[DEBUG]: File descriptor: " << fd << std::endl;
   if (write(fd, message.c_str(), message.length()) == -1) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;

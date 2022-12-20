@@ -167,6 +167,9 @@ public:
 // Default socket timeout value (in seconds).
 #define SOCKET_TIMEOUT 5
 
+// Maximum number of pending TCP connection requests
+#define MAX_TCP_CONNECTION_REQUESTS 5
+
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from socket creation and handling, TCP/UDP connections to file handling.
 
@@ -239,7 +242,7 @@ public:
 int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
 
 // TODO: add documentation
-socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler);
+socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient);
 
 /**
  * @brief Handle graceful disconnection of a socket.

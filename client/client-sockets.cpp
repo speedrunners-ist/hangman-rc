@@ -11,7 +11,7 @@ void signalHandler(int signum) {
 }
 
 int createSocket(__socket_type type, peerInfo peer, sighandler_t handler) {
-  socketInfo socket = handleSocketCreation(type, peer, handler);
+  socketInfo socket = handleSocketCreation(type, peer, handler, true);
   if (type == SOCK_DGRAM) {
     socketUDP = socket;
     return socketUDP.fd;
