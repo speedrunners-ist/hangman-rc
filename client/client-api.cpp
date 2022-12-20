@@ -45,6 +45,8 @@ std::string getPlayerID() { return plid; }
 
 void resetGame() { state.setInactive(); }
 
+bool isActive() { return state.isActive(); }
+
 void incrementTrials() { state.incrementTrials(); }
 
 int getTrials() { return state.getTrials(); }

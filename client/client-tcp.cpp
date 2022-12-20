@@ -14,7 +14,6 @@ int generalTCPHandler(std::string message, peerInfo peer) {
   if (createSocket(SOCK_STREAM, peer, (sighandler_t)signalHandler) == -1) {
     return -1;
   }
-
   if (sendTCPMessage(message, getServerInfoTCP(), getSocketFdTCP()) == -1) {
     disconnect(getSocket(SOCK_STREAM));
     return -1;
@@ -33,7 +32,7 @@ int generalTCPHandler(std::string message, peerInfo peer) {
 }
 
 int handleRSB(protocolMessage response) {
-  if (response.request != getExpectedMessageTCP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -54,7 +53,9 @@ int handleRSB(protocolMessage response) {
 }
 
 int handleRHL(protocolMessage response) {
-  if (response.request != getExpectedMessageTCP()) {
+  if (response.request != getExpectedMessage()) {
+    std::cout << "Expected: " << getExpectedMessage() << std::endl;
+    std::cout << "Received: " << response.request << std::endl;
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -77,7 +78,7 @@ int handleRHL(protocolMessage response) {
 }
 
 int handleRST(protocolMessage response) {
-  if (response.request != getExpectedMessageTCP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -111,7 +112,7 @@ int sendGSB(messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GSB"});
-  setExpectedMessageTCP("RSB");
+  setExpectedMessage("RSB");
   return generalTCPHandler(message, info.peer);
 }
 
@@ -120,7 +121,7 @@ int sendGHL(messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GHL", getPlayerID()});
-  setExpectedMessageTCP("RHL");
+  setExpectedMessage("RHL");
   return generalTCPHandler(message, info.peer);
 }
 
@@ -129,6 +130,6 @@ int sendSTA(messageInfo info) {
     return -1;
   }
   const std::string message = buildSplitStringNewline({"STA", getPlayerID()});
-  setExpectedMessageTCP("RST");
+  setExpectedMessage("RST");
   return generalTCPHandler(message, info.peer);
 }

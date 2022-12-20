@@ -70,7 +70,7 @@
 #define RSG_NOK                                                                                              \
   "Failed to start a new game - a game is currently ongoing. Use quit to leave the current game."
 #define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
-#define RSG_ERR "Message was sent in an invalid format. Try again."
+#define RSG_ERR "An error occurred - perhaps the submitted player ID is invalid? Try again."
 #define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
 #define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
 #define RLG_WIN(word) ("WELL DONE! You guessed: " + word)
@@ -78,14 +78,14 @@
 #define RLG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RLG_OVR "GAME OVER! You do not have any more errors left."
 #define RLG_INV "An invalid trial parameter was sent. Try again."
-#define RLG_ERR "Message was sent in an invalid format. Try again."
+#define RLG_ERR "An error occurred - is there a game currently ongoing? Is the player ID valid? Try again."
 
 #define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
 #define RWG_WIN(word) "WELL DONE! You guessed: " + word
 #define RWG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."
-#define RWG_ERR "Message was sent in an invalid format. Try again."
+#define RWG_ERR "An error occurred. Is there a game currently ongoing? Is the player ID valid? Try again."
 
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game."
@@ -288,9 +288,7 @@ struct addrinfo *getServerInfoUDP();
 struct addrinfo *getServerInfoTCP();
 int getSocketFdUDP();
 int getSocketFdTCP();
-std::string getExpectedMessageUDP();
-std::string getExpectedMessageTCP();
-void setExpectedMessageUDP(std::string message);
-void setExpectedMessageTCP(std::string message);
+std::string getExpectedMessage();
+void setExpectedMessage(std::string message);
 
 #endif /* CLIENT_PROTOCOL_H */

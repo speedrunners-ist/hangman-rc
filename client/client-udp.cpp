@@ -70,7 +70,7 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
  */
 
 int handleRSG(protocolMessage response) {
-  if (response.request != getExpectedMessageUDP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -105,7 +105,7 @@ int handleRSG(protocolMessage response) {
 }
 
 int handleRLG(protocolMessage response) {
-  if (response.request != getExpectedMessageUDP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -153,7 +153,7 @@ int handleRLG(protocolMessage response) {
   }
   if (response.status == "ERR") {
     std::cout << RLG_ERR << std::endl;
-    if (checkFinishedGame()) {
+    if (isActive() && checkFinishedGame()) {
       resetGame();
     }
     return 0;
@@ -162,7 +162,7 @@ int handleRLG(protocolMessage response) {
 }
 
 int handleRWG(protocolMessage response) {
-  if (response.request != getExpectedMessageUDP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -200,7 +200,7 @@ int handleRWG(protocolMessage response) {
   }
   if (response.status == "ERR") {
     std::cout << RWG_ERR << std::endl;
-    if (checkFinishedGame()) {
+    if (isActive() && checkFinishedGame()) {
       resetGame();
     }
     return 0;
@@ -209,7 +209,7 @@ int handleRWG(protocolMessage response) {
 }
 
 int handleRQT(protocolMessage response) {
-  if (response.request != getExpectedMessageUDP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -226,7 +226,7 @@ int handleRQT(protocolMessage response) {
 }
 
 int handleRRV(protocolMessage response) {
-  if (response.request != getExpectedMessageUDP()) {
+  if (response.request != getExpectedMessage()) {
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
@@ -252,7 +252,7 @@ int sendSNG(messageInfo info) {
   }
   setPlayerID(plid);
   const std::string message = buildSplitStringNewline({"SNG", plid});
-  setExpectedMessageUDP("RSG");
+  setExpectedMessage("RSG");
   return generalUDPHandler(message, RSG_BYTES);
 }
 
@@ -275,7 +275,7 @@ int sendPLG(messageInfo info) {
   const std::string message =
       buildSplitStringNewline({"PLG", getPlayerID(), letter, std::to_string(getTrials() + 1)});
   setLastGuess(letter[0]);
-  setExpectedMessageUDP("RLG");
+  setExpectedMessage("RLG");
   return generalUDPHandler(message, RLG_BYTES);
 }
 
@@ -298,7 +298,7 @@ int sendPWG(messageInfo info) {
   const std::string message =
       buildSplitStringNewline({"PWG", getPlayerID(), guess, std::to_string(getTrials() + 1)});
   setLastWordGuess(guess);
-  setExpectedMessageUDP("RWG");
+  setExpectedMessage("RWG");
   return generalUDPHandler(message, RWG_BYTES);
 }
 
@@ -313,7 +313,7 @@ int sendQUT(messageInfo info) {
 
   const std::string command = info.input.substr(0, info.input.find('\n'));
   const std::string message = buildSplitStringNewline({"QUT", getPlayerID()});
-  setExpectedMessageUDP("RQT");
+  setExpectedMessage("RQT");
   if (command == "quit") {
     return generalUDPHandler(message, RQT_BYTES);
   }
@@ -330,6 +330,6 @@ int sendREV(messageInfo info) {
   }
 
   const std::string message = buildSplitStringNewline({"REV", getPlayerID()});
-  setExpectedMessageUDP("RRV");
+  setExpectedMessage("RRV");
   return generalUDPHandler(message, RRV_BYTES);
 }

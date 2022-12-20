@@ -154,6 +154,7 @@ int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct 
 socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient) {
   socketInfo socket;
   socket.created = false;
+  socket.type = type;
   socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
   if (socket.fd == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
@@ -165,7 +166,7 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
     if (turnOnSocketTimer(socket.fd) == -1) {
       disconnectSocket(socket.res, socket.fd);
       return socket;
-    } else if (type == SOCK_DGRAM && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
+    } else if (type == SOCK_STREAM && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
       std::cerr << CONNECTION_ERROR << std::endl;
       disconnectSocket(socket.res, socket.fd);
       return socket;
@@ -243,7 +244,6 @@ int turnOffSocketTimer(int fd) {
 }
 
 int parseMessage(std::string message, protocolMessage &response, bool fullMessage) {
-  std::cout << "[DEBUG]: Parsing message: " << message;
   std::string auxMessage = message.substr(message.find_first_of(" \n") + 1);
 
   try {
@@ -265,7 +265,6 @@ int parseMessage(std::string message, protocolMessage &response, bool fullMessag
     return -1;
   }
 
-  std::cout << "[DEBUG]: Finished parsing message" << std::endl;
   return 0;
 }
 
@@ -277,7 +276,6 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[DEBUG]: Sending UDP message: " << message;
   if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
@@ -319,8 +317,6 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[DEBUG]: Sending TCP message: " << message;
-  std::cout << "[DEBUG]: File descriptor: " << fd << std::endl;
   if (write(fd, message.c_str(), message.length()) == -1) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;

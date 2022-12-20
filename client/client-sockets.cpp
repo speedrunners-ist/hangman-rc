@@ -1,6 +1,7 @@
 #include "client-protocol.h"
 
 socketInfo socketTCP, socketUDP;
+std::string expectedMessage;
 
 void signalHandler(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
@@ -35,7 +36,5 @@ struct addrinfo *getServerInfoUDP() { return socketUDP.res; }
 struct addrinfo *getServerInfoTCP() { return socketTCP.res; }
 int getSocketFdUDP() { return socketUDP.fd; }
 int getSocketFdTCP() { return socketTCP.fd; }
-std::string getExpectedMessageUDP() { return socketUDP.expectedMessage; }
-std::string getExpectedMessageTCP() { return socketTCP.expectedMessage; }
-void setExpectedMessageUDP(std::string message) { socketUDP.expectedMessage = message; }
-void setExpectedMessageTCP(std::string message) { socketTCP.expectedMessage = message; }
+std::string getExpectedMessage() { return expectedMessage; }
+void setExpectedMessage(std::string message) { expectedMessage = message; }

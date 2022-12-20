@@ -94,6 +94,13 @@ std::string getPlayerID();
 void resetGame();
 
 /**
+ * @brief Checks whether the game is active.
+ *
+ * @return True if the game is active, false otherwise.
+ */
+bool isActive();
+
+/**
  * @brief Increments the player's trial count in one unit.
  */
 void incrementTrials();

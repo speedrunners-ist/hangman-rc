@@ -75,7 +75,7 @@ int generalTCPHandler(peerInfo peer) {
       }
 
       if (verbose) {
-        std::cout << "[INFO]: Received the following message: " << request.body;
+        std::cout << "[INFO]: Received the following message: " << request.body << std::endl;
       }
       messageTCPHandler(request, handleTCPClientMessage, childConnectionFd, getResTCP());
       if (close(childConnectionFd) == -1) {

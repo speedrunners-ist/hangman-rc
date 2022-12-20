@@ -80,7 +80,6 @@ typedef struct {
 
 // TODO: add documentation
 typedef struct {
-  std::string expectedMessage;
   struct addrinfo *res;
   struct addrinfo hints;
   struct sigaction act;
