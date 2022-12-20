@@ -14,9 +14,6 @@ responseHandler handleTCPServerMessage = {
   {"RST", handleRST}
 };
 
-// std::map<std::string, int> expectedResponseArgs = {
-//   {"RSB OK"
-// };
 // clang-format on
 
 int createSocketTCP(peerInfo peer) {
