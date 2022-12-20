@@ -101,8 +101,13 @@ int handleRSG(protocolMessage response) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
+    const int expectedMistakes = getAvailableMistakes();
+    const int availableMistakes = args[1];
+    if (expectedMistakes != availableMistakes) {
+      std::cerr << RSG_ERROR << std::endl;
+      return -1;
+    }
     createGame(args, getPlayerID());
-    const int availableMistakes = getAvailableMistakes();
     const std::string word = getWord();
     std::cout << RSG_OK(availableMistakes, word) << std::endl;
     return 0;
