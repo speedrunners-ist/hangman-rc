@@ -101,9 +101,9 @@ int handleRSG(protocolMessage response) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
-    const int expectedMistakes = getAvailableMistakes();
     const int wordLength = args[0];
     const int availableMistakes = args[1];
+    const int expectedMistakes = initialAvailableMistakes(wordLength);
     if (wordLength <= 0 || expectedMistakes != availableMistakes) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
@@ -136,11 +136,14 @@ int handleRLG(protocolMessage response) {
       std::cerr << RLG_ERROR << std::endl;
       return -1;
     }
+    const int trial = args[0];
     const int n = args[1];
-    for (int i = 0; i < 2; i++) {
-      // erase trial and n from response.args
-      response.args = response.args.substr(response.args.find(' ') + 1);
+    if (trial <= 0 || trial != getTrials() + 1 || n <= 0 || n >= 100) {
+      std::cerr << RLG_ERROR << std::endl;
+      return -1;
     }
+    std::string oArgs = buildSplitString({std::to_string(trial), std::to_string(n)});
+    response.args = response.args.substr(response.args.find(oArgs) + oArgs.length() + 1);
     return playCorrectGuess(response.args, n);
   }
   if (response.status == "WIN") {
@@ -184,6 +187,11 @@ int handleRWG(protocolMessage response) {
   if (response.status == "WIN") {
     std::vector<int> args;
     if (!gatherResponseArguments(response.args, args, RWG_ARGS)) {
+      std::cerr << RWG_ERROR << std::endl;
+      return -1;
+    }
+    const int trial = args[0];
+    if (trial <= 0 || trial != getTrials() + 1) {
       std::cerr << RWG_ERROR << std::endl;
       return -1;
     }
