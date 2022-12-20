@@ -199,17 +199,12 @@ int parseMessage(std::string message, protocolMessage &response, bool fullMessag
     response.request = message.substr(0, message.find_first_of(" \n"));
     response.status = auxMessage.substr(0, auxMessage.find_first_of(" \n"));
     response.command = buildSplitString({response.request, response.status});
-    std::cout << "[DEBUG]: Parsed request: " << response.request << std::endl;
-    std::cout << "[DEBUG]: Parsed status: " << response.status << std::endl;
-    std::cout << "[DEBUG]: Parsed command: " << response.command << std::endl;
     if (fullMessage && message.find_last_of("\n") != message.length() - 1) {
-      std::cout << "[DEBUG]: No newline at the end of the message" << std::endl;
       throw std::out_of_range("No newline at the end of the message");
     }
     message.erase(std::remove(message.begin(), message.end(), '\n'), message.end());
     if (message.find(response.command) + response.command.length() < message.length()) {
       response.args = message.substr(message.find(response.command) + response.command.length() + 1);
-      std::cout << "[DEBUG]: Parsed args: " << response.args << std::endl;
     }
     response.body = message;
   } catch (const std::out_of_range &e) {
@@ -248,10 +243,6 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
   const ssize_t bytesReceived = recvfrom(fd, response, maxBytes, 0, res->ai_addr, &res->ai_addrlen);
   if (bytesReceived == -1) {
     std::cerr << RECVFROM_ERROR << std::endl;
-    return -1;
-  }
-  if (response[bytesReceived - 1] != '\n') {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return -1;
   }
   return 0;

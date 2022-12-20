@@ -111,7 +111,7 @@ int generalTCPHandler(peerInfo peer) {
 
       if (parseMessage(std::string(bufferTCP), request) == -1) {
         std::cerr << PARSE_ERROR << std::endl;
-        sendTCPMessage(buildSplitStringNewline({"ERR"}), resTCP, newConnectionFd);
+        sendTCPMessage(ERR, resTCP, newConnectionFd);
         continue;
       }
 
@@ -137,7 +137,7 @@ int generalTCPHandler(peerInfo peer) {
 int handleGSB(protocolMessage message) {
   if (!validArgsAmount(message.body, GSB_ARGS)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitStringNewline({"ERR"});
+    std::string response = ERR;
     return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
@@ -154,14 +154,14 @@ int handleGSB(protocolMessage message) {
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
-  return sendTCPMessage(buildSplitStringNewline({"ERR"}), resTCP, newConnectionFd);
+  return sendTCPMessage(ERR, resTCP, newConnectionFd);
 }
 
 int handleGHL(protocolMessage message) {
   const std::string plid = message.status;
   if (!validArgsAmount(message.body, GHL_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    std::string response = buildSplitStringNewline({"ERR"});
+    std::string response = ERR;
     return sendTCPMessage(response, resTCP, newConnectionFd);
   }
 
@@ -181,7 +181,7 @@ int handleGHL(protocolMessage message) {
   }
 
   std::cerr << INTERNAL_ERROR << std::endl;
-  response = buildSplitStringNewline({"ERR"});
+  response = ERR;
   return sendTCPMessage(response, resTCP, newConnectionFd);
 }
 
