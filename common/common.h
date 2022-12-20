@@ -395,7 +395,15 @@ int displayFile(std::string filePath);
  */
 bool validArgsAmount(std::string input, int n);
 
-// FIXME: fix documentation here
+/**
+ * @brief Checks if a string has a given amount of arguments - strings split by spaces.
+ * If the string has the expected amount of arguments, the arguments are stored in a vector.
+ * 
+ * @param body: String to be checked.
+ * @param args: Vector of strings to be filled with the arguments.
+ * @param expectedArgs: Expected amount of arguments.
+ * @return True if the string has the expected amount of arguments, false otherwise.
+ */
 bool gatherResponseArguments(std::string body, std::vector<int> &args, int expectedArgs);
 
 /**
