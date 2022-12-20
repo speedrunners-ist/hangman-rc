@@ -142,28 +142,4 @@ void printHelpMenu();
  */
 void displayCurrentInformation();
 
-// UDP/TCP socket creation and retrieval functions
-
-/**
- * @brief Creates a new UDP socket.
- *
- * @param type The type of socket to be created.
- * @param peer The peer to be connected to.
- * @return The socket's file descriptor.
- */
-int createSocket(__socket_type type, peerInfo peer);
-
-// FIXME: add docs
-int disconnect(socketInfo socket);
-
-socketInfo getSocket(__socket_type type);
-struct addrinfo *getServerInfoUDP();
-struct addrinfo *getServerInfoTCP();
-int getSocketFdUDP();
-int getSocketFdTCP();
-std::string getExpectedMessageUDP();
-std::string getExpectedMessageTCP();
-void setExpectedMessageUDP(std::string message);
-void setExpectedMessageTCP(std::string message);
-
 #endif /* CLIENT_API_H */

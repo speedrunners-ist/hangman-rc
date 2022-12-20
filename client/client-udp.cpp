@@ -17,10 +17,10 @@ std::map<std::string, int> expectedResponseArgs = {
 };
 // clang-format on
 
+
 // Since the protocol may answer with ERR if the game is already finished and we try to guess the word again,
 // we need to send back a STA request to check if the game is over. If the answer is an RST FIN, we need to reset
 // the game.
-
 bool checkFinishedGame() {
   if (sendTCPMessage(buildSplitStringNewline({"STA", getPlayerID()}), getServerInfoTCP(), getSocketFdTCP()) == -1) {
     return false;
@@ -29,7 +29,7 @@ bool checkFinishedGame() {
   if (receiveTCPMessage(responseMessage, TCP_DEFAULT_ARGS, getSocketFdTCP()) == -1) {
     return false;
   }
-  const std::string expectedMessage = "RST FIN";
+  const std::string expectedMessage = "RST FIN ";
   std::cout << "[DEBUG] Received message: -" << responseMessage << "-" << std::endl;
   std::cout << "[DEBUG] Expected message: -" << expectedMessage << "-" << std::endl;
   return responseMessage == expectedMessage;
