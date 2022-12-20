@@ -51,7 +51,7 @@ typedef struct {
  */
 typedef struct {
   std::string fileName;
-  int fileSize;
+  size_t fileSize;
   char delimiter;
 } fileInfo;
 

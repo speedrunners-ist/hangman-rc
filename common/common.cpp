@@ -353,7 +353,7 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
 
   ssize_t bytesReceived = 0;
   size_t bytesRead = 0;
-  size_t bytesLeft = (size_t)info.fileSize;
+  size_t bytesLeft = info.fileSize;
   // create directory if it doesn't exist
   std::filesystem::path dirPath(dir);
   if (!std::filesystem::exists(dirPath)) {
@@ -487,11 +487,11 @@ bool validResponse(std::string body, std::vector<int> &args, int expectedArgs) {
   std::vector<std::string> tokens;
   std::string token;
   int readArgs = 0;
-  int arg;
+  unsigned long arg;
   while (ss >> token) {
     try {
       arg = std::stoul(token);
-      args.push_back(arg);
+      args.push_back((int)arg);
       tokens.push_back(token);
       readArgs++;
     } catch (std::invalid_argument &e) {
