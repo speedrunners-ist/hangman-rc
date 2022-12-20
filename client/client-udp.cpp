@@ -102,8 +102,9 @@ int handleRSG(protocolMessage response) {
       return -1;
     }
     const int expectedMistakes = getAvailableMistakes();
+    const int wordLength = args[0];
     const int availableMistakes = args[1];
-    if (expectedMistakes != availableMistakes) {
+    if (wordLength <= 0 || expectedMistakes != availableMistakes) {
       std::cerr << RSG_ERROR << std::endl;
       return -1;
     }
