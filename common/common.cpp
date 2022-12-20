@@ -491,13 +491,12 @@ bool gatherResponseArguments(std::string body, std::vector<int> &args, int expec
       args.push_back((int)arg);
       tokens.push_back(token);
       readArgs++;
-    } catch (std::invalid_argument &e) {
-      std::cout << "[ERR]: Invalid argument: " << token << std::endl;
+    } catch (const std::exception &e) {
+      std::cerr << "[ERR]: Invalid argument: " << token << std::endl;
       return false;
     }
   }
-  std::cout << "Received arguments: " << buildSplitString(tokens) << std::endl;
-  std::cout << "Expected arguments: " << expectedArgs << std::endl;
+  
   return true;
 }
 

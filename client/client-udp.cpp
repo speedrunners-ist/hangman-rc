@@ -77,7 +77,7 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
         std::cerr << UDP_HANGMAN_ERROR << std::endl;
         return -1;
       }
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
       std::cerr << UDP_HANGMAN_ERROR << std::endl;
       return -1;
     }
