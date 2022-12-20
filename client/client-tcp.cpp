@@ -150,6 +150,7 @@ int handleRST(protocolMessage response) {
     std::cout << RST_ACT << std::endl;
   } else if (response.status == "FIN") {
     std::cout << RST_FIN << std::endl;
+    resetGame();
   }
   return displayFile(ST_PATH(info.fileName));
 }
