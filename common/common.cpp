@@ -262,7 +262,7 @@ int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd,
     return handler[message.request](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    if (fd == NULL || res == NULL) {
+    if (fd == -1 || res == NULL) {
       return -1;
     }
     return sendUDPMessage(ERR, res, fd);
@@ -392,7 +392,7 @@ int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd,
     return handler[message.request](message);
   } catch (const std::bad_function_call &e) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    if (fd == NULL || res == NULL) {
+    if (fd == -1 || res == NULL) {
       return -1;
     }
     return sendTCPMessage(ERR, res, fd);

@@ -282,7 +282,7 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
  * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd=NULL, struct addrinfo *res=NULL);
+int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd=-1, struct addrinfo *res=NULL);
 
 /**
  * @brief Handle sending of a TCP message.
@@ -334,7 +334,7 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd);
  * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd=NULL, struct addrinfo *res=NULL);
+int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd=-1, struct addrinfo *res=NULL);
 
 /**
  * @brief Parses the server-sent file information for the following file transfer.
