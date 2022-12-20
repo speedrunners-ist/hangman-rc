@@ -75,7 +75,7 @@ int generalTCPHandler(std::string message, peerInfo peer) {
     disconnectTCP();
     return -1;
   }
-  if (parseMessage(serverMessage.body, serverMessage) == -1) {
+  if (parseMessage(serverMessage.body, serverMessage, false) == -1) {
     disconnectTCP();
     return -1;
   }

@@ -250,7 +250,7 @@ int turnOnSocketTimer(int socketFd);
  */
 int turnOffSocketTimer(int socketFd);
 
-int parseMessage(std::string message, protocolMessage &response);
+int parseMessage(std::string message, protocolMessage &response, bool fullMessage=true);
 
 /**
  * @brief Handle sending of a UDP message.

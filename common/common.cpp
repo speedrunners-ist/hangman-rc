@@ -192,18 +192,18 @@ int turnOffSocketTimer(int fd) {
 }
 
 // TODO: fix header function
-int parseMessage(std::string message, protocolMessage &response) {
+int parseMessage(std::string message, protocolMessage &response, bool fullMessage) {
   std::cout << "[DEBUG]: Parsing message: " << message;
-  std::string auxMessage = message.substr(message.find(' ') + 1);
+  std::string auxMessage = message.substr(message.find_first_of(" \n") + 1);
 
   try {
-    response.request = message.substr(0, message.find(' '));
+    response.request = message.substr(0, message.find_first_of(" \n"));
     response.status = auxMessage.substr(0, auxMessage.find_first_of(" \n"));
     response.command = buildSplitString({response.request, response.status});
     std::cout << "[DEBUG]: Parsed request: " << response.request << std::endl;
     std::cout << "[DEBUG]: Parsed status: " << response.status << std::endl;
     std::cout << "[DEBUG]: Parsed command: " << response.command << std::endl;
-    if (message.find_last_of("\n") != message.length() - 1) {
+    if (fullMessage && message.find_last_of("\n") != message.length() - 1) {
       std::cout << "[DEBUG]: No newline at the end of the message" << std::endl;
       throw std::out_of_range("No newline at the end of the message");
     }
