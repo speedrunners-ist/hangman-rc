@@ -394,7 +394,7 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   // create directory if it doesn't exist
   std::filesystem::path dirPath(dir);
   if (!std::filesystem::exists(dirPath)) {
-    std::filesystem::create_directory(dirPath);
+    std::filesystem::create_directories(dirPath);
   }
 
   std::fstream file;
