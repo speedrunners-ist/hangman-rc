@@ -2,7 +2,7 @@
 CXX ?= g++
 LD ?= g++
 
-INCLUDE_DIRS := lib client/include server/include client/src server/src
+INCLUDE_DIRS := client/include server/include lib
 INCLUDES := $(addprefix -I,$(INCLUDE_DIRS))
 SOURCES := $(shell find . -name "*.cpp")
 HEADERS := $(shell find . -name "*.h")
@@ -50,5 +50,5 @@ depend : $(SOURCES)
 test: dev
 	./test.sh
 
-client/bin/player: client/bin/client-api.o client/bin/client-tcp.o client/bin/client-udp.o client/bin/client-sockets.o lib/common.o
-server/bin/GS: server/bin/server-utils.o server/bin/server-api.o server/bin/server-tcp.o server/bin/server-udp.o server/bin/server-sockets.o lib/common.o
+client/bin/player: client/src/client-api.o client/src/client-tcp.o client/src/client-udp.o client/src/client-sockets.o lib/common.o
+server/bin/GS: server/src/server-utils.o server/src/server-api.o server/src/server-tcp.o server/src/server-udp.o server/src/server-sockets.o lib/common.o
