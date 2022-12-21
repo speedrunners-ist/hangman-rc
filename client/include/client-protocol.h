@@ -66,6 +66,7 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 #define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
 #define UNEXPECTED_MESSAGE "[ERR]: Unexpected message received from server."
 #define UNEXPECTED_COMMAND "[ERR]: The command received is not supported by this client."
+#define INVALID_PLAYER_ID "[ERR]: Invalid player ID. Please try again."
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
@@ -84,6 +85,7 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 
 #define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
 #define RWG_WIN(word) "WELL DONE! You guessed: " + word
+#define RWG_DUP "You have already guessed this word."
 #define RWG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."

@@ -12,7 +12,7 @@ responseHandler handleUDPServerMessage = {
 std::map<std::string, int> expectedResponseArgs = {
   {"RSG OK", 4},  {"RSG NOK", 2}, {"RSG ERR", 2},
   {"RLG WIN", 3}, {"RLG DUP", 3}, {"RLG NOK", 3}, {"RLG OVR", 3}, {"RLG INV", 3}, {"RLG ERR", 2},
-  {"RWG WIN", 3}, {"RWG NOK", 3}, {"RWG OVR", 3}, {"RWG INV", 3}, {"RWG ERR", 2},
+  {"RWG WIN", 3}, {"RWG DUP", 3}, {"RWG NOK", 3}, {"RWG OVR", 3}, {"RWG INV", 3}, {"RWG ERR", 2},
   {"RQT OK", 2},  {"RQT NOK", 2}, {"RQT ERR", 2}
 };
 // clang-format on
@@ -21,8 +21,8 @@ std::map<std::string, int> expectedResponseArgs = {
 // we need to send back a STA request to check if the game is over. If the answer is an RST FIN, we need to
 // reset the game.
 bool checkFinishedGame() {
-  if (sendTCPMessage(buildSplitStringNewline({"STA", getPlayerID()}), getServerInfoTCP(), getSocketFdTCP()) ==
-      -1) {
+  const std::string statusCheck = buildSplitStringNewline({"STA", getPlayerID()});
+  if (sendTCPMessage(statusCheck, getServerInfoTCP(), getSocketFdTCP()) == -1) {
     return false;
   }
   std::string responseMessage;
@@ -180,6 +180,10 @@ int handleRWG(protocolMessage response) {
     std::cout << RWG_WIN(getWord()) << std::endl;
     return 0;
   }
+  if (response.status == "DUP") {
+    std::cout << RWG_DUP << std::endl;
+    return 0;
+  }
   if (response.status == "NOK") {
     playIncorrectGuess();
     std::cout << RWG_NOK(getAvailableMistakes()) << std::endl;
@@ -239,7 +243,7 @@ int handleRRV(protocolMessage response) {
 
 int sendSNG(messageInfo info) {
   if (!validArgsAmount(info.input, START_ARGS)) {
-    std::cout << UNEXPECTED_COMMAND << std::endl; // TODO
+    std::cerr << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
 
@@ -247,6 +251,7 @@ int sendSNG(messageInfo info) {
   std::string plid = info.input.substr(pos1 + 1);
   plid.erase(std::remove(plid.begin(), plid.end(), '\n'), plid.end());
   if (!validPlayerID(plid)) {
+    std::cerr << INVALID_PLAYER_ID << std::endl;
     return -1;
   }
   setPlayerID(plid);
@@ -257,7 +262,7 @@ int sendSNG(messageInfo info) {
 
 int sendPLG(messageInfo info) {
   if (!validArgsAmount(info.input, PLAY_ARGS)) {
-    std::cout << UNEXPECTED_COMMAND << std::endl;
+    std::cerr << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
@@ -281,7 +286,7 @@ int sendPLG(messageInfo info) {
 
 int sendPWG(messageInfo info) {
   if (!validArgsAmount(info.input, GUESS_ARGS)) {
-    std::cout << UNEXPECTED_COMMAND << std::endl;
+    std::cerr << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
@@ -305,7 +310,7 @@ int sendPWG(messageInfo info) {
 
 int sendQUT(messageInfo info) {
   if (!validArgsAmount(info.input, QUIT_ARGS)) {
-    std::cout << UNEXPECTED_COMMAND << std::endl;
+    std::cerr << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
@@ -324,7 +329,7 @@ int sendQUT(messageInfo info) {
 
 int sendREV(messageInfo info) {
   if (!validArgsAmount(info.input, REVEAL_ARGS)) {
-    std::cout << UNEXPECTED_COMMAND << std::endl;
+    std::cerr << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
