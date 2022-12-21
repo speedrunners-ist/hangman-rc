@@ -32,7 +32,9 @@ int GameState::getWordLength() { return wordLength; }
 
 std::string GameState::getWord() { return word; }
 
-void GameState::setLastGuess(char guess) { lastGuess = guess; }
+void GameState::setLastGuess(char guess) {
+  lastGuess = (char)std::tolower(guess);
+}
 
 void GameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
 

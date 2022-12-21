@@ -245,11 +245,11 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return TRIAL_MISMATCH;
   }
 
+  toLower(letter);
   if (state.isLetterGuessed(letter.front())) {
     return DUPLICATE_GUESS;
   }
 
-  toLower(letter);
   std::string positions;
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
