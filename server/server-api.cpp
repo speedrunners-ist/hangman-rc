@@ -78,7 +78,8 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 void displayPeerInfo(struct addrinfo *res, std::string connection) {
   char host[NI_MAXHOST] = {0};
   char service[NI_MAXSERV] = {0};
-  const int errcode = getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
+  const int errcode =
+      getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
   // NI_NUMERICSERV: return numeric form of the service's address
   if (errcode != 0) {
     std::cerr << VERBOSE_ERROR(errcode) << std::endl;
@@ -357,12 +358,16 @@ int insertScore(std::string plid, GameState &state) {
   const std::string printedScore = scoreStream.str();
 
   // clang-format off
-  std::string scoreline = buildSplitString({
+  std::string scoreline = buildSplitString({" ", 
     printedScore,
+    "    ",
     plid,
-    state.getWord(),
+    "",
     std::to_string(successfulGuesses),
-    std::to_string(trialsMade)
+    "           ",
+    std::to_string(trialsMade),
+    "      ",
+    state.getWord(),
   });
   // clang-format on
 

@@ -39,6 +39,8 @@ clean:
 	rm -rf client/hints
 	rm -rf client/state
 	rm -rf client/scoreboard
+	rm -rf server/scores
+	rm -rf server/games
 
 fmt: $(SOURCES) $(HEADERS)
 	clang-format -i $^

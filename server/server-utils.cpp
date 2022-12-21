@@ -61,6 +61,15 @@ int transferGameFile(std::string plid) {
 
 int appendScoreFile(int score, std::string scoreline) {
   std::fstream file(SCORES_PATH, std::ios::in | std::ios::out);
+
+  if (file.fail()) {
+    std::filesystem::path dir(SCORES_DIR);
+    if (!std::filesystem::exists(dir)) {
+      std::filesystem::create_directory(dir);
+    }
+    file.open(SCORES_PATH, std::ios::in | std::ios::out | std::ios::trunc);
+  }
+
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
