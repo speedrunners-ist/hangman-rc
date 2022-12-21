@@ -111,7 +111,7 @@ int generalTCPHandler(peerInfo peer) {
 int handleGSB(protocolMessage message) {
   if (!validArgsAmount(message.body, GSB_ARGS)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"RSB", "NOK"}), getResTCP(), childConnectionFd);
+    return sendTCPMessage(buildSplitStringNewline({"RSB", "ERR"}), getResTCP(), childConnectionFd);
   }
 
   std::string response;
@@ -134,7 +134,7 @@ int handleGHL(protocolMessage message) {
   const std::string plid = message.status;
   if (!validArgsAmount(message.body, GHL_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"RHL", "NOK"}), getResTCP(), childConnectionFd);
+    return sendTCPMessage(buildSplitStringNewline({"RHL", "ERR"}), getResTCP(), childConnectionFd);
   }
 
   std::string file;
@@ -161,7 +161,7 @@ int handleSTA(protocolMessage message) {
   const std::string plid = message.status;
   if (!validArgsAmount(message.body, STA_ARGS) || !validPlayerID(plid)) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    return sendTCPMessage(buildSplitStringNewline({"RST", "NOK"}), getResTCP(), childConnectionFd);
+    return sendTCPMessage(buildSplitStringNewline({"RST", "ERR"}), getResTCP(), childConnectionFd);
   }
 
   std::string file;
