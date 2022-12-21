@@ -17,7 +17,6 @@ int createSocket(__socket_type type, peerInfo peer, sighandler_t handler) {
     socketUDP = socket;
     return socketUDP.fd;
   }
-  socket.isConnected = true;
   socketTCP = socket;
   return socketTCP.fd;
 }
@@ -29,9 +28,11 @@ int disconnect(socketInfo socket) {
     }
     socketTCP.isConnected = false;
   } else {
-    std::cout << "Disconnecting UDP socket" << std::endl;
-    std::cout << socket.res << socket.fd << std::endl;
+    if (!socketUDP.isConnected) {
+      return 0;
+    }
     sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), socket.res, socket.fd);
+    socketUDP.isConnected = false;
   }
   return disconnectSocket(socket.res, socket.fd);
 }

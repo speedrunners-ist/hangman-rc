@@ -93,8 +93,8 @@ typedef struct {
   struct addrinfo *res;
   struct addrinfo hints;
   struct sigaction act;
-  bool isConnected;
-  bool created;
+  bool isConnected = false;
+  bool created = false;
   __socket_type type;
   int fd;
 } socketInfo;
