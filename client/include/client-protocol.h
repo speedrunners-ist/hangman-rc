@@ -96,9 +96,11 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 
 #define RRV_OK(word) "[REV]: Word is " + word
 
+#define RSB_SUCCESS(path, bytes) "[INFO]: Scoreboard stored at " << path << ", " << bytes << " bytes."
 #define RSB_FAIL "[INFO]: The server hasn't held any games yet."
-#define RHL_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
+#define RHL_SUCCESS(path, bytes) "[INFO]: Hint stored at " << path << ", " << bytes << " bytes."
 #define RHL_FAIL "[INFO]: The server could not send any hints at the moment."
+#define RST_SUCCESS(path, bytes) "[INFO]: State stored at " << path << ", " << bytes << " bytes."
 #define RST_ACT "[INFO]: Displaying information about the current game."
 #define RST_FIN "[INFO]: Displaying information about the last finished game."
 #define RST_NOK "[INFO]: The server could not find any games (neither active nor finished)."

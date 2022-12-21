@@ -398,7 +398,8 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   }
 
   std::fstream file;
-  file.open(dir + "/" + info.fileName, std::ios::out | std::ios::in | std::ios::trunc);
+  info.filePath = dir + info.fileName;
+  file.open(info.filePath, std::ios::out | std::ios::in | std::ios::trunc);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
