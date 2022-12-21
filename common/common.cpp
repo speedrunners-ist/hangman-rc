@@ -106,7 +106,7 @@ std::string GameState::getPlayerID() { return playerID; }
 
 /*** Socket functions implementation ***/
 
-int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
+int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
   int fd = socket(AF_INET, type, 0);
   if (fd == -1) {
     std::cout << SOCKET_ERROR << std::endl;
@@ -151,6 +151,52 @@ int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo *
   return fd;
 }
 
+socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient) {
+  socketInfo socket;
+  socket.created = false;
+  socket.type = type;
+  socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
+  if (socket.fd == -1) {
+    std::cerr << SOCKET_ERROR << std::endl;
+    return socket;
+  }
+
+  socket.isConnected = true;
+
+  if (type == SOCK_STREAM) {
+    if (
+      (isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
+      (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)
+    ) {
+      std::cerr << CONNECTION_ERROR << std::endl;
+      disconnectSocket(socket.res, socket.fd);
+      return socket;
+    }
+  }
+
+  signal(SIGINT, handler);
+  signal(SIGTERM, handler);
+
+  memset(&socket.act, 0, sizeof(socket.act));
+  socket.act.sa_handler = SIG_IGN;
+
+  // Ignore SIGCHLD to avoid zombies
+  if (sigaction(SIGCHLD, &socket.act, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    return socket;
+  }
+
+  // Ignore SIGPIPE to avoid crashing when writing to a closed socket
+  if (sigaction(SIGPIPE, &socket.act, NULL) == -1) {
+    std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectSocket(socket.res, socket.fd);
+    return socket;
+  }
+  // Everything went well, we can return the socket as created
+  socket.created = true;
+  return socket;
+}
+
 int disconnectSocket(struct addrinfo *res, int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
@@ -192,7 +238,6 @@ int turnOffSocketTimer(int fd) {
 }
 
 int parseMessage(std::string message, protocolMessage &response, bool fullMessage) {
-  std::cout << "[DEBUG]: Parsing message: " << message;
   std::string auxMessage = message.substr(message.find_first_of(" \n") + 1);
 
   try {
@@ -214,7 +259,6 @@ int parseMessage(std::string message, protocolMessage &response, bool fullMessag
     return -1;
   }
 
-  std::cout << "[DEBUG]: Finished parsing message" << std::endl;
   return 0;
 }
 
@@ -226,7 +270,6 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[DEBUG]: Sending UDP message: " << message;
   if (sendto(fd, message.c_str(), message.length(), 0, res->ai_addr, res->ai_addrlen) == -1) {
     std::cerr << SENDTO_ERROR << std::endl;
     return -1;
@@ -268,7 +311,6 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd) {
     return -1;
   }
 
-  std::cout << "[DEBUG]: Sending TCP message: " << message;
   if (write(fd, message.c_str(), message.length()) == -1) {
     std::cerr << TCP_SEND_MESSAGE_ERROR << std::endl;
     return -1;

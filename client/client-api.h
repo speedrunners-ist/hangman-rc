@@ -94,6 +94,13 @@ std::string getPlayerID();
 void resetGame();
 
 /**
+ * @brief Checks whether the game is active.
+ *
+ * @return True if the game is active, false otherwise.
+ */
+bool isActive();
+
+/**
  * @brief Increments the player's trial count in one unit.
  */
 void incrementTrials();
@@ -112,14 +119,6 @@ int getTrials();
  * @return True if the player wants to exit, false otherwise.
  */
 bool forceExitClient(std::string command);
-
-/**
- * @brief Gets the keys of a commandHandler (i.e all the possible commands).
- *
- * @param map The map to be checked.
- * @return A vector containing all the map's available commands.
- */
-std::vector<std::string> getKeys(commandHandler map);
 
 /**
  * @brief Prints the help menu.

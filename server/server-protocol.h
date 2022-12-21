@@ -35,23 +35,13 @@
 // Expected amount of arguments for the STA command.
 #define STA_ARGS 2
 
-// Maximum number of pending TCP connection requests
-#define MAX_TCP_CONNECTION_REQUESTS 5
-
 /**
- * @brief Sets up the server's UDP parameters, according to the program's parameters.
+ * @brief Sets up the server's parameters, according to the program's parameters.
  *
- * @param filepath Path to the file containing the game's words.
+ * @param filePath Path to the file containing the game's words.
  * @param vParam Whether or not the server should operate in a verbose manner.
  */
-int setServerUDPParameters(std::string filepath, bool vParam);
-
-/**
- * @brief Sets up the server's TCP parameters, according to the program's parameters.
- *
- * @param vParam Whether or not the server should operate in a verbose manner.
- */
-void setServerTCPParameters(bool vParam);
+int setServerParameters(std::string filePath, bool vParam);
 
 /**
  * @brief Closes the UDP socket and exits the program.
@@ -73,41 +63,6 @@ void signalHandlerTCP(int signum);
  * @param signum The signal's number.
  */
 void signalHandlerTCPchild(int signum);
-
-/**
- * @brief Sets up the server's UDP socket.
- *
- * @return 0 if the setup was successful, -1 otherwise.
- */
-int createSocketUDP(peerInfo peer);
-
-/**
- * @brief Sets up the server's TCP socket.
- *
- * @return 0 if the setup was successful, -1 otherwise.
- */
-int createSocketTCP(peerInfo peer);
-
-/**
- * @brief Disconnects the server from the UDP socket.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectUDP();
-
-/**
- * @brief Disconnects the server from the TCP socket.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectTCP();
-
-/**
- * @brief Disconnects the server from the TCP child socket.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectTCPchild();
 
 /**
  * @brief Centralized UDP communication handler with the client.
@@ -188,5 +143,68 @@ int handleGHL(protocolMessage message);
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
 int handleSTA(protocolMessage message);
+
+/**
+ * @brief Creates a new UDP socket.
+ *
+ * @param type The type of socket to be created.
+ * @param peer The peer to be connected to.
+ * @param handler The signal handler to be used.
+ * @return The socket's file descriptor.
+ */
+int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
+
+/**
+ * @brief Provides specific server-side socket disconnection.
+ * 
+ * @param socket The socket to be disconnected.
+ * @return 0 if the socket was successfully disconnected, -1 otherwise.
+*/
+int disconnect(socketInfo socket);
+
+/**
+ * @brief Retrieves a server-side socket, according to its type.
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The socketInfo struct containing the socket's main information.
+*/
+socketInfo getSocket(__socket_type type);
+
+/**
+ * @brief Retrieves the client's address information (UDP).
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The addrinfo struct containing the client's address information.
+ */
+struct addrinfo *getResUDP();
+
+/**
+ * @brief Retrieves the client's address information (TCP).
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The addrinfo struct containing the client's address information.
+ */
+struct addrinfo *getResTCP();
+
+/**
+ * @brief Retrieves the client's file descriptor (UDP).
+ * 
+ * @return The client's file descriptor.
+ */
+int getSocketFdUDP();
+
+/**
+ * @brief Retrieves the client's file descriptor (TCP).
+ * 
+ * @return The client's file descriptor.
+ */
+int getSocketFdTCP();
+
+/**
+ * @brief Check whether the server is operating in a verbose manner.
+ * 
+ * @return True if the server is operating in a verbose manner, false otherwise.
+ */
+bool checkVerbose();
 
 #endif /* SERVER_PROTOCOL_H */

@@ -13,14 +13,6 @@ commandHandler handlePlayerMessage = {
 };
 // clang-format on
 
-void signalHandler(int signum) {
-  std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectUDP();
-  disconnectTCP();
-  std::cout << EXIT_PROGRAM << std::endl;
-  exit(signum);
-}
-
 int main(int argc, char *argv[]) {
   int opt;
   std::string GSIP = DEFAULT_GSIP;
@@ -50,11 +42,12 @@ int main(int argc, char *argv[]) {
   }
 
   const peerInfo peer = {GSIP, GSport};
-  if (createSocketUDP(peer) == -1) {
+  if (createSocket(SOCK_DGRAM, peer, (sighandler_t)signalHandler) == -1) {
     exit(EXIT_FAILURE);
   }
 
   char buffer[MAX_USER_INPUT];
+  std::cout << "Welcome to a brand new Hangman game!" << std::endl;
   printHelpMenu();
   continueReading(buffer);
 
@@ -71,8 +64,8 @@ int main(int argc, char *argv[]) {
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
-      const std::string allCommands = buildSplitStringNewline(getKeys(handlePlayerMessage));
-      std::cerr << UNEXPECTED_COMMAND_ERROR(allCommands);
+      std::cerr << UNEXPECTED_COMMAND << std::endl;
+      printHelpMenu();
       continueReading(buffer);
       continue;
     }
@@ -86,7 +79,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << EXIT_PROGRAM << std::endl;
-  if (disconnectUDP() == -1) {
+  if (disconnect(getSocket(SOCK_DGRAM)) == -1) {
     exit(EXIT_FAILURE);
   }
   exit(EXIT_SUCCESS);

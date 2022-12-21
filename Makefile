@@ -52,5 +52,5 @@ depend : $(SOURCES)
 test: dev
 	./test.sh
 
-client/player: client/client-api.o client/client-tcp.o client/client-udp.o common/common.o
-server/GS: server/server-utils.o server/server-api.o server/server-tcp.o server/server-udp.o common/common.o
+client/player: client/client-api.o client/client-tcp.o client/client-udp.o client/client-sockets.o common/common.o
+server/GS: server/server-utils.o server/server-api.o server/server-tcp.o server/server-udp.o server/server-sockets.o common/common.o

@@ -78,8 +78,28 @@ typedef struct {
   peerInfo peer;
 } messageInfo;
 
-// Handler maps, used to store the functions that will handle the commands and responses.
-typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
+/**
+ * @brief Struct that represents a socket, containing associated relevant information.
+ * 
+ * @param res The socket's address information.
+ * @param hints The socket's hints.
+ * @param act The action to be taken when a signal is received.
+ * @param isConnected Whether the socket is connected or not.
+ * @param created Whether the socket has been created or not.
+ * @param type The socket's type.
+ * @param fd The socket's file descriptor.
+*/
+typedef struct {
+  struct addrinfo *res;
+  struct addrinfo hints;
+  struct sigaction act;
+  bool isConnected;
+  bool created;
+  __socket_type type;
+  int fd;
+} socketInfo;
+
+// Redirection handler for each specific request.
 typedef std::map<std::string, std::function<int(protocolMessage response)>> responseHandler;
 
 /**
@@ -155,6 +175,9 @@ public:
 // Default socket timeout value (in seconds).
 #define SOCKET_TIMEOUT 5
 
+// Maximum number of pending TCP connection requests
+#define MAX_TCP_CONNECTION_REQUESTS 5
+
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from socket creation and handling, TCP/UDP connections to file handling.
 
@@ -169,6 +192,7 @@ public:
 #define SENDTO_ERROR "[ERR]: Failed to send message."
 #define RECVFROM_ERROR "[ERR]: Failed to receive message."
 #define SIGACTION_ERROR "[ERR]: Failed to set action."
+#define CONNECTION_ERROR "[ERR]: Failed to connect to peer."
 
 #define ERR "ERR\n"
 
@@ -215,7 +239,7 @@ public:
 #define TCP_FILE_ARGS 2
 
 /**
- * @brief Handle creation of a new socket.
+ * @brief Creates a new socket.
  *
  * @param type Type of socket to be created - SOCK_DGRAM or SOCK_STREAM.
  * @param peer PeerInfo struct containing the peer's IP address and port.
@@ -223,7 +247,18 @@ public:
  * @param serverInfo Pointer to a struct addrinfo that will be filled with the server's address info.
  * @return The socket's file descriptor.
  */
-int newSocket(int type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
+int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
+
+/**
+ * @brief Handles the creation of a socket (and everything surrounding it).
+ * 
+ * @param type Type of socket to be created - SOCK_DGRAM or SOCK_STREAM.
+ * @param peer PeerInfo struct containing the peer's IP address and port.
+ * @param handler Signal handler to be set associated with the socket.
+ * @param isClient Boolean indicating whether the socket is for a client or a server.
+ * @return A socketInfo struct containing the socket's main information.
+*/
+socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient);
 
 /**
  * @brief Handle graceful disconnection of a socket.
@@ -429,13 +464,6 @@ bool forceExit(GameState state, std::string command);
  * @param buffer: Buffer to be cleared.
  */
 void continueReading(char *buffer);
-
-/**
- * @brief Gracefully handles a given signal.
- *
- * @param signum: Signal to be handled.
- */
-void signalHandler(int signum);
 
 /**
  * @brief Converts a given string to lowercase.

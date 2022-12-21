@@ -3,6 +3,9 @@
 
 #include "client-api.h"
 
+// Redirection handler for each specific user command.
+typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
+
 // Expected amount of arguments for the "start" command.
 #define START_ARGS 2
 
@@ -56,22 +59,20 @@
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from general incorrect input usage to command-specific errors.
 
-#define TCP_SERVER_ERROR "[ERR]: Failed to connect to server via TCP."
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./player [-n GSIP] [-p GSport]"
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                                  \
   "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
-#define UNEXPECTED_COMMAND_ERROR(commands)                                                                   \
-  "[ERR]: Invalid input. Expected one of the following commands: " + commands
 #define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
 #define UNEXPECTED_MESSAGE "[ERR]: Unexpected message received from server."
+#define UNEXPECTED_COMMAND "[ERR]: The command received is not supported by this client."
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
 #define RSG_NOK                                                                                              \
   "Failed to start a new game - a game is currently ongoing. Use quit to leave the current game."
 #define RSG_ERROR "[ERR]: Response from server does not match RSG protocol."
-#define RSG_ERR "Message was sent in an invalid format. Try again."
+#define RSG_ERR "An error occurred - perhaps the submitted player ID is invalid? Try again."
 #define RLG_ERROR "[ERR]: Response from server does not match RLG protocol."
 #define RLG_INVALID_WORD_LEN "[ERR]: Response from server includes invalid word length."
 #define RLG_WIN(word) ("WELL DONE! You guessed: " + word)
@@ -79,14 +80,14 @@
 #define RLG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RLG_OVR "GAME OVER! You do not have any more errors left."
 #define RLG_INV "An invalid trial parameter was sent. Try again."
-#define RLG_ERR "Message was sent in an invalid format. Try again."
+#define RLG_ERR "An error occurred - is there a game currently ongoing? Is the player ID valid? Try again."
 
 #define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
 #define RWG_WIN(word) "WELL DONE! You guessed: " + word
 #define RWG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."
-#define RWG_ERR "Message was sent in an invalid format. Try again."
+#define RWG_ERR "An error occurred. Is there a game currently ongoing? Is the player ID valid? Try again."
 
 #define RQT_OK "Game was successfully quit."
 #define RQT_ERR "Failed to quit game."
@@ -117,36 +118,6 @@
 
 // File name for the state file
 #define ST_PATH(name) ST_DIR + name
-
-/**
- * @brief Creates a socket for UDP communication with the server.
- *
- * @param peer The peerInfo struct containing the server's IP and port.
- * @return The socket's file descriptor.
- */
-int createSocketUDP(peerInfo peer);
-
-/**
- * @brief Creates a socket for TCP communication with the server.
- *
- * @param peer The peerInfo struct containing the server's IP and port.
- * @return The socket's file descriptor.
- */
-int createSocketTCP(peerInfo peer);
-
-/**
- * @brief Ends the UDP communication with the server.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectUDP();
-
-/**
- * @brief Ends the TCP communication with the server.
- *
- * @return 0 if the disconnection was successful, -1 otherwise.
- */
-int disconnectTCP();
 
 /**
  * @brief Centralized UDP communication handler with the server.
@@ -295,5 +266,82 @@ int sendGHL(messageInfo info);
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
 int sendSTA(messageInfo info);
+
+// UDP/TCP socket creation and retrieval functions
+
+/**
+ * @brief General signal handler (SIGINT, SIGTERM, etc.) for client-side signals.
+ * 
+ * @param signum The signal number.
+ */
+void signalHandler(int signum);
+
+/**
+ * @brief Creates a new socket.
+ *
+ * @param type The type of socket to be created.
+ * @param peer The peer to be connected to.
+ * @param handler The signal handler to be used.
+ * @return The socket's file descriptor.
+ */
+int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
+
+/**
+ * @brief Provides specific client-side socket disconnection.
+ * 
+ * @param socket The socket to be disconnected.
+ * @return 0 if the socket was successfully disconnected, -1 otherwise.
+*/
+int disconnect(socketInfo socket);
+
+/**
+ * @brief Retrieves a client-side socket, according to its type.
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The socketInfo struct containing the socket's main information.
+*/
+socketInfo getSocket(__socket_type type);
+
+/**
+ * @brief Retrieves the server information (UDP), according to its type.
+ * 
+ * @return The addrinfo struct containing the server's main information (UDP).
+*/
+struct addrinfo *getServerInfoUDP();
+
+/**
+ * @brief Retrieves the server information (TCP), according to its type.
+ * 
+ * @return The addrinfo struct containing the server's main information (TCP).
+*/
+struct addrinfo *getServerInfoTCP();
+
+/**
+ * @brief Retrieves the client's UDP socket file descriptor.
+ * 
+ * @return The client's UDP socket file descriptor.
+*/
+int getSocketFdUDP();
+
+/**
+ * @brief Retrieves the client's TCP socket file descriptor.
+ * 
+ * @return The client's TCP socket file descriptor.
+*/
+int getSocketFdTCP();
+
+/**
+ * @brief Retrieves the expected server-sent message (considering a prior request).
+ * 
+ * @return The expected server-sent message.
+*/
+std::string getExpectedMessage();
+
+/**
+ * @brief Sets a new expected server-sent message (considering a prior request).
+ * 
+ * @param message The new expected server-sent message.
+*/
+void setExpectedMessage(std::string message);
 
 #endif /* CLIENT_PROTOCOL_H */
