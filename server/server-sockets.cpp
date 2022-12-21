@@ -20,7 +20,7 @@ int disconnect(socketInfo socket) {
   if (socket.type == SOCK_STREAM) {
     socketTCP.isConnected = false;
   }
-  return disconnectSocket(socket.res, socket.fd);
+  return disconnectSocket(socket);
 }
 
 int setServerParameters(std::string filePath, bool vParam) {

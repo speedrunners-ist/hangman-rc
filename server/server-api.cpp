@@ -78,7 +78,8 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 void displayPeerInfo(struct addrinfo *res, std::string connection) {
   char host[NI_MAXHOST] = {0};
   char service[NI_MAXSERV] = {0};
-  const int errcode = getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
+  const int errcode =
+      getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
   // NI_NUMERICSERV: return numeric form of the service's address
   if (errcode != 0) {
     std::cerr << VERBOSE_ERROR(errcode) << std::endl;
@@ -226,14 +227,17 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   GameState state;
   if (retrieveGame(plid, state) != 0) {
-    arguments = buildSplitString({std::to_string(getTrials(state))});
     return SYNTAX_ERROR;
   }
 
-  arguments = buildSplitString({std::to_string(getTrials(state))});
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
-  if (std::stoi(trial) != getTrials(state)) {
-    return TRIAL_MISMATCH;
+  try {
+    if (std::stoi(trial) != getTrials(state)) {
+      return TRIAL_MISMATCH;
+    }
+  } catch (const std::exception &e) {
+    return SYNTAX_ERROR;
   }
 
   if (state.isLetterGuessed(letter.front())) {
@@ -245,6 +249,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
   state.incrementTrials();
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
   if (occurrences == 0) {
     state.setMistakesLeft(state.getAvailableMistakes() - 1);
@@ -280,13 +285,17 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   }
 
   GameState state;
-  arguments = buildSplitString({std::to_string(getTrials(state))});
   if (retrieveGame(plid, state) != 0) {
     return SYNTAX_ERROR;
   }
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
-  if (std::stoi(trial) != getTrials(state)) {
-    return TRIAL_MISMATCH;
+  try {
+    if (std::stoi(trial) != getTrials(state)) {
+      return TRIAL_MISMATCH;
+    }
+  } catch (const std::exception &e) {
+    return SYNTAX_ERROR;
   }
 
   if (state.isWordGuessed(word)) {
@@ -297,7 +306,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   state.setLastWordGuess(word);
   state.addGuessedWord(word);
   state.incrementTrials();
-  arguments = trial;
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
   if (state.getWord() == word) {
     appendGameFile(plid, CORRECT_FINAL_WORD, word);
@@ -359,10 +368,14 @@ int insertScore(std::string plid, GameState &state) {
   // clang-format off
   std::string scoreline = buildSplitString({
     printedScore,
+    "    ",
     plid,
-    state.getWord(),
+    "",
     std::to_string(successfulGuesses),
-    std::to_string(trialsMade)
+    "           ",
+    std::to_string(trialsMade),
+    "      ",
+    state.getWord(),
   });
   // clang-format on
 

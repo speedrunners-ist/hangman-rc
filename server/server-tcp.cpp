@@ -5,14 +5,16 @@ char bufferTCP[TCP_CHUNK_SIZE];
 
 void signalHandlerTCP(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectSocket(getResTCP(), getSocketFdTCP());
+  disconnectSocket(getSocket(SOCK_STREAM));
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
 
 void signalHandlerTCPchild(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectSocket(getResTCP(), childConnectionFd);
+  socketInfo childSocket = getSocket(SOCK_STREAM);
+  childSocket.fd = childConnectionFd;
+  disconnectSocket(childSocket);
   exit(signum);
 }
 
@@ -28,13 +30,16 @@ int generalTCPHandler(peerInfo peer) {
   const bool verbose = checkVerbose();
   protocolMessage request;
   pid_t pid;
+  int ret;
   if (createSocket(SOCK_STREAM, peer, signalHandlerTCP) == -1) {
     return -1;
   }
 
   // Listening for incoming connections
   while (true) {
-    childConnectionFd = accept(getSocketFdTCP(), getResTCP()->ai_addr, &getResTCP()->ai_addrlen);
+    do {
+      childConnectionFd = accept(getSocketFdTCP(), getResTCP()->ai_addr, &getResTCP()->ai_addrlen);
+    } while (childConnectionFd == -1 && errno == EINTR);
     if (childConnectionFd == -1) {
       std::cerr << TCP_ACCEPT_ERROR << std::endl;
       return -1;
@@ -48,10 +53,15 @@ int generalTCPHandler(peerInfo peer) {
 
     if (pid == 0) { // Child process
       signal(SIGINT, signalHandlerTCPchild);
-      if (close(getSocketFdTCP()) == -1) {
+      do {
+        ret = close(getSocketFdTCP());
+      } while (ret == -1 && errno == EINTR);
+      if (ret == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
-      } else if (turnOnSocketTimer(childConnectionFd) == -1) {
+      }
+
+      if (turnOnSocketTimer(childConnectionFd) == -1) {
         return -1;
       }
 
@@ -78,14 +88,19 @@ int generalTCPHandler(peerInfo peer) {
         std::cout << "[INFO]: Received the following message: " << request.body << std::endl;
       }
       messageTCPHandler(request, handleTCPClientMessage, childConnectionFd, getResTCP());
-      if (close(childConnectionFd) == -1) {
+      do {
+        ret = close(childConnectionFd);
+      } while (ret == -1 && errno == EINTR);
+      if (ret == -1) {
         std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
         return -1;
       }
       exit(EXIT_SUCCESS);
     }
-
-    if (close(childConnectionFd) == -1) {
+    do {
+      ret = close(childConnectionFd);
+    } while (ret == -1 && errno == EINTR);
+    if (ret == -1) {
       std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
       return -1;
     }
