@@ -30,8 +30,6 @@ bool checkFinishedGame() {
     return false;
   }
   const std::string expectedMessage = "RST FIN ";
-  std::cout << "[DEBUG] Received message: -" << responseMessage << "-" << std::endl;
-  std::cout << "[DEBUG] Expected message: -" << expectedMessage << "-" << std::endl;
   return responseMessage == expectedMessage;
 }
 
@@ -51,7 +49,6 @@ int generalUDPHandler(std::string message, size_t maxBytes) {
   }
 
   if (response.command != "RLG OK") { // edge case where the number of arguments is uncertain
-    // FIXME: find out if there's a better way to handle the RLG OK edge case
     try {
       if (!validArgsAmount(response.body, expectedResponseArgs[response.command])) {
         std::cerr << UDP_HANGMAN_ERROR << std::endl;

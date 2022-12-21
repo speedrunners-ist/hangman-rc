@@ -54,8 +54,6 @@ int handleRSB(protocolMessage response) {
 
 int handleRHL(protocolMessage response) {
   if (response.request != getExpectedMessage()) {
-    std::cout << "Expected: " << getExpectedMessage() << std::endl;
-    std::cout << "Received: " << response.request << std::endl;
     std::cerr << UNEXPECTED_MESSAGE << std::endl;
     return -1;
   }
