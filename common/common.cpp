@@ -202,6 +202,7 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   // Ignore SIGCHLD to avoid zombies
   if (sigaction(SIGCHLD, &socket.act, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectSocket(socket.res, socket.fd);
     return socket;
   }
 
@@ -221,15 +222,14 @@ int disconnectSocket(struct addrinfo *res, int fd) {
   memset(&tv, 0, sizeof(tv));
   freeaddrinfo(res);
   if (turnOffSocketTimer(fd) == -1) {
-    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
     if (close(fd) == -1) {
-      std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+      std::cerr << SOCKET_CLOSE_ERROR << std::endl;
     }
     return -1;
   }
 
   if (close(fd) == -1) {
-    std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+    std::cerr << SOCKET_CLOSE_ERROR << std::endl;
     return -1;
   }
   return 0;
@@ -250,7 +250,7 @@ int turnOffSocketTimer(int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
+    std::cerr << SOCKET_TIMER_RESET_ERROR << std::endl;
     return -1;
   }
   return 0;

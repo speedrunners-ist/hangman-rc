@@ -187,6 +187,7 @@ public:
 #define IP_ERROR "[ERR]: Invalid IP address."
 
 #define SOCKET_ERROR "[ERR]: Failed to create socket."
+#define SOCKET_CLOSE_ERROR "[ERR]: Failed to close socket."
 #define SOCKET_REUSE_ERROR "[ERR]: Failed to set socket re-usage flag."
 #define SOCKET_TIMER_SET_ERROR "[ERR]: Failed to set socket timeout."
 #define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."

@@ -2,6 +2,7 @@
 
 socketInfo socketTCP, socketUDP;
 std::string expectedMessage;
+bool tcpConnected = false;
 
 void signalHandler(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
@@ -18,14 +19,23 @@ int createSocket(__socket_type type, peerInfo peer, sighandler_t handler) {
     return socketUDP.fd;
   }
   socket.isConnected = true;
+  tcpConnected = true;
   socketTCP = socket;
   return socketTCP.fd;
 }
 
 int disconnect(socketInfo socket) {
+  if (!tcpConnected)
+    return 0;
   if (socket.type == SOCK_STREAM) {
+    if (!socketTCP.isConnected) {
+      return 0;
+    }
     socketTCP.isConnected = false;
+    tcpConnected = false;
   } else {
+    std::cout << "Disconnecting UDP socket" << std::endl;
+    std::cout << socket.res << socket.fd << std::endl;
     sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), socket.res, socket.fd);
   }
   return disconnectSocket(socket.res, socket.fd);
