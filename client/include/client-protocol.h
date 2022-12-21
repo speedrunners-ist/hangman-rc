@@ -39,13 +39,13 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 #define RSG_ARGS 2
 
 // Maximum amount of Bytes that can be sent by the server in a RLG message.
-#define RLG_BYTES 3 + 1 + 3 + 1 + 1 + 2 + 2 * 30 + 1
+#define RLG_BYTES 3 + 1 + 3 + 1 + 2 + 2 + 2 * 30 + 1
 
 // Expected amount of arguments (not including command and status) for the RLG message.
 #define RLG_ARGS 2
 
 // Maximum amount of Bytes that can be sent by the server in a RWG message.
-#define RWG_BYTES 3 + 1 + 3 + 1 + 1 + 1
+#define RWG_BYTES 3 + 1 + 3 + 1 + 2 + 1
 
 // Expected amount of arguments (not including command and status) for the RWG message.
 #define RWG_ARGS 1

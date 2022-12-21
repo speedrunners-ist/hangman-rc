@@ -104,6 +104,27 @@ int GameState::getTrials() { return trials; }
 void GameState::setPlayerID(std::string id) { playerID = id; }
 std::string GameState::getPlayerID() { return playerID; }
 
+/*** Initialization functions implementation ***/
+
+int checkPortNumber(std::string port) {
+  if (port.empty()) {
+    std::cerr << PORT_ERROR << std::endl;
+    return -1;
+  }
+  try {
+    int portNum = std::stoi(port);
+    if (portNum < 0 || portNum > 65535) {
+      std::cerr << PORT_ERROR << std::endl;
+      return -1;
+    }
+  } catch (const std::exception &e) {
+    std::cerr << PORT_ERROR << std::endl;
+    return -1;
+  }
+
+  return 0;
+}
+
 /*** Socket functions implementation ***/
 
 int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
@@ -153,7 +174,6 @@ int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct 
 
 socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient) {
   socketInfo socket;
-  socket.created = false;
   socket.type = type;
   socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
   if (socket.fd == -1) {
@@ -162,12 +182,11 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   }
 
   socket.isConnected = true;
-
   if (type == SOCK_STREAM) {
     if ((isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
         (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)) {
       std::cerr << CONNECTION_ERROR << std::endl;
-      disconnectSocket(socket.res, socket.fd);
+      disconnectSocket(socket);
       return socket;
     }
   }
@@ -181,13 +200,14 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   // Ignore SIGCHLD to avoid zombies
   if (sigaction(SIGCHLD, &socket.act, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
+    disconnectSocket(socket);
     return socket;
   }
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &socket.act, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    disconnectSocket(socket.res, socket.fd);
+    disconnectSocket(socket);
     return socket;
   }
   // Everything went well, we can return the socket as created
@@ -195,21 +215,14 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   return socket;
 }
 
-int disconnectSocket(struct addrinfo *res, int fd) {
-  struct timeval tv;
-  memset(&tv, 0, sizeof(tv));
-  freeaddrinfo(res);
-  if (turnOffSocketTimer(fd) == -1) {
-    std::cerr << SOCKET_TIMER_SET_ERROR << std::endl;
-    if (close(fd) == -1) {
-      std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
+int disconnectSocket(socketInfo socket) {
+  if (socket.created) {
+    freeaddrinfo(socket.res);
+    turnOffSocketTimer(socket.fd);
+    if (close(socket.fd) == -1) {
+      std::cerr << SOCKET_CLOSE_ERROR << std::endl;
+      return -1;
     }
-    return -1;
-  }
-
-  if (close(fd) == -1) {
-    std::cerr << TCP_SOCKET_CLOSE_ERROR << std::endl;
-    return -1;
   }
   return 0;
 }
@@ -229,7 +242,7 @@ int turnOffSocketTimer(int fd) {
   struct timeval tv;
   memset(&tv, 0, sizeof(tv));
   if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-    std::cout << SOCKET_TIMER_RESET_ERROR << std::endl;
+    std::cerr << SOCKET_TIMER_RESET_ERROR << std::endl;
     return -1;
   }
   return 0;
@@ -250,7 +263,7 @@ int parseMessage(std::string message, protocolMessage &response, bool fullMessag
       response.args = message.substr(message.find(response.command) + response.command.length() + 1);
     }
     response.body = message;
-  } catch (const std::out_of_range &e) {
+  } catch (const std::exception &e) {
     if (message != ERR) {
       std::cerr << PARSE_ERROR << std::endl;
     }

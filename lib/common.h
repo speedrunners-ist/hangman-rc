@@ -93,8 +93,8 @@ typedef struct {
   struct addrinfo *res;
   struct addrinfo hints;
   struct sigaction act;
-  bool isConnected;
-  bool created;
+  bool isConnected = false;
+  bool created = false;
   __socket_type type;
   int fd;
 } socketInfo;
@@ -183,7 +183,11 @@ public:
 
 #define SIGNAL(signum) "[INFO]: Interrupt signal (" << signum << ") received."
 
+#define PORT_ERROR "[ERR]: Invalid port number."
+#define IP_ERROR "[ERR]: Invalid IP address."
+
 #define SOCKET_ERROR "[ERR]: Failed to create socket."
+#define SOCKET_CLOSE_ERROR "[ERR]: Failed to close socket."
 #define SOCKET_REUSE_ERROR "[ERR]: Failed to set socket re-usage flag."
 #define SOCKET_TIMER_SET_ERROR "[ERR]: Failed to set socket timeout."
 #define SOCKET_TIMER_RESET_ERROR "[ERR]: Failed to reset socket timeout."
@@ -239,6 +243,14 @@ public:
 #define TCP_FILE_ARGS 2
 
 /**
+ * @brief Checks if the given port number is valid.
+ *
+ * @param port
+ * @return int
+ */
+int checkPortNumber(std::string port);
+
+/**
  * @brief Creates a new socket.
  *
  * @param type Type of socket to be created - SOCK_DGRAM or SOCK_STREAM.
@@ -263,11 +275,10 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
 /**
  * @brief Handle graceful disconnection of a socket.
  *
- * @param res Pointer to a struct addrinfo containing the socket's address info.
- * @param fd Socket's file descriptor.
+ * @param socket Socket to be disconnected.
  * @return 0 on success, -1 on error.
  */
-int disconnectSocket(struct addrinfo *res, int fd);
+int disconnectSocket(socketInfo socket);
 
 /**
  * @brief Handle initialization of a socket's timeout.
@@ -456,7 +467,8 @@ bool gatherResponseArguments(std::string body, std::vector<int> &args, int expec
  *
  * @param state: To-be-checked state of the program.
  * @param command: Command to be checked.
- * @return True if the program should exit (i.e game isn't active and the user pressed exit), false otherwise.
+ * @return True if the program should exit (i.e game isn't active and the user pressed exit), false
+ * otherwise.
  */
 bool forceExit(GameState state, std::string command);
 

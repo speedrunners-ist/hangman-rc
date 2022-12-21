@@ -15,20 +15,27 @@ int createSocket(__socket_type type, peerInfo peer, sighandler_t handler) {
   socketInfo socket = handleSocketCreation(type, peer, handler, true);
   if (type == SOCK_DGRAM) {
     socketUDP = socket;
+    turnOnSocketTimer(socketUDP.fd);
     return socketUDP.fd;
   }
-  socket.isConnected = true;
   socketTCP = socket;
   return socketTCP.fd;
 }
 
 int disconnect(socketInfo socket) {
   if (socket.type == SOCK_STREAM) {
+    if (!socketTCP.isConnected) {
+      return 0;
+    }
     socketTCP.isConnected = false;
   } else {
+    if (!socketUDP.isConnected) {
+      return 0;
+    }
     sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), socket.res, socket.fd);
+    socketUDP.isConnected = false;
   }
-  return disconnectSocket(socket.res, socket.fd);
+  return disconnectSocket(socket);
 }
 
 socketInfo getSocket(__socket_type type) { return type == SOCK_STREAM ? socketTCP : socketUDP; }

@@ -21,6 +21,9 @@
 // Path to a player's finished game, given the time it was finished
 #define FINISHED_GAMES_PATH(plid, time) PLID_GAMES_DIR(plid) + "GAME_" + time + ".txt"
 
+// Path to the directory where the scoreboard is stored
+#define SCORES_DIR "server/scores/"
+
 // Path to the scoreboard file
 #define SCORES_PATH "server/assets/scores/scoreboard.txt"
 
@@ -47,6 +50,9 @@
 
 // Message to be written in the state temp file if there haven't been any plays yet
 #define NO_GUESSES "No guesses have been made yet."
+
+// Error when scoreboard file is not in the correct format
+#define SCOREBOARD_FORMAT_ERROR "Scoreboard file is not in the correct format."
 
 /**
  * @brief Creates a file for a player's game.

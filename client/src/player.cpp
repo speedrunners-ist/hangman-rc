@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
     std::cout << DEFAULT_GSPORT_STR << std::endl;
   }
 
+  if (checkPortNumber(GSport) == -1) {
+    exit(EXIT_FAILURE);
+  }
+
   const peerInfo peer = {GSIP, GSport};
   if (createSocket(SOCK_DGRAM, peer, (sighandler_t)signalHandler) == -1) {
     exit(EXIT_FAILURE);
@@ -60,7 +64,14 @@ int main(int argc, char *argv[]) {
     }
 
     std::string input(buffer);
-    std::string command = input.substr(0, input.find_first_of(" \n"));
+    std::string command;
+    try {
+      command = input.substr(0, input.find_first_of(" \n"));
+    } catch (const std::exception &e) {
+      std::cerr << UNEXPECTED_COMMAND << std::endl;
+      continueReading(buffer);
+      continue;
+    }
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {

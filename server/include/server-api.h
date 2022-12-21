@@ -4,7 +4,7 @@
 #include "server-utils.h"
 
 // Wrong program arguments
-#define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"
+#define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] [-v]"
 
 // Server initialization message
 #define STARTING_SERVER "[INFO] Starting server."

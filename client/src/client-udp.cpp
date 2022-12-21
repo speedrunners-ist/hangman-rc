@@ -215,7 +215,8 @@ int handleRQT(protocolMessage response) {
     resetGame();
     std::cout << RQT_OK << std::endl;
     return 0;
-  } else if (response.status == "ERR") {
+  }
+  if (response.status == "ERR") {
     std::cout << RQT_ERR << std::endl;
     return 0;
   }
