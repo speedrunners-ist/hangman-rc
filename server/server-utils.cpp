@@ -100,9 +100,9 @@ int appendScoreFile(int score, std::string scoreline) {
     ++i;
   }
 
+  int pos = 0;
   // Otherwise, we need to find the position where the score fits
   try {
-    int pos = 0;
     for (auto &l : lines) {
       std::string lineScore = l.substr(0, l.find(' '));
       if (score > std::stoi(lineScore)) {
