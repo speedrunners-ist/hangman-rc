@@ -65,5 +65,17 @@ server/games/
 *.html
 *.log
 
+# Where output files go
+build/
+bin/
+
+# Ignore everything in assets except words_eng.txt
+assets/*
+!assets/words_eng.txt
+
+# Ignore all files inside the folders inside assets
+assets/**/*
+!assets/**/
+
 
 .vscode
