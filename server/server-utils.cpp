@@ -101,13 +101,17 @@ int appendScoreFile(int score, std::string scoreline) {
   }
 
   // Otherwise, we need to find the position where the score fits
-  int pos = 0;
-  for (auto &l : lines) {
-    std::string lineScore = l.substr(0, l.find(' '));
-    if (score > std::stoi(lineScore)) {
-      break;
+  try {
+    int pos = 0;
+    for (auto &l : lines) {
+      std::string lineScore = l.substr(0, l.find(' '));
+      if (score > std::stoi(lineScore)) {
+        break;
+      }
+      ++pos;
     }
-    ++pos;
+  } catch (const std::exception &e) {
+    std::cerr << SCOREBOARD_FORMAT_ERROR << std::endl;
   }
 
   // Insert the scoreline in the correct position
@@ -201,12 +205,17 @@ int createPlaceholderState(std::string plid, std::string filePath) {
 void destroyTempFiles() {
   const std::filesystem::path gamePath = GAMES_DIR;
 
-  for (const auto &entry : std::filesystem::directory_iterator{gamePath}) {
-    if (!entry.is_directory()) {
-      std::filesystem::remove(entry.path());
+  if (std::filesystem::exists(gamePath)) {
+
+    for (const auto &entry : std::filesystem::directory_iterator{gamePath}) {
+      if (!entry.is_directory()) {
+        std::filesystem::remove(entry.path());
+      }
     }
   }
   const std::filesystem::path statePath = TMP_DIR;
 
-  std::filesystem::remove_all(statePath);
+  if (std::filesystem::exists(statePath))
+
+    std::filesystem::remove_all(statePath);
 }
