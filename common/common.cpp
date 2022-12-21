@@ -162,23 +162,17 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   }
 
   socket.isConnected = true;
-  if (isClient) {
-    if (turnOnSocketTimer(socket.fd) == -1) {
-      disconnectSocket(socket.res, socket.fd);
-      return socket;
-    } else if (type == SOCK_STREAM && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) {
-      std::cerr << CONNECTION_ERROR << std::endl;
-      disconnectSocket(socket.res, socket.fd);
-      return socket;
-    }
-  } else {
-    if (type == SOCK_STREAM && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1) {
+
+  if (type == SOCK_STREAM) {
+    if (
+      (isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
+      (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)
+    ) {
       std::cerr << CONNECTION_ERROR << std::endl;
       disconnectSocket(socket.res, socket.fd);
       return socket;
     }
   }
-
 
   signal(SIGINT, handler);
   signal(SIGTERM, handler);
