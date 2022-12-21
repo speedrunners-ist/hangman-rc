@@ -263,7 +263,7 @@ int parseMessage(std::string message, protocolMessage &response, bool fullMessag
       response.args = message.substr(message.find(response.command) + response.command.length() + 1);
     }
     response.body = message;
-  } catch (const std::out_of_range &e) {
+  } catch (const std::exception &e) {
     if (message != ERR) {
       std::cerr << PARSE_ERROR << std::endl;
     }
