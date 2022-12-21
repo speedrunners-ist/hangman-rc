@@ -191,10 +191,10 @@ bool isOngoingGame(std::string plid);
 
 /**
  * @brief Checks if a given trial is invalid.
- * 
+ *
  * @param trial The trial.
  * @return true if the trial is invalid, false otherwise.
-*/
+ */
 bool isInvalidTrial(std::string trial);
 
 /**

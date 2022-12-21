@@ -216,5 +216,4 @@ void destroyTempFiles() {
   if (std::filesystem::exists(statePath)) {
     std::filesystem::remove_all(statePath);
   }
-
 }
