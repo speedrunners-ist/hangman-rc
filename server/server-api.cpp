@@ -227,11 +227,10 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   GameState state;
   if (retrieveGame(plid, state) != 0) {
-    arguments = buildSplitString({std::to_string(getTrials(state))});
     return SYNTAX_ERROR;
   }
 
-  arguments = buildSplitString({std::to_string(getTrials(state))});
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
   try {
     if (std::stoi(trial) != getTrials(state)) {
@@ -250,6 +249,7 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
   state.incrementTrials();
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
   if (occurrences == 0) {
     state.setMistakesLeft(state.getAvailableMistakes() - 1);
@@ -285,10 +285,10 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   }
 
   GameState state;
-  arguments = buildSplitString({std::to_string(getTrials(state))});
   if (retrieveGame(plid, state) != 0) {
     return SYNTAX_ERROR;
   }
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
   try {
     if (std::stoi(trial) != getTrials(state)) {
@@ -306,7 +306,7 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   state.setLastWordGuess(word);
   state.addGuessedWord(word);
   state.incrementTrials();
-  arguments = trial;
+  arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
   if (state.getWord() == word) {
     appendGameFile(plid, CORRECT_FINAL_WORD, word);
