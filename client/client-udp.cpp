@@ -17,12 +17,12 @@ std::map<std::string, int> expectedResponseArgs = {
 };
 // clang-format on
 
-
 // Since the protocol may answer with ERR if the game is already finished and we try to guess the word again,
-// we need to send back a STA request to check if the game is over. If the answer is an RST FIN, we need to reset
-// the game.
+// we need to send back a STA request to check if the game is over. If the answer is an RST FIN, we need to
+// reset the game.
 bool checkFinishedGame() {
-  if (sendTCPMessage(buildSplitStringNewline({"STA", getPlayerID()}), getServerInfoTCP(), getSocketFdTCP()) == -1) {
+  if (sendTCPMessage(buildSplitStringNewline({"STA", getPlayerID()}), getServerInfoTCP(), getSocketFdTCP()) ==
+      -1) {
     return false;
   }
   std::string responseMessage;
@@ -215,7 +215,8 @@ int handleRQT(protocolMessage response) {
     resetGame();
     std::cout << RQT_OK << std::endl;
     return 0;
-  } else if (response.status == "ERR") {
+  }
+  if (response.status == "ERR") {
     std::cout << RQT_ERR << std::endl;
     return 0;
   }
