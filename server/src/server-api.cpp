@@ -299,11 +299,11 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
     return TRIAL_MISMATCH;
   }
 
+  toLower(word);
   if (state.isWordGuessed(word)) {
     return DUPLICATE_GUESS;
   }
 
-  toLower(word);
   state.setLastWordGuess(word);
   state.addGuessedWord(word);
   state.incrementTrials();
