@@ -41,7 +41,7 @@ command from the project's root directory):
 client/bin/player [-p <port>] [-n <host>]
 ```
 
-Here, the host's port and IP(v4) address can be specified with the `-p` and `-n`, respectively. If no port is specified, the default port `58045` will be used. If no IP address is specified, the default address `localhost` will be used.
+Here, the host's port and IP(v4) address/hostname can be specified with the `-p` and `-n`, respectively. If no port is specified, the default port `58045` will be used. If no IP address is specified, the default address `localhost` will be used.
 
 ## Project structure
 
