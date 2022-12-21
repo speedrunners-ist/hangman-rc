@@ -57,9 +57,9 @@ server/GS
 
 # Text files
 scoreboard/
-client/hints/
+client/assets/hints/
 state/
-server/games/
+server/assets/games/
 
 # Test suite files
 *.html
@@ -68,14 +68,6 @@ server/games/
 # Where output files go
 build/
 bin/
-
-# Ignore everything in assets except words_eng.txt
-assets/*
-!assets/words_eng.txt
-
-# Ignore all files inside the folders inside assets
-assets/**/*
-!assets/**/
 
 
 .vscode
