@@ -1,7 +1,7 @@
 #ifndef CLIENT_PROTOCOL_H
 #define CLIENT_PROTOCOL_H
 
-#include "client/include/client-api.h"
+#include "client-api.h"
 
 // Redirection handler for each specific user command.
 typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;

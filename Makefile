@@ -2,14 +2,11 @@
 CXX ?= g++
 LD ?= g++
 
-INCLUDE_DIRS := client server lib
-INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
-SOURCES := $(wildcard client/src/*.cpp) $(wildcard server/src/*.cpp) $(wildcard lib/*.cpp)
-HEADERS := $(wildcard client/include/*.h) $(wildcard server/include/*.h) $(wildcard lib/*.h)
-OBJECTS := $(patsubst %.cpp,%.o,$(SOURCES))
-OBJECTS := $(patsubst client/%,client/bin/%,$(OBJECTS))
-OBJECTS := $(patsubst server/%,server/bin/%,$(OBJECTS))
-
+INCLUDE_DIRS := lib client/include server/include client/src server/src
+INCLUDES := $(addprefix -I,$(INCLUDE_DIRS))
+SOURCES := $(shell find . -name "*.cpp")
+HEADERS := $(shell find . -name "*.h")
+OBJECTS := $(SOURCES:.cpp=.o)
 TARGET_EXECS := client/bin/player server/bin/GS
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
@@ -20,8 +17,7 @@ vpath %.h $(INCLUDE_DIRS)
 CXXFLAGS = -std=c++20 -O3
 CXXFLAGS += $(INCLUDES)
 # Warnings
-CXXFLAGS += -fdiagnostics-color=always -Wall  -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
-CXXFLAGS += -Wno-sign-compare
+CXXFLAGS += -fdiagnostics-color=always -Wall  -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wno-sign-compare
 # Differentiate between dev and prod
 CXXFLAGS += -DPRODUCTION
 

@@ -1,7 +1,7 @@
 #ifndef CLIENT_API_H
 #define CLIENT_API_H
 
-#include "lib/common.h"
+#include "common.h"
 
 /**
  * @brief Creates a GameState instance, with the given parameters.

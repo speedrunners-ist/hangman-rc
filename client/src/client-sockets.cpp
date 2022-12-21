@@ -1,4 +1,4 @@
-#include "client/include/client-protocol.h"
+#include "client-protocol.h"
 
 socketInfo socketTCP, socketUDP;
 std::string expectedMessage;

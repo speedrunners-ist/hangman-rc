@@ -1,9 +1,25 @@
-client-api.o: client/client-api.cpp
-client.o: client/client.cpp client/client-api.h lib/common.h \
- client/client-protocol.h
-client-protocol.o: client/client-protocol.cpp client/client-protocol.h \
- client/client-api.h lib/common.h
-common.o: lib/common.cpp
-server-api.o: server/server-api.cpp
-server.o: server/server.cpp server/server-api.h server/server-protocol.h
-server-udp.o: server/server-udp.cpp
+common.o: lib/common.cpp lib/common.h
+client-sockets.o: client/src/client-sockets.cpp \
+ client/include/client-protocol.h client/include/client-api.h \
+ lib/common.h
+player.o: client/src/player.cpp client/include/client-protocol.h \
+ client/include/client-api.h lib/common.h
+client-api.o: client/src/client-api.cpp client/include/client-api.h \
+ lib/common.h
+client-tcp.o: client/src/client-tcp.cpp client/include/client-protocol.h \
+ client/include/client-api.h lib/common.h
+client-udp.o: client/src/client-udp.cpp client/include/client-protocol.h \
+ client/include/client-api.h lib/common.h
+server-udp.o: server/src/server-udp.cpp server/include/server-protocol.h \
+ server/include/server-api.h server/include/server-utils.h lib/common.h
+server-utils.o: server/src/server-utils.cpp server/include/server-utils.h \
+ lib/common.h
+server-sockets.o: server/src/server-sockets.cpp \
+ server/include/server-protocol.h server/include/server-api.h \
+ server/include/server-utils.h lib/common.h
+GS.o: server/src/GS.cpp server/include/server-protocol.h \
+ server/include/server-api.h server/include/server-utils.h lib/common.h
+server-tcp.o: server/src/server-tcp.cpp server/include/server-protocol.h \
+ server/include/server-api.h server/include/server-utils.h lib/common.h
+server-api.o: server/src/server-api.cpp server/include/server-api.h \
+ server/include/server-utils.h lib/common.h

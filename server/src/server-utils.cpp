@@ -1,4 +1,4 @@
-#include "server/include/server-utils.h"
+#include "server-utils.h"
 
 int createGameFile(std::string plid, std::string word, std::string hint) {
   std::filesystem::path dir(GAMES_DIR);

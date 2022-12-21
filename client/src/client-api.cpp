@@ -1,4 +1,4 @@
-#include "client/include/client-api.h"
+#include "client-api.h"
 
 /*** ClientAPI methods implementation ***/
 

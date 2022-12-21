@@ -1,4 +1,4 @@
-#include "client/include/client-protocol.h"
+#include "client-protocol.h"
 
 // clang-format off
 responseHandler handleTCPServerMessage = {

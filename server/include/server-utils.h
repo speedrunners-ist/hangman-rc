@@ -1,7 +1,7 @@
 #ifndef SERVER_UTILS_H
 #define SERVER_UTILS_H
 
-#include "lib/common.h"
+#include "common.h"
 
 // Path to the directory where games are stored
 #define GAMES_DIR "server/assets/games/"

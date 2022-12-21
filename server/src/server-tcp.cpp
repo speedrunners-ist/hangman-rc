@@ -1,4 +1,4 @@
-#include "server/include/server-protocol.h"
+#include "server-protocol.h"
 
 int childConnectionFd;
 char bufferTCP[TCP_CHUNK_SIZE];
