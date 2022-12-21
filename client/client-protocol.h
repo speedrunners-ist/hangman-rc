@@ -39,13 +39,13 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 #define RSG_ARGS 2
 
 // Maximum amount of Bytes that can be sent by the server in a RLG message.
-#define RLG_BYTES 3 + 1 + 3 + 1 + 1 + 2 + 2 * 30 + 1
+#define RLG_BYTES 3 + 1 + 3 + 1 + 2 + 2 + 2 * 30 + 1
 
 // Expected amount of arguments (not including command and status) for the RLG message.
 #define RLG_ARGS 2
 
 // Maximum amount of Bytes that can be sent by the server in a RWG message.
-#define RWG_BYTES 3 + 1 + 3 + 1 + 1 + 1
+#define RWG_BYTES 3 + 1 + 3 + 1 + 2 + 1
 
 // Expected amount of arguments (not including command and status) for the RWG message.
 #define RWG_ARGS 1
@@ -271,7 +271,7 @@ int sendSTA(messageInfo info);
 
 /**
  * @brief General signal handler (SIGINT, SIGTERM, etc.) for client-side signals.
- * 
+ *
  * @param signum The signal number.
  */
 void signalHandler(int signum);
@@ -288,60 +288,60 @@ int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
 
 /**
  * @brief Provides specific client-side socket disconnection.
- * 
+ *
  * @param socket The socket to be disconnected.
  * @return 0 if the socket was successfully disconnected, -1 otherwise.
-*/
+ */
 int disconnect(socketInfo socket);
 
 /**
  * @brief Retrieves a client-side socket, according to its type.
- * 
+ *
  * @param type The type of socket to be retrieved.
  * @return The socketInfo struct containing the socket's main information.
-*/
+ */
 socketInfo getSocket(__socket_type type);
 
 /**
  * @brief Retrieves the server information (UDP), according to its type.
- * 
+ *
  * @return The addrinfo struct containing the server's main information (UDP).
-*/
+ */
 struct addrinfo *getServerInfoUDP();
 
 /**
  * @brief Retrieves the server information (TCP), according to its type.
- * 
+ *
  * @return The addrinfo struct containing the server's main information (TCP).
-*/
+ */
 struct addrinfo *getServerInfoTCP();
 
 /**
  * @brief Retrieves the client's UDP socket file descriptor.
- * 
+ *
  * @return The client's UDP socket file descriptor.
-*/
+ */
 int getSocketFdUDP();
 
 /**
  * @brief Retrieves the client's TCP socket file descriptor.
- * 
+ *
  * @return The client's TCP socket file descriptor.
-*/
+ */
 int getSocketFdTCP();
 
 /**
  * @brief Retrieves the expected server-sent message (considering a prior request).
- * 
+ *
  * @return The expected server-sent message.
-*/
+ */
 std::string getExpectedMessage();
 
 /**
  * @brief Sets a new expected server-sent message (considering a prior request).
- * 
+ *
  * @param message The new expected server-sent message.
-*/
+ */
 void setExpectedMessage(std::string message);
 
 #endif /* CLIENT_PROTOCOL_H */
