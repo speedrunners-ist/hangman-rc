@@ -112,6 +112,15 @@ int setupWordList(std::string filePath) {
 
 bool isOngoingGame(std::string plid) { return std::filesystem::exists(ONGOING_GAMES_PATH(plid)); }
 
+bool isInvalidTrial(std::string trial) {
+  try {
+    const int t = std::stoi(trial);
+    return t <= 0 || t > 100;
+  } catch (const std::invalid_argument &e) {
+    return true;
+  }
+}
+
 std::pair<std::string, std::string> getWordHintPair() {
 #ifdef PRODUCTION
   // Random in production mode
@@ -232,12 +241,8 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
 
   arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
-  try {
-    if (std::stoi(trial) != getTrials(state)) {
-      return TRIAL_MISMATCH;
-    }
-  } catch (const std::exception &e) {
-    return SYNTAX_ERROR;
+  if (std::stoi(trial) != getTrials(state)) {
+    return TRIAL_MISMATCH;
   }
 
   if (state.isLetterGuessed(letter.front())) {
@@ -290,12 +295,8 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
   }
   arguments = buildSplitString({std::to_string(getTrials(state) - 1)});
 
-  try {
-    if (std::stoi(trial) != getTrials(state)) {
-      return TRIAL_MISMATCH;
-    }
-  } catch (const std::exception &e) {
-    return SYNTAX_ERROR;
+  if (std::stoi(trial) != getTrials(state)) {
+    return TRIAL_MISMATCH;
   }
 
   if (state.isWordGuessed(word)) {
