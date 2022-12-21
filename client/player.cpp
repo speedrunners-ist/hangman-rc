@@ -64,7 +64,14 @@ int main(int argc, char *argv[]) {
     }
 
     std::string input(buffer);
-    std::string command = input.substr(0, input.find_first_of(" \n"));
+    std::string command;
+    try {
+      command = input.substr(0, input.find_first_of(" \n"));
+    } catch (const std::exception &e) {
+      std::cerr << UNEXPECTED_COMMAND << std::endl;
+      continueReading(buffer);
+      continue;
+    }
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
