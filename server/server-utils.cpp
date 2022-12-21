@@ -206,7 +206,6 @@ void destroyTempFiles() {
   const std::filesystem::path gamePath = GAMES_DIR;
 
   if (std::filesystem::exists(gamePath)) {
-
     for (const auto &entry : std::filesystem::directory_iterator{gamePath}) {
       if (!entry.is_directory()) {
         std::filesystem::remove(entry.path());
@@ -215,7 +214,8 @@ void destroyTempFiles() {
   }
   const std::filesystem::path statePath = TMP_DIR;
 
-  if (std::filesystem::exists(statePath))
-
+  if (std::filesystem::exists(statePath)) {
     std::filesystem::remove_all(statePath);
+  }
+
 }
