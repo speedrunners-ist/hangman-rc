@@ -35,16 +35,6 @@
 // Expected amount of arguments for the STA command.
 #define STA_ARGS 2
 
-// TODO: add docs
-int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
-int disconnect(socketInfo socket);
-socketInfo getSocket(__socket_type type);
-struct addrinfo *getResUDP();
-struct addrinfo *getResTCP();
-int getSocketFdUDP();
-int getSocketFdTCP();
-bool checkVerbose();
-
 /**
  * @brief Sets up the server's parameters, according to the program's parameters.
  *
@@ -153,5 +143,68 @@ int handleGHL(protocolMessage message);
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
 int handleSTA(protocolMessage message);
+
+/**
+ * @brief Creates a new UDP socket.
+ *
+ * @param type The type of socket to be created.
+ * @param peer The peer to be connected to.
+ * @param handler The signal handler to be used.
+ * @return The socket's file descriptor.
+ */
+int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
+
+/**
+ * @brief Provides specific server-side socket disconnection.
+ * 
+ * @param socket The socket to be disconnected.
+ * @return 0 if the socket was successfully disconnected, -1 otherwise.
+*/
+int disconnect(socketInfo socket);
+
+/**
+ * @brief Retrieves a server-side socket, according to its type.
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The socketInfo struct containing the socket's main information.
+*/
+socketInfo getSocket(__socket_type type);
+
+/**
+ * @brief Retrieves the client's address information (UDP).
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The addrinfo struct containing the client's address information.
+ */
+struct addrinfo *getResUDP();
+
+/**
+ * @brief Retrieves the client's address information (TCP).
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The addrinfo struct containing the client's address information.
+ */
+struct addrinfo *getResTCP();
+
+/**
+ * @brief Retrieves the client's file descriptor (UDP).
+ * 
+ * @return The client's file descriptor.
+ */
+int getSocketFdUDP();
+
+/**
+ * @brief Retrieves the client's file descriptor (TCP).
+ * 
+ * @return The client's file descriptor.
+ */
+int getSocketFdTCP();
+
+/**
+ * @brief Check whether the server is operating in a verbose manner.
+ * 
+ * @return True if the server is operating in a verbose manner, false otherwise.
+ */
+bool checkVerbose();
 
 #endif /* SERVER_PROTOCOL_H */

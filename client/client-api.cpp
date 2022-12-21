@@ -53,16 +53,7 @@ int getTrials() { return state.getTrials(); }
 
 bool forceExitClient(std::string command) { return forceExit(state, command); }
 
-std::vector<std::string> getKeys(commandHandler map) {
-  std::vector<std::string> keys;
-  for (auto const &pair : map) {
-    keys.push_back(pair.first);
-  }
-  return keys;
-}
-
 void printHelpMenu() {
-  std::cout << "Welcome to a brand new Hangman game!" << std::endl;
   std::cout << "To play, you can use the following commands:" << std::endl;
   std::cout << "  - start/sg <player_id>: starts a new game. The Player ID must be composed of 6 digits."
             << std::endl;

@@ -121,14 +121,6 @@ int getTrials();
 bool forceExitClient(std::string command);
 
 /**
- * @brief Gets the keys of a commandHandler (i.e all the possible commands).
- *
- * @param map The map to be checked.
- * @return A vector containing all the map's available commands.
- */
-std::vector<std::string> getKeys(commandHandler map);
-
-/**
  * @brief Prints the help menu.
  */
 void printHelpMenu();

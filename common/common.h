@@ -78,7 +78,17 @@ typedef struct {
   peerInfo peer;
 } messageInfo;
 
-// TODO: add documentation
+/**
+ * @brief Struct that represents a socket, containing associated relevant information.
+ * 
+ * @param res The socket's address information.
+ * @param hints The socket's hints.
+ * @param act The action to be taken when a signal is received.
+ * @param isConnected Whether the socket is connected or not.
+ * @param created Whether the socket has been created or not.
+ * @param type The socket's type.
+ * @param fd The socket's file descriptor.
+*/
 typedef struct {
   struct addrinfo *res;
   struct addrinfo hints;
@@ -89,8 +99,7 @@ typedef struct {
   int fd;
 } socketInfo;
 
-// Handler maps, used to store the functions that will handle the commands and responses.
-typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
+// Redirection handler for each specific request.
 typedef std::map<std::string, std::function<int(protocolMessage response)>> responseHandler;
 
 /**
@@ -230,7 +239,7 @@ public:
 #define TCP_FILE_ARGS 2
 
 /**
- * @brief Handle creation of a new socket.
+ * @brief Creates a new socket.
  *
  * @param type Type of socket to be created - SOCK_DGRAM or SOCK_STREAM.
  * @param peer PeerInfo struct containing the peer's IP address and port.
@@ -240,7 +249,15 @@ public:
  */
 int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo);
 
-// TODO: add documentation
+/**
+ * @brief Handles the creation of a socket (and everything surrounding it).
+ * 
+ * @param type Type of socket to be created - SOCK_DGRAM or SOCK_STREAM.
+ * @param peer PeerInfo struct containing the peer's IP address and port.
+ * @param handler Signal handler to be set associated with the socket.
+ * @param isClient Boolean indicating whether the socket is for a client or a server.
+ * @return A socketInfo struct containing the socket's main information.
+*/
 socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient);
 
 /**

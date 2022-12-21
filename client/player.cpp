@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
   }
 
   char buffer[MAX_USER_INPUT];
+  std::cout << "Welcome to a brand new Hangman game!" << std::endl;
   printHelpMenu();
   continueReading(buffer);
 
@@ -63,8 +64,8 @@ int main(int argc, char *argv[]) {
 
     // if command isn't a key in handlePlayerMessage, print error
     if (handlePlayerMessage.find(command) == handlePlayerMessage.end()) {
-      const std::string allCommands = buildSplitStringNewline(getKeys(handlePlayerMessage));
-      std::cerr << UNEXPECTED_COMMAND_ERROR(allCommands);
+      std::cerr << UNEXPECTED_COMMAND << std::endl;
+      printHelpMenu();
       continueReading(buffer);
       continue;
     }

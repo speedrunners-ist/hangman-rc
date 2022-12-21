@@ -3,6 +3,9 @@
 
 #include "client-api.h"
 
+// Redirection handler for each specific user command.
+typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
+
 // Expected amount of arguments for the "start" command.
 #define START_ARGS 2
 
@@ -60,10 +63,9 @@
 #define EXPECTED_LETTER_ERROR "[ERR]: Invalid input. Expected a single letter."
 #define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                                  \
   "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
-#define UNEXPECTED_COMMAND_ERROR(commands)                                                                   \
-  "[ERR]: Invalid input. Expected one of the following commands: " + commands
 #define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
 #define UNEXPECTED_MESSAGE "[ERR]: Unexpected message received from server."
+#define UNEXPECTED_COMMAND "[ERR]: The command received is not supported by this client."
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
@@ -267,11 +269,15 @@ int sendSTA(messageInfo info);
 
 // UDP/TCP socket creation and retrieval functions
 
-// TODO: add docs
+/**
+ * @brief General signal handler (SIGINT, SIGTERM, etc.) for client-side signals.
+ * 
+ * @param signum The signal number.
+ */
 void signalHandler(int signum);
 
 /**
- * @brief Creates a new UDP socket.
+ * @brief Creates a new socket.
  *
  * @param type The type of socket to be created.
  * @param peer The peer to be connected to.
@@ -280,15 +286,62 @@ void signalHandler(int signum);
  */
 int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
 
-// FIXME: add docs
+/**
+ * @brief Provides specific client-side socket disconnection.
+ * 
+ * @param socket The socket to be disconnected.
+ * @return 0 if the socket was successfully disconnected, -1 otherwise.
+*/
 int disconnect(socketInfo socket);
 
+/**
+ * @brief Retrieves a client-side socket, according to its type.
+ * 
+ * @param type The type of socket to be retrieved.
+ * @return The socketInfo struct containing the socket's main information.
+*/
 socketInfo getSocket(__socket_type type);
+
+/**
+ * @brief Retrieves the server information (UDP), according to its type.
+ * 
+ * @return The addrinfo struct containing the server's main information (UDP).
+*/
 struct addrinfo *getServerInfoUDP();
+
+/**
+ * @brief Retrieves the server information (TCP), according to its type.
+ * 
+ * @return The addrinfo struct containing the server's main information (TCP).
+*/
 struct addrinfo *getServerInfoTCP();
+
+/**
+ * @brief Retrieves the client's UDP socket file descriptor.
+ * 
+ * @return The client's UDP socket file descriptor.
+*/
 int getSocketFdUDP();
+
+/**
+ * @brief Retrieves the client's TCP socket file descriptor.
+ * 
+ * @return The client's TCP socket file descriptor.
+*/
 int getSocketFdTCP();
+
+/**
+ * @brief Retrieves the expected server-sent message (considering a prior request).
+ * 
+ * @return The expected server-sent message.
+*/
 std::string getExpectedMessage();
+
+/**
+ * @brief Sets a new expected server-sent message (considering a prior request).
+ * 
+ * @param message The new expected server-sent message.
+*/
 void setExpectedMessage(std::string message);
 
 #endif /* CLIENT_PROTOCOL_H */
