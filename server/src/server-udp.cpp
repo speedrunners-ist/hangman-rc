@@ -104,7 +104,7 @@ int handlePLG(protocolMessage message) {
   const std::string letter = args.substr(0, 1);
   const std::string trial = args.substr(2);
 
-  if (isdigit(letter[0]) || args[1] != ' ' || !isNumber(trial)) {
+  if (isdigit(letter[0]) || args[1] != ' ' || isInvalidTrial(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"RLG", "ERR"}), getResUDP(), getSocketFdUDP());
   }
@@ -151,7 +151,7 @@ int handlePWG(protocolMessage message) {
   const std::string args = message.args;
   const std::string word = args.substr(0, args.find(' '));
   const std::string trial = args.substr(args.find(' ') + 1);
-  if (!hasWordFormat(word) || !isNumber(trial)) {
+  if (!hasWordFormat(word) || isInvalidTrial(trial)) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
     return sendUDPMessage(buildSplitStringNewline({"RWG", "ERR"}), getResUDP(), getSocketFdUDP());
   }

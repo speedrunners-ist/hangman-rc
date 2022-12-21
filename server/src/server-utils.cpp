@@ -1,7 +1,6 @@
 #include "server-utils.h"
 
 int createGameFile(std::string plid, std::string word, std::string hint) {
-  // create games directory if it doesn't exist
   std::filesystem::path dir(GAMES_DIR);
   if (!std::filesystem::exists(dir)) {
     std::filesystem::create_directory(dir);
@@ -217,5 +216,4 @@ void destroyTempFiles() {
   if (std::filesystem::exists(statePath)) {
     std::filesystem::remove_all(statePath);
   }
-
 }

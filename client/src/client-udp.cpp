@@ -239,6 +239,7 @@ int handleRRV(protocolMessage response) {
 
 int sendSNG(messageInfo info) {
   if (!validArgsAmount(info.input, START_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl; // TODO
     return -1;
   }
 
@@ -256,6 +257,7 @@ int sendSNG(messageInfo info) {
 
 int sendPLG(messageInfo info) {
   if (!validArgsAmount(info.input, PLAY_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
@@ -279,6 +281,7 @@ int sendPLG(messageInfo info) {
 
 int sendPWG(messageInfo info) {
   if (!validArgsAmount(info.input, GUESS_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
@@ -302,6 +305,7 @@ int sendPWG(messageInfo info) {
 
 int sendQUT(messageInfo info) {
   if (!validArgsAmount(info.input, QUIT_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {
@@ -320,6 +324,7 @@ int sendQUT(messageInfo info) {
 
 int sendREV(messageInfo info) {
   if (!validArgsAmount(info.input, REVEAL_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   if (getPlayerID().empty()) {

@@ -190,6 +190,14 @@ int setupWordList(std::string filePath);
 bool isOngoingGame(std::string plid);
 
 /**
+ * @brief Checks if a given trial is invalid.
+ *
+ * @param trial The trial.
+ * @return true if the trial is invalid, false otherwise.
+ */
+bool isInvalidTrial(std::string trial);
+
+/**
  * @brief Returns a word-hint pair from the given word list, according to
  * compilation-defined rules (randomly or sequential).
  *

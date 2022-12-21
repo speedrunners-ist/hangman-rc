@@ -107,6 +107,7 @@ int handleRST(protocolMessage response) {
 
 int sendGSB(messageInfo info) {
   if (!validArgsAmount(info.input, SCOREBOARD_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GSB"});
@@ -116,6 +117,7 @@ int sendGSB(messageInfo info) {
 
 int sendGHL(messageInfo info) {
   if (!validArgsAmount(info.input, HINT_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   const std::string message = buildSplitStringNewline({"GHL", getPlayerID()});
@@ -125,6 +127,7 @@ int sendGHL(messageInfo info) {
 
 int sendSTA(messageInfo info) {
   if (!validArgsAmount(info.input, STATE_ARGS)) {
+    std::cout << UNEXPECTED_COMMAND << std::endl;
     return -1;
   }
   const std::string message = buildSplitStringNewline({"STA", getPlayerID()});

@@ -57,13 +57,16 @@ server/GS
 
 # Text files
 scoreboard/
-client/hints/
+client/assets/hints/
 state/
-server/games/
+server/assets/games/
 
 # Test suite files
 *.html
 *.log
 
+# Where output files go
+build/
+bin/
 
 .vscode

@@ -39,8 +39,12 @@ int disconnect(socketInfo socket) {
 }
 
 socketInfo getSocket(__socket_type type) { return type == SOCK_STREAM ? socketTCP : socketUDP; }
-struct addrinfo *getServerInfoUDP() { return socketUDP.res; }
-struct addrinfo *getServerInfoTCP() { return socketTCP.res; }
+struct addrinfo *getServerInfoUDP() {
+  return socketUDP.res;
+}
+struct addrinfo *getServerInfoTCP() {
+  return socketTCP.res;
+}
 int getSocketFdUDP() { return socketUDP.fd; }
 int getSocketFdTCP() { return socketTCP.fd; }
 std::string getExpectedMessage() { return expectedMessage; }

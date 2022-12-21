@@ -1,7 +1,7 @@
 #ifndef CLIENT_API_H
 #define CLIENT_API_H
 
-#include "common/common.h"
+#include "common.h"
 
 /**
  * @brief Creates a GameState instance, with the given parameters.
@@ -125,7 +125,7 @@ bool forceExitClient(std::string command);
  */
 void printHelpMenu();
 /**
- * @brief Displays the current information regarding the current game state. 
+ * @brief Displays the current information regarding the current game state.
  */
 void displayCurrentInformation();
 
