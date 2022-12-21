@@ -271,7 +271,7 @@ int sendSTA(messageInfo info);
 
 /**
  * @brief General signal handler (SIGINT, SIGTERM, etc.) for client-side signals.
- * 
+ *
  * @param signum The signal number.
  */
 void signalHandler(int signum);
@@ -288,60 +288,60 @@ int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
 
 /**
  * @brief Provides specific client-side socket disconnection.
- * 
+ *
  * @param socket The socket to be disconnected.
  * @return 0 if the socket was successfully disconnected, -1 otherwise.
-*/
+ */
 int disconnect(socketInfo socket);
 
 /**
  * @brief Retrieves a client-side socket, according to its type.
- * 
+ *
  * @param type The type of socket to be retrieved.
  * @return The socketInfo struct containing the socket's main information.
-*/
+ */
 socketInfo getSocket(__socket_type type);
 
 /**
  * @brief Retrieves the server information (UDP), according to its type.
- * 
+ *
  * @return The addrinfo struct containing the server's main information (UDP).
-*/
+ */
 struct addrinfo *getServerInfoUDP();
 
 /**
  * @brief Retrieves the server information (TCP), according to its type.
- * 
+ *
  * @return The addrinfo struct containing the server's main information (TCP).
-*/
+ */
 struct addrinfo *getServerInfoTCP();
 
 /**
  * @brief Retrieves the client's UDP socket file descriptor.
- * 
+ *
  * @return The client's UDP socket file descriptor.
-*/
+ */
 int getSocketFdUDP();
 
 /**
  * @brief Retrieves the client's TCP socket file descriptor.
- * 
+ *
  * @return The client's TCP socket file descriptor.
-*/
+ */
 int getSocketFdTCP();
 
 /**
  * @brief Retrieves the expected server-sent message (considering a prior request).
- * 
+ *
  * @return The expected server-sent message.
-*/
+ */
 std::string getExpectedMessage();
 
 /**
  * @brief Sets a new expected server-sent message (considering a prior request).
- * 
+ *
  * @param message The new expected server-sent message.
-*/
+ */
 void setExpectedMessage(std::string message);
 
 #endif /* CLIENT_PROTOCOL_H */

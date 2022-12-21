@@ -156,23 +156,23 @@ int createSocket(__socket_type type, peerInfo peer, sighandler_t handler);
 
 /**
  * @brief Provides specific server-side socket disconnection.
- * 
+ *
  * @param socket The socket to be disconnected.
  * @return 0 if the socket was successfully disconnected, -1 otherwise.
-*/
+ */
 int disconnect(socketInfo socket);
 
 /**
  * @brief Retrieves a server-side socket, according to its type.
- * 
+ *
  * @param type The type of socket to be retrieved.
  * @return The socketInfo struct containing the socket's main information.
-*/
+ */
 socketInfo getSocket(__socket_type type);
 
 /**
  * @brief Retrieves the client's address information (UDP).
- * 
+ *
  * @param type The type of socket to be retrieved.
  * @return The addrinfo struct containing the client's address information.
  */
@@ -180,7 +180,7 @@ struct addrinfo *getResUDP();
 
 /**
  * @brief Retrieves the client's address information (TCP).
- * 
+ *
  * @param type The type of socket to be retrieved.
  * @return The addrinfo struct containing the client's address information.
  */
@@ -188,21 +188,21 @@ struct addrinfo *getResTCP();
 
 /**
  * @brief Retrieves the client's file descriptor (UDP).
- * 
+ *
  * @return The client's file descriptor.
  */
 int getSocketFdUDP();
 
 /**
  * @brief Retrieves the client's file descriptor (TCP).
- * 
+ *
  * @return The client's file descriptor.
  */
 int getSocketFdTCP();
 
 /**
  * @brief Check whether the server is operating in a verbose manner.
- * 
+ *
  * @return True if the server is operating in a verbose manner, false otherwise.
  */
 bool checkVerbose();

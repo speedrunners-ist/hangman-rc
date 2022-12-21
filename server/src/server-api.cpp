@@ -78,7 +78,8 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 void displayPeerInfo(struct addrinfo *res, std::string connection) {
   char host[NI_MAXHOST] = {0};
   char service[NI_MAXSERV] = {0};
-  const int errcode = getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
+  const int errcode =
+      getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
   // NI_NUMERICSERV: return numeric form of the service's address
   if (errcode != 0) {
     std::cerr << VERBOSE_ERROR(errcode) << std::endl;

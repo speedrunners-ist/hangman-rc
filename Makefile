@@ -3,12 +3,15 @@ CXX ?= g++
 LD ?= g++
 SRC_EXT ?= cpp
 
+# The following variables are used to define the source files, the header files, the object files and the executable files
 INCLUDE_DIRS := client/include server/include lib
 INCLUDES := $(addprefix -I, $(INCLUDE_DIRS))
-SOURCES := $(wildcard client/src/*.$(SRC_EXT)) $(wildcard server/src/*.$(SRC_EXT)) $(wildcard lib/*.$(SRC_EXT))
 
 BIN_DIR_CLIENT := client/bin
 BIN_DIR_SERVER := server/bin
+BIN_CLIENT = $(BIN_DIR_CLIENT)/player
+BIN_SERVER = $(BIN_DIR_SERVER)/GS
+
 OBJ_DIR_CLIENT := client/build
 OBJ_DIR_SERVER := server/build
 OBJ_DIR_LIB := lib/build
@@ -16,20 +19,20 @@ OBJ_DIR_LIB := lib/build
 SRC_CLIENT := $(wildcard client/src/*.$(SRC_EXT))
 SRC_SERVER := $(wildcard server/src/*.$(SRC_EXT))
 SRC_LIB := $(wildcard lib/*.$(SRC_EXT))
+SOURCES := $(SRC_CLIENT) $(SRC_SERVER) $(SRC_LIB)
 
 HEADERS := $(wildcard client/include/*.h) $(wildcard server/include/*.h) $(wildcard lib/*.h)
 
-OBJECTS_CLIENT = $(patsubst %.cpp, $(OBJ_DIR_CLIENT)/%.o, $(notdir $(SRC_CLIENT)))
-OBJECTS_SERVER = $(patsubst %.cpp, $(OBJ_DIR_SERVER)/%.o, $(notdir $(SRC_SERVER)))
-OBJECTS_LIB = $(patsubst %.cpp, $(OBJ_DIR_LIB)/%.o, $(notdir $(SRC_LIB)))
-
-BIN_CLIENT = $(BIN_DIR_CLIENT)/player
-BIN_SERVER = $(BIN_DIR_SERVER)/GS
+OBJECTS_CLIENT = $(patsubst %.$(SRC_EXT), $(OBJ_DIR_CLIENT)/%.o, $(notdir $(SRC_CLIENT)))
+OBJECTS_SERVER = $(patsubst %.$(SRC_EXT), $(OBJ_DIR_SERVER)/%.o, $(notdir $(SRC_SERVER)))
+OBJECTS_LIB = $(patsubst %.$(SRC_EXT), $(OBJ_DIR_LIB)/%.o, $(notdir $(SRC_LIB)))
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>
 vpath # clears VPATH
 vpath %.h $(INCLUDE_DIRS)
+
+# CXXFLAGS is a variable used by the Makefile which defines the compiler flags
 
 CXXFLAGS = -std=c++20 -O3
 CXXFLAGS += $(INCLUDES)
@@ -72,6 +75,7 @@ $(BIN_SERVER): $(OBJECTS_SERVER) $(OBJECTS_LIB)
 dev: CXXFLAGS := $(filter-out -DPRODUCTION,$(CXXFLAGS))
 dev: all
 
+# Remove all object files and executables + all generated files during the player and server's execution
 clean:
 	rm -f $(BIN_CLIENT) $(BIN_SERVER) $(OBJECTS_CLIENT) $(OBJECTS_SERVER) $(OBJECTS_LIB)
 	rm -rf client/assets/hints
@@ -89,5 +93,6 @@ fmt: $(SOURCES) $(HEADERS)
 depend : $(SOURCES)
 	$(CXX) $(INCLUDES) -MM $^ > autodep
 
+# In testing, we want to utilize the dev version of our project
 test: dev
 	./test.sh

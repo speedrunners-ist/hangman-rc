@@ -27,7 +27,7 @@ enum {
   CREATE_GAME_SUCCESS, // RSG OK
 
   // RLG and RWG return codes
-  
+
   GENERAL_ERROR,       // ERR
   SYNTAX_ERROR,        // RLG ERR/RWG ERR
   TRIAL_MISMATCH,      // RLG INV/RWG INV
@@ -167,7 +167,7 @@ void setHint(GameState &state, std::string hint);
 
 /**
  * @brief Displays the peer's information (useful for verbose scenarios).
- * 
+ *
  * @param res The addrinfo structure containing the peer's information.
  * @param connection The type of connection (TCP or UDP).
  */
@@ -192,9 +192,9 @@ bool isOngoingGame(std::string plid);
 /**
  * @brief Returns a word-hint pair from the given word list, according to
  * compilation-defined rules (randomly or sequential).
- * 
+ *
  * @return The word-hint pair according to previously defined rules.
-*/
+ */
 std::pair<std::string, std::string> getWordHintPair();
 
 /**

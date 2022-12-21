@@ -80,7 +80,7 @@ typedef struct {
 
 /**
  * @brief Struct that represents a socket, containing associated relevant information.
- * 
+ *
  * @param res The socket's address information.
  * @param hints The socket's hints.
  * @param act The action to be taken when a signal is received.
@@ -88,7 +88,7 @@ typedef struct {
  * @param created Whether the socket has been created or not.
  * @param type The socket's type.
  * @param fd The socket's file descriptor.
-*/
+ */
 typedef struct {
   struct addrinfo *res;
   struct addrinfo hints;
@@ -251,13 +251,13 @@ int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct 
 
 /**
  * @brief Handles the creation of a socket (and everything surrounding it).
- * 
+ *
  * @param type Type of socket to be created - SOCK_DGRAM or SOCK_STREAM.
  * @param peer PeerInfo struct containing the peer's IP address and port.
  * @param handler Signal handler to be set associated with the socket.
  * @param isClient Boolean indicating whether the socket is for a client or a server.
  * @return A socketInfo struct containing the socket's main information.
-*/
+ */
 socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t handler, bool isClient);
 
 /**
@@ -287,17 +287,17 @@ int turnOffSocketTimer(int socketFd);
 
 /**
  * @brief Handle parsing of a message sent from a socket.
- * 
+ *
  * @param message Message to be parsed.
  * @param response Struct to store the parsed message.
  * @param fullMessage Whether the message being handled is a full message or not.
  * @return 0 on success, -1 on error.
-*/
-int parseMessage(std::string message, protocolMessage &response, bool fullMessage=true);
+ */
+int parseMessage(std::string message, protocolMessage &response, bool fullMessage = true);
 
 /**
  * @brief Handle sending of a UDP message.
- * 
+ *
  * @param message Message to be sent.
  * @param res The socket's address info.
  * @param fd The socket's file descriptor.
@@ -307,7 +307,7 @@ int sendUDPMessage(std::string message, struct addrinfo *res, int fd);
 
 /**
  * @brief Handle receiving of a UDP message.
- * 
+ *
  * @param response Buffer to store the received message.
  * @param maxBytes Maximum amount of bytes to be received.
  * @param res The socket's address info.
@@ -318,18 +318,19 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
 
 /**
  * @brief Handle receiving of a parsed UDP message (with possible send of a response).
- * 
+ *
  * @param message The previously parsed message.
  * @param handler The function to be called to handle the message.
  * @param fd The socket's file descriptor.
  * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd=-1, struct addrinfo *res=NULL);
+int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd = -1,
+                      struct addrinfo *res = NULL);
 
 /**
  * @brief Handle sending of a TCP message.
- * 
+ *
  * @param message Message to be sent.
  * @param res The socket's address info.
  * @param fd The socket's file descriptor.
@@ -339,7 +340,7 @@ int sendTCPMessage(std::string message, struct addrinfo *res, int fd);
 
 /**
  * @brief Handle sending of a file via TCP.
- * 
+ *
  * @param info File information (name and size).
  * @param res The socket's address info.
  * @param fd The socket's file descriptor.
@@ -350,7 +351,7 @@ int sendTCPFile(std::string info, struct addrinfo *res, int fd, std::string file
 
 /**
  * @brief Handle receiving of a TCP message.
- * 
+ *
  * @param message Buffer to store the received message.
  * @param args Amount of expected arguments in the message.
  * @param fd The socket's file descriptor.
@@ -360,7 +361,7 @@ int receiveTCPMessage(std::string &message, int args, int fd);
 
 /**
  * @brief Handle receiving of a file via TCP.
- * 
+ *
  * @param info File information (name and size).
  * @param dir Directory to store the received file.
  * @param fd The socket's file descriptor.
@@ -370,14 +371,15 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd);
 
 /**
  * @brief Handle receiving of a parsed TCP message (with possible send of a response).
- * 
+ *
  * @param message The previously parsed message.
  * @param handler The function to be called to handle the message.
  * @param fd The socket's file descriptor.
  * @param res The socket's address info.
  * @return 0 on success, -1 on error.
  */
-int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd=-1, struct addrinfo *res=NULL);
+int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd = -1,
+                      struct addrinfo *res = NULL);
 
 /**
  * @brief Parses the server-sent file information for the following file transfer.
@@ -441,7 +443,7 @@ bool validArgsAmount(std::string input, int n);
 /**
  * @brief Checks if a string has a given amount of arguments - strings split by spaces.
  * If the string has the expected amount of arguments, the arguments are stored in a vector.
- * 
+ *
  * @param body: String to be checked.
  * @param args: Vector of strings to be filled with the arguments.
  * @param expectedArgs: Expected amount of arguments.

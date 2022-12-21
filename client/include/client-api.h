@@ -125,7 +125,7 @@ bool forceExitClient(std::string command);
  */
 void printHelpMenu();
 /**
- * @brief Displays the current information regarding the current game state. 
+ * @brief Displays the current information regarding the current game state.
  */
 void displayCurrentInformation();
 

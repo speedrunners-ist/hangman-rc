@@ -31,7 +31,11 @@ int setServerParameters(std::string filePath, bool vParam) {
 bool checkVerbose() { return verbose; }
 
 socketInfo getSocket(__socket_type type) { return type == SOCK_STREAM ? socketTCP : socketUDP; }
-struct addrinfo *getResUDP() { return socketUDP.res; }
-struct addrinfo *getResTCP() { return socketTCP.res; }
+struct addrinfo *getResUDP() {
+  return socketUDP.res;
+}
+struct addrinfo *getResTCP() {
+  return socketTCP.res;
+}
 int getSocketFdUDP() { return socketUDP.fd; }
 int getSocketFdTCP() { return socketTCP.fd; }

@@ -164,10 +164,8 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   socket.isConnected = true;
 
   if (type == SOCK_STREAM) {
-    if (
-      (isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
-      (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)
-    ) {
+    if ((isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
+        (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)) {
       std::cerr << CONNECTION_ERROR << std::endl;
       disconnectSocket(socket.res, socket.fd);
       return socket;
@@ -538,7 +536,7 @@ bool gatherResponseArguments(std::string body, std::vector<int> &args, int expec
       return false;
     }
   }
-  
+
   return true;
 }
 
