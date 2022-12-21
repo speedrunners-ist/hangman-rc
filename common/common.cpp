@@ -158,7 +158,7 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   socket.fd = newSocket(type, peer, &socket.hints, &socket.res);
   if (socket.fd == -1) {
     std::cerr << SOCKET_ERROR << std::endl;
-    exit(EXIT_FAILURE);
+    return socket;
   }
 
   socket.isConnected = true;
