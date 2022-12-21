@@ -5,14 +5,16 @@ char bufferTCP[TCP_CHUNK_SIZE];
 
 void signalHandlerTCP(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectSocket(getResTCP(), getSocketFdTCP());
+  disconnectSocket(getSocket(SOCK_STREAM));
   std::cout << EXIT_PROGRAM << std::endl;
   exit(signum);
 }
 
 void signalHandlerTCPchild(int signum) {
   std::cout << std::endl << SIGNAL(signum) << std::endl;
-  disconnectSocket(getResTCP(), childConnectionFd);
+  socketInfo childSocket = getSocket(SOCK_STREAM);
+  childSocket.fd = childConnectionFd;
+  disconnectSocket(childSocket);
   exit(signum);
 }
 

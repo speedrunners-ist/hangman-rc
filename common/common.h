@@ -275,11 +275,10 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
 /**
  * @brief Handle graceful disconnection of a socket.
  *
- * @param res Pointer to a struct addrinfo containing the socket's address info.
- * @param fd Socket's file descriptor.
+ * @param socket Socket to be disconnected.
  * @return 0 on success, -1 on error.
  */
-int disconnectSocket(struct addrinfo *res, int fd);
+int disconnectSocket(socketInfo socket);
 
 /**
  * @brief Handle initialization of a socket's timeout.

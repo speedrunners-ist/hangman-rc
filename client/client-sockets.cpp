@@ -34,7 +34,7 @@ int disconnect(socketInfo socket) {
     sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), socket.res, socket.fd);
     socketUDP.isConnected = false;
   }
-  return disconnectSocket(socket.res, socket.fd);
+  return disconnectSocket(socket);
 }
 
 socketInfo getSocket(__socket_type type) { return type == SOCK_STREAM ? socketTCP : socketUDP; }

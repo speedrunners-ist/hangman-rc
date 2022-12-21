@@ -186,7 +186,7 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
     if ((isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
         (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)) {
       std::cerr << CONNECTION_ERROR << std::endl;
-      disconnectSocket(socket.res, socket.fd);
+      disconnectSocket(socket);
       return socket;
     }
   }
@@ -200,14 +200,14 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   // Ignore SIGCHLD to avoid zombies
   if (sigaction(SIGCHLD, &socket.act, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    disconnectSocket(socket.res, socket.fd);
+    disconnectSocket(socket);
     return socket;
   }
 
   // Ignore SIGPIPE to avoid crashing when writing to a closed socket
   if (sigaction(SIGPIPE, &socket.act, NULL) == -1) {
     std::cerr << SIGACTION_ERROR << std::endl;
-    disconnectSocket(socket.res, socket.fd);
+    disconnectSocket(socket);
     return socket;
   }
   // Everything went well, we can return the socket as created
@@ -215,20 +215,14 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   return socket;
 }
 
-int disconnectSocket(struct addrinfo *res, int fd) {
-  struct timeval tv;
-  memset(&tv, 0, sizeof(tv));
-  freeaddrinfo(res);
-  if (turnOffSocketTimer(fd) == -1) {
-    if (close(fd) == -1) {
+int disconnectSocket(socketInfo socket) {
+  if (socket.created) {
+    freeaddrinfo(socket.res);
+    turnOffSocketTimer(socket.fd);
+    if (close(socket.fd) == -1) {
       std::cerr << SOCKET_CLOSE_ERROR << std::endl;
+      return -1;
     }
-    return -1;
-  }
-
-  if (close(fd) == -1) {
-    std::cerr << SOCKET_CLOSE_ERROR << std::endl;
-    return -1;
   }
   return 0;
 }
