@@ -1,4 +1,4 @@
-#include "server-protocol.h"
+#include "server/include/server-protocol.h"
 
 char bufferUDP[UDP_RECV_SIZE];
 char lastMessage[UDP_RECV_SIZE];

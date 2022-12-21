@@ -2,13 +2,15 @@
 CXX ?= g++
 LD ?= g++
 
-INCLUDE_DIRS := client server .
+INCLUDE_DIRS := client server lib
 INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
+SOURCES := $(wildcard client/src/*.cpp) $(wildcard server/src/*.cpp) $(wildcard lib/*.cpp)
+HEADERS := $(wildcard client/include/*.h) $(wildcard server/include/*.h) $(wildcard lib/*.h)
+OBJECTS := $(patsubst %.cpp,%.o,$(SOURCES))
+OBJECTS := $(patsubst client/%,client/bin/%,$(OBJECTS))
+OBJECTS := $(patsubst server/%,server/bin/%,$(OBJECTS))
 
-SOURCES  := $(wildcard */*.cpp)
-HEADERS  := $(wildcard */*.h)
-OBJECTS  := $(SOURCES:.cpp=.o)
-TARGET_EXECS := client/player server/GS
+TARGET_EXECS := client/bin/player server/bin/GS
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>
@@ -34,11 +36,11 @@ dev: all
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXECS)
-	rm -rf server/games/*
+	rm -rf client/assets/hints
+	rm -rf client/assets/state
+	rm -rf client/assets/scoreboard
+	rm -rf server/assets/games/*
 	rm -rf tests/tmp
-	rm -rf client/hints
-	rm -rf client/state
-	rm -rf client/scoreboard
 
 fmt: $(SOURCES) $(HEADERS)
 	clang-format -i $^
@@ -52,5 +54,5 @@ depend : $(SOURCES)
 test: dev
 	./test.sh
 
-client/player: client/client-api.o client/client-tcp.o client/client-udp.o client/client-sockets.o common/common.o
-server/GS: server/server-utils.o server/server-api.o server/server-tcp.o server/server-udp.o server/server-sockets.o common/common.o
+client/bin/player: client/bin/client-api.o client/bin/client-tcp.o client/bin/client-udp.o client/bin/client-sockets.o lib/common.o
+server/bin/GS: server/bin/server-utils.o server/bin/server-api.o server/bin/server-tcp.o server/bin/server-udp.o server/bin/server-sockets.o lib/common.o

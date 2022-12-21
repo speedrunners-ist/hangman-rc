@@ -1,7 +1,7 @@
 #ifndef CLIENT_PROTOCOL_H
 #define CLIENT_PROTOCOL_H
 
-#include "client-api.h"
+#include "client/include/client-api.h"
 
 // Redirection handler for each specific user command.
 typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandler;
@@ -105,13 +105,13 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 #define DISPLAY_ERR "[ERR]: An error has occurred. Please try again later."
 
 // Directory where the scoreboard file will be stored.
-#define SB_DIR "client/scoreboard/"
+#define SB_DIR "client/assets/scoreboard/"
 
 // Directory where the hint files will be stored.
-#define H_DIR "client/hints/"
+#define H_DIR "client/assets/hints/"
 
 // Directory where the state files will be stored.
-#define ST_DIR "client/state/"
+#define ST_DIR "client/assets/state/"
 
 // File name for the scoreboard file
 #define SB_PATH(name) SB_DIR + name

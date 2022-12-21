@@ -1,4 +1,4 @@
-#include "client-protocol.h"
+#include "client/include/client-protocol.h"
 
 // clang-format off
 commandHandler handlePlayerMessage = {

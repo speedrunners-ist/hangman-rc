@@ -1,4 +1,4 @@
-#include "server-api.h"
+#include "server/include/server-api.h"
 
 std::vector<std::pair<std::string, std::string>> wordsList;
 std::vector<std::pair<std::string, std::string>>::iterator currentPair;

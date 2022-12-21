@@ -1,4 +1,4 @@
-#include "server-protocol.h"
+#include "server/include/server-protocol.h"
 
 int main(int argc, char *argv[]) {
   std::string GSIP = DEFAULT_GSIP;

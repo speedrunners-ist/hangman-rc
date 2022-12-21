@@ -1,7 +1,7 @@
 #ifndef SERVER_API_H
 #define SERVER_API_H
 
-#include "server-utils.h"
+#include "server/include/server-utils.h"
 
 // Wrong program arguments
 #define WRONG_ARGS_ERROR "[ERR] Usage: ./GS file-path [-p GSport] -v"

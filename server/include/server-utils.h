@@ -1,10 +1,10 @@
 #ifndef SERVER_UTILS_H
 #define SERVER_UTILS_H
 
-#include "common/common.h"
+#include "lib/common.h"
 
 // Path to the directory where games are stored
-#define GAMES_DIR "server/games/"
+#define GAMES_DIR "server/assets/games/"
 
 // Path to the directory where a player's finished games are stored
 #define PLID_GAMES_DIR(plid) GAMES_DIR + plid + "/"
@@ -22,7 +22,7 @@
 #define FINISHED_GAMES_PATH(plid, time) PLID_GAMES_DIR(plid) + "GAME_" + time + ".txt"
 
 // Path to the scoreboard file
-#define SCORES_PATH "server/scores/scoreboard.txt"
+#define SCORES_PATH "server/assets/scores/scoreboard.txt"
 
 // Header for the scoreboard file
 #define TOP_10_HEADER "TOP 10 SCORES"
@@ -37,10 +37,10 @@
 #define MAX_TIME_FORMAT 64
 
 // Path to the directory where hints are stored
-#define HINTS_PATH(filename) "server/hints/" + filename
+#define HINTS_PATH(filename) "server/assets/hints/" + filename
 
 // Path to the directory where the state of a player's game is temporarily stored
-#define TMP_DIR "server/state/"
+#define TMP_DIR "server/assets/state/"
 
 // Path to the temporary file for a player's game
 #define TMP_PATH(plid) std::string(TMP_DIR) + "STATE_" + plid + ".txt"

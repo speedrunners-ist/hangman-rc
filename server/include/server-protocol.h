@@ -1,7 +1,7 @@
 #ifndef SERVER_PROTOCOL_H
 #define SERVER_PROTOCOL_H
 
-#include "server-api.h"
+#include "server/include/server-api.h"
 
 // Below, general error messages related to establishing connections
 

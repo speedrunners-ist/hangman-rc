@@ -1,4 +1,4 @@
-#include "server-protocol.h"
+#include "server/include/server-protocol.h"
 
 // here, socketTCP is the TCP socket of the parent process
 

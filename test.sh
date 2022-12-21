@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 function run_server() {
-  server/GS server/word_eng.txt -v -p 58045 > tests/tmp/server.log
+  server/bin/GS server/assets/word_eng.txt -v -p 58045 > tests/tmp/server.log
 }
 
 function run_command() {
