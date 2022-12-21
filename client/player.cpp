@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
     std::cout << DEFAULT_GSPORT_STR << std::endl;
   }
 
+  if (checkPortNumber(GSport) == -1) {
+    exit(EXIT_FAILURE);
+  }
+
   const peerInfo peer = {GSIP, GSport};
   if (createSocket(SOCK_DGRAM, peer, (sighandler_t)signalHandler) == -1) {
     exit(EXIT_FAILURE);

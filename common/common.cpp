@@ -104,6 +104,27 @@ int GameState::getTrials() { return trials; }
 void GameState::setPlayerID(std::string id) { playerID = id; }
 std::string GameState::getPlayerID() { return playerID; }
 
+/*** Initialization functions implementation ***/
+
+int checkPortNumber(std::string port) {
+  if (port.empty()) {
+    std::cerr << PORT_ERROR << std::endl;
+    return -1;
+  }
+  try {
+    int portNum = std::stoi(port);
+    if (portNum < 0 || portNum > 65535) {
+      std::cerr << PORT_ERROR << std::endl;
+      return -1;
+    }
+  } catch (const std::exception &e) {
+    std::cerr << PORT_ERROR << std::endl;
+    return -1;
+  }
+
+  return 0;
+}
+
 /*** Socket functions implementation ***/
 
 int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct addrinfo **serverInfo) {
@@ -164,10 +185,8 @@ socketInfo handleSocketCreation(__socket_type type, peerInfo peer, sighandler_t 
   socket.isConnected = true;
 
   if (type == SOCK_STREAM) {
-    if (
-      (isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
-      (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)
-    ) {
+    if ((isClient && connect(socket.fd, socket.res->ai_addr, socket.res->ai_addrlen) == -1) ||
+        (!isClient && listen(socket.fd, MAX_TCP_CONNECTION_REQUESTS) == -1)) {
       std::cerr << CONNECTION_ERROR << std::endl;
       disconnectSocket(socket.res, socket.fd);
       return socket;
@@ -538,7 +557,7 @@ bool gatherResponseArguments(std::string body, std::vector<int> &args, int expec
       return false;
     }
   }
-  
+
   return true;
 }
 
