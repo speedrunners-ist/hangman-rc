@@ -375,13 +375,13 @@ int insertScore(std::string plid, GameState &state) {
   // clang-format off
   std::string scoreline = buildSplitString({
     printedScore,
-    "    ",
+    " ",
     plid,
-    "",
+    " ",
     state.getWord(),
-    "           ",
+    " ",
     std::to_string(successfulGuesses),
-    "      ",
+    " ",
     std::to_string(trialsMade),
   });
   // clang-format on
