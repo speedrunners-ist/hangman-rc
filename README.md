@@ -4,7 +4,7 @@ Hangman implementation in a multi-client server context, using C++.
 
 ## Compilation
 
-In order to compile the project, `c++20` (available since GCC 9) is required.
+In order to compile the project, `c++17` (available since GCC 9) is required.
 There are two ways to compile the project:
 
 - Using `make prod`, which will generate the server's binary according to the project
