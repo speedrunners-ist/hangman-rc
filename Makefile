@@ -38,10 +38,8 @@ CXXFLAGS = -std=c++20 -O3
 CXXFLAGS += $(INCLUDES)
 # Warnings
 CXXFLAGS += -fdiagnostics-color=always -Wall -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wno-sign-compare
-# Differentiate between dev and prod
-CXXFLAGS += -DPRODUCTION
 
-.PHONY: all dev clean fmt depend test
+.PHONY: all prod clean fmt depend test
 
 # Defines the default target
 all: $(BIN_CLIENT) $(BIN_SERVER)
@@ -72,8 +70,8 @@ $(BIN_SERVER): $(OBJECTS_SERVER) $(OBJECTS_LIB)
 
 # In development, we want the rev command to be answered with the actual word
 # Moreover, in dev mode, the file read order (server-side) will be sequential
-dev: CXXFLAGS := $(filter-out -DPRODUCTION,$(CXXFLAGS))
-dev: all
+prod: CXXFLAGS += -DPRODUCTION
+prod: all
 
 # Remove all object files and executables + all generated files during the player and server's execution
 clean:
@@ -94,5 +92,5 @@ depend : $(SOURCES)
 	$(CXX) $(INCLUDES) -MM $^ > autodep
 
 # In testing, we want to utilize the dev version of our project
-test: dev
+test: all
 	./test.sh
