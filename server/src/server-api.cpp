@@ -86,7 +86,7 @@ void displayPeerInfo(struct addrinfo *res, std::string connection) {
     std::cerr << VERBOSE_ERROR(err) << std::endl;
     return;
   }
-  
+
   if (strcmp(addr, host) == 0) {
     // If there is no host name, just print the address
     std::cout << VERBOSE_SUCCESS(connection, addr, service) << std::endl;
@@ -375,14 +375,14 @@ int insertScore(std::string plid, GameState &state) {
   // clang-format off
   std::string scoreline = buildSplitString({
     printedScore,
-    "    ",
+    "   ",
     plid,
     "",
-    std::to_string(successfulGuesses),
-    "           ",
-    std::to_string(trialsMade),
-    "      ",
     state.getWord(),
+    " ",
+    std::to_string(successfulGuesses),
+    "         ",
+    std::to_string(trialsMade),
   });
   // clang-format on
 
@@ -397,8 +397,21 @@ int getScoreboard(std::string &response) {
   if (ret == -1) {
     return SCOREBOARD_ERROR;
   }
-  if (ret == -2 || lines.empty()) {
+  if (ret == -2) {
     // if the file did not exist or was empty
+    std::filesystem::path dir(SCORES_DIR);
+    if (!std::filesystem::exists(dir)) {
+      std::filesystem::create_directories(dir);
+    }
+
+    std::ofstream file(SCORES_PATH); // create a file in SCORES_PATH
+    std::cerr << SCOREBOARD_CREATED << std::endl;
+
+    response = "EMPTY";
+    return SCOREBOARD_EMPTY;
+  }
+
+  if (lines.empty()) {
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }

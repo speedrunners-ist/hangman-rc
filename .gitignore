@@ -56,10 +56,11 @@ client/player
 server/GS
 
 # Text files
+scores/
 scoreboard/
 client/assets/hints/
 state/
-server/assets/games/
+games/
 
 # Test suite files
 *.html
