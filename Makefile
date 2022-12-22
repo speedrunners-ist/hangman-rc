@@ -75,10 +75,8 @@ prod: all
 
 # Remove all object files and executables + all generated files during the player and server's execution
 clean:
-	rm -f $(BIN_CLIENT) $(BIN_SERVER) $(OBJ_DIR_CLIENT)/* $(OBJ_DIR_SERVER)/* $(OBJ_DIR_LIB)/*
-	rm -rf client/assets/hints
-	rm -rf client/assets/state
-	rm -rf client/assets/scoreboard
+	rm -rf $(BIN_DIR_CLIENT) $(BIN_DIR_SERVER) $(OBJ_DIR_CLIENT) $(OBJ_DIR_SERVER) $(OBJ_DIR_LIB)
+	rm -rf client/assets
 	rm -rf server/assets/games
 	rm -rf server/assets/scores
 	rm -rf tests/tmp
