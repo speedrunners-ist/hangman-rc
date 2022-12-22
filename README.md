@@ -7,7 +7,7 @@ Hangman implementation in a multi-client server context, using C++.
 In order to compile the project, `c++20` (available since GCC 9) is required.
 There are two ways to compile the project:
 
-- Using `make dev`, which will generate the server's binary according to the project
+- Using `make prod`, which will generate the server's binary according to the project
   statement's specifications - the `RRV` answer is sent with an `OK` status code,
   instead of the game's associated word, and the word-list reading order is
   **randomized**.
