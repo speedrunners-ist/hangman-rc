@@ -91,5 +91,5 @@ depend : $(SOURCES)
 	$(CXX) $(INCLUDES) -MM $^ > autodep
 
 release: clean
-	git archive --format zip --prefix proj_45/ --output proj_45.zip HEAD autodep client lib Makefile README.md server .clang-format docs/auto-avaliacao-g45.xlsx
+	git archive --format zip --prefix proj_45/ --output proj_45.zip HEAD autodep client lib Makefile README.md server/include server/src server/assets/word_eng.txt .clang-format docs/auto-avaliacao-g45.xlsx
 

@@ -22,6 +22,10 @@ and `lib/`, containing the generated object files.
 There's also the `make clean` command, which will remove the generated binaries
 and asset folders created during the server's execution.
 
+Note that, regarding the `server/assets/hints/` folder, the images are not included
+in the compressed archive (as suggested by the teacher). **All hints should, however,
+be placed in this folder**.
+
 ## Usage
 
 After compiling the project, the **server** can be executed by running its binary,
@@ -65,4 +69,3 @@ The project is structured as follows:
 ## Teacher's note
 
 Regarding changes that the lab's teacher may want to do in order to further test the project, altering the timeout's associated waiting time can be done via the `SOCKET_TIMEOUT` constant in `lib/common.h` (which is, by default, set to 5 seconds) - if set to 0 seconds, the timer is deactivated (according to the manpage).
-
