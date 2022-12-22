@@ -18,9 +18,6 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 // Expected amount of arguments for the quit and "exit" commands.
 #define QUIT_ARGS 1
 
-// Expected amount of arguments for the "rev" command.
-#define REVEAL_ARGS 1
-
 // Expected amount of arguments for the "scoreboard" command.
 #define SCOREBOARD_ARGS 1
 
@@ -52,9 +49,6 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 
 // Maximum amount of Bytes that can be sent by the server in a RQT message.
 #define RQT_BYTES 3 + 1 + 3 + 1
-
-// Maximum amount of Bytes that can be sent by the server in a RRV message.
-#define RRV_BYTES 3 + 1 + 30 + 1
 
 // Below, a series of error messages to be displayed to the user via stderr.
 // Errors range from general incorrect input usage to command-specific errors.
@@ -177,14 +171,6 @@ int handleRWG(protocolMessage response);
 int handleRQT(protocolMessage response);
 
 /**
- * @brief Handles RRV responses from the server.
- *
- * @param response The response from the server.
- * @return 0 if the response was handled successfully, -1 otherwise.
- */
-int handleRRV(protocolMessage response);
-
-/**
  * @brief Handles RSB responses from the server.
  *
  * @param response The response from the server.
@@ -239,14 +225,6 @@ int sendPWG(messageInfo info);
  * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
  */
 int sendQUT(messageInfo info);
-
-/**
- * @brief Sends REV messages to the server.
- *
- * @param info The messageInfo struct containing the message's parameters.
- * @return 0 if the message was successfully sent and its response handled, -1 otherwise.
- */
-int sendREV(messageInfo info);
 
 /**
  * @brief Sends GSB messages to the server.

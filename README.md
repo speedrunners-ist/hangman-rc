@@ -8,12 +8,9 @@ In order to compile the project, `c++20` (available since GCC 9) is required.
 There are two ways to compile the project:
 
 - Using `make prod`, which will generate the server's binary according to the project
-  statement's specifications - the `RRV` answer is sent with an `OK` status code,
-  instead of the game's associated word, and the word-list reading order is
-  **randomized**.
+  statement's specifications - the word-list reading order is **randomized**.
 - Using `make`, the project version utilized to run tests and, in a general
-  manner, debug the server. This version will send the game's associated word
-  instead of the `OK` in an `RRV` answer, and the word-list reading order is
+  manner, debug the server. The word-list reading order is
   **sequential** (in order for the tests to be deterministic).
 
 On compilation, `build/` folders will be generated inside `client/`, `server/`

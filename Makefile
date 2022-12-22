@@ -34,7 +34,7 @@ vpath %.h $(INCLUDE_DIRS)
 
 # CXXFLAGS is a variable used by the Makefile which defines the compiler flags
 
-CXXFLAGS = -std=c++20 -O3
+CXXFLAGS = -std=c++17 -O3
 CXXFLAGS += $(INCLUDES)
 # Warnings
 CXXFLAGS += -fdiagnostics-color=always -Wall -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wno-sign-compare
@@ -68,8 +68,7 @@ $(BIN_SERVER): $(OBJECTS_SERVER) $(OBJECTS_LIB)
 	mkdir -p $(BIN_DIR_SERVER)
 	$(CXX) $^ -o $@
 
-# In development, we want the rev command to be answered with the actual word
-# Moreover, in dev mode, the file read order (server-side) will be sequential
+# In dev mode, the file read order (server-side) will be sequential
 prod: CXXFLAGS += -DPRODUCTION
 prod: all
 

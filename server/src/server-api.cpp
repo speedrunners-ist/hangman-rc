@@ -347,20 +347,6 @@ int closeGameSession(std::string plid) {
   return CLOSE_GAME_SUCCESS;
 }
 
-int revealWord(std::string plid, std::string &word) {
-  if (!isOngoingGame(plid)) {
-    return REVEAL_ERROR;
-  }
-
-  GameState state;
-  if (retrieveGame(plid, state) != 0) {
-    return REVEAL_ERROR;
-  }
-
-  word = RRV_OK(state.getWord());
-  return REVEAL_SUCCESS;
-}
-
 int insertScore(std::string plid, GameState &state) {
   const int initialMistakes = initialAvailableMistakes(getWordLength(state));
   const int trialsMade = state.getTrials();
@@ -375,13 +361,14 @@ int insertScore(std::string plid, GameState &state) {
   // clang-format off
   std::string scoreline = buildSplitString({
     printedScore,
-    "   ",
+    " ",
     plid,
-    "",
-    state.getWord(),
+    // use getWord occupying 30 characters - if it doesn't, fill the end with spaces
+    getWord(state) + std::string((size_t)(30 - getWordLength(state)), ' '),
+    // 30 spaces
     " ",
     std::to_string(successfulGuesses),
-    "         ",
+    "           ",
     std::to_string(trialsMade),
   });
   // clang-format on

@@ -6,7 +6,6 @@ responseHandler handleUDPServerMessage = {
   {"RLG", handleRLG},
   {"RWG", handleRWG},
   {"RQT", handleRQT},
-  {"RRV", handleRRV}
 };
 
 std::map<std::string, int> expectedResponseArgs = {
@@ -227,16 +226,6 @@ int handleRQT(protocolMessage response) {
   return -1;
 }
 
-int handleRRV(protocolMessage response) {
-  if (response.request != getExpectedMessage()) {
-    std::cerr << UNEXPECTED_MESSAGE << std::endl;
-    return -1;
-  }
-
-  std::cout << RRV_OK(response.status) << std::endl;
-  return 0;
-}
-
 /**
  * Client request handlers
  */
@@ -330,19 +319,4 @@ int sendQUT(messageInfo info) {
     return generalUDPHandler(message, RQT_BYTES);
   }
   return generalUDPHandler(message, RQT_BYTES) == 0 ? EXIT_HANGMAN : -1;
-}
-
-int sendREV(messageInfo info) {
-  if (!validArgsAmount(info.input, REVEAL_ARGS)) {
-    std::cerr << UNEXPECTED_COMMAND << std::endl;
-    return -1;
-  }
-  if (getPlayerID().empty()) {
-    std::cerr << NO_PLAYER_ERROR << std::endl;
-    return -1;
-  }
-
-  const std::string message = buildSplitStringNewline({"REV", getPlayerID()});
-  setExpectedMessage("RRV");
-  return generalUDPHandler(message, RRV_BYTES);
 }

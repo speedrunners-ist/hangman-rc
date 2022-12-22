@@ -137,7 +137,7 @@ int newSocket(__socket_type type, peerInfo peer, struct addrinfo *hints, struct 
   hints->ai_family = AF_INET;
   hints->ai_socktype = type;
 
-  std::cout << "[DEBUG]: Connecting to " << peer.addr << ":" << peer.port << std::endl;
+  std::cout << "[INFO]: Connecting to " << peer.addr << ":" << peer.port << std::endl;
   int status;
   if (!peer.addr.empty()) {
     // if we're dealing with a client, we need to resolve the address
