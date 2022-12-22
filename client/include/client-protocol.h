@@ -64,6 +64,7 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 #define EXPECTED_WORD_DIF_LEN_ERROR(length)                                                                  \
   "[ERR]: Invalid input. Expected a word of length " + std::to_string(length) + "."
 #define NO_PLAYER_ERROR "[ERR]: There's no playerID currently set. Please start a game."
+#define NO_GAME_ERROR "[ERR]: There's no game currently ongoing. Please start a game."
 #define UNEXPECTED_MESSAGE "[ERR]: Unexpected message received from server."
 #define UNEXPECTED_COMMAND "[ERR]: The command received is not supported by this client."
 
