@@ -63,6 +63,8 @@ enum {
 // Below, file handling utility macros + scoreboard line macros
 
 #define EMPTY_FILE(file) "[ERR]: File " + file + " is empty."
+#define SCOREBOARD_CREATED "[INFO]: Scoreboard created."
+#define SCOREBOARD_NOT_CREATED "[ERR]: Scoreboard not created."
 #define UNEXPECTED_GAME_LINE(line) "[ERR]: Unexpected line in game file: " + line
 #define GAME_SCORE(correct, total) (correct * 100 / total)
 #define CORRECT_LETTER "Correct guess (letter):"

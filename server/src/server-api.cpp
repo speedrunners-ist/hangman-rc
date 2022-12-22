@@ -397,16 +397,23 @@ int getScoreboard(std::string &response) {
   if (ret == -1) {
     return SCOREBOARD_ERROR;
   }
-  if (ret == -2 || lines.empty()) {
+  if (ret == -2) {
     // if the file did not exist or was empty
     std::filesystem::path dir(SCORES_DIR);
     if (!std::filesystem::exists(dir)) {
       std::filesystem::create_directories(dir);
     }
-
     std::fstream file(SCORES_PATH, std::ios::in | std::ios::out);
+    file.open(SCORES_PATH, std::ios::out);
     file.close();
 
+    std::cerr << SCOREBOARD_CREATED << std::endl;
+
+    response = "EMPTY";
+    return SCOREBOARD_EMPTY;
+  }
+
+  if (lines.empty()) {
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }
