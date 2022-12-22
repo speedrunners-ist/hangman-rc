@@ -32,7 +32,9 @@ int disconnect(socketInfo socket) {
     if (!socketUDP.isConnected) {
       return 0;
     }
-    sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), socket.res, socket.fd);
+    if (!getPlayerID().empty()) {
+      sendUDPMessage(buildSplitStringNewline({"QUT", getPlayerID()}), socket.res, socket.fd);
+    }
     socketUDP.isConnected = false;
   }
   return disconnectSocket(socket);

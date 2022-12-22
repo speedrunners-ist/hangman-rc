@@ -9,8 +9,7 @@ responseHandler handleUDPClientMessage = {
   {"SNG", handleSNG},
   {"PLG", handlePLG},
   {"PWG", handlePWG},
-  {"QUT", handleQUT},
-  {"REV", handleREV}
+  {"QUT", handleQUT}
 };
 // clang-format on
 
@@ -202,26 +201,6 @@ int handleQUT(protocolMessage message) {
     default:
       std::cerr << INTERNAL_ERROR << std::endl;
       response = buildSplitStringNewline({"RQT", "ERR"});
-  }
-  return sendUDPMessage(response, getResUDP(), getSocketFdUDP());
-}
-
-int handleREV(protocolMessage message) {
-  if (!validArgsAmount(message.body, REV_ARGS) || !validPlayerID(message.status)) {
-    std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    return sendUDPMessage(buildSplitStringNewline({"RRV", "ERR"}), getResUDP(), getSocketFdUDP());
-  }
-
-  const std::string plid = message.status;
-  std::string word;
-  const int ret = revealWord(plid, word);
-  switch (ret) {
-    case REVEAL_SUCCESS:
-      response = buildSplitStringNewline({"RRV", word});
-      break;
-    case REVEAL_ERROR:
-    default:
-      response = buildSplitStringNewline({"RRV", "ERR"});
   }
   return sendUDPMessage(response, getResUDP(), getSocketFdUDP());
 }

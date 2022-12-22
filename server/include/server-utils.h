@@ -31,7 +31,7 @@
 #define TOP_10_HEADER "TOP 10 SCORES"
 
 // Header for the scoreboard file's table
-#define SCORES_HEADER "SCORE PLAYER  WORD      GOOD TRIALS  TOTAL TRIALS"
+#define SCORES_HEADER "SCORE PLAYER WORD                       GOOD TRIALS TOTAL TRIALS"
 
 // Format for the player's games to be stored in
 #define TIME_FORMAT "%Y-%m-%d_%H-%M-%S"

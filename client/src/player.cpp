@@ -8,8 +8,7 @@ commandHandler handlePlayerMessage = {
   { "scoreboard", sendGSB }, { "sb", sendGSB },
   { "hint", sendGHL },       { "h", sendGHL },
   { "state", sendSTA },      { "st", sendSTA },
-  { "quit", sendQUT },       { "exit", sendQUT },
-  { "rev", sendREV }
+  { "quit", sendQUT },       { "exit", sendQUT }
 };
 // clang-format on
 

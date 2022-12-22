@@ -64,7 +64,6 @@ void printHelpMenu() {
   std::cout << "  - hint/h: shows a hint for the current word." << std::endl;
   std::cout << "  - state/st: shows the current state of the game (or the state of your last finished game)."
             << std::endl;
-  std::cout << "  - rev: if in development, shows the current word. Otherwise, does nothing." << std::endl;
   std::cout << "  - quit: quits the game." << std::endl;
   std::cout << "  - exit: quits the game and exits the program." << std::endl;
   std::cout << "  Good luck!" << std::endl;

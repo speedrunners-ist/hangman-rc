@@ -23,9 +23,6 @@
 // Expected amount of arguments for the QUT command.
 #define QUT_ARGS 2
 
-// Expected amount of arguments for the REV command.
-#define REV_ARGS 2
-
 // Expected amount of arguments for the GSB command.
 #define GSB_ARGS 1
 
@@ -111,14 +108,6 @@ int handlePWG(protocolMessage message);
  * @return 0 if the request was handled successfully, -1 otherwise.
  */
 int handleQUT(protocolMessage message);
-
-/**
- * @brief Handles REV request from the client.
- *
- * @param message The message from the client.
- * @return 0 if the request was handled successfully, -1 otherwise.
- */
-int handleREV(protocolMessage message);
 
 /**
  * @brief Handles GSB request from the client.
