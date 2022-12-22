@@ -375,13 +375,13 @@ int insertScore(std::string plid, GameState &state) {
   // clang-format off
   std::string scoreline = buildSplitString({
     printedScore,
-    " ",
+    "   ",
     plid,
-    " ",
+    "",
     state.getWord(),
     " ",
     std::to_string(successfulGuesses),
-    " ",
+    "         ",
     std::to_string(trialsMade),
   });
   // clang-format on
@@ -403,10 +403,8 @@ int getScoreboard(std::string &response) {
     if (!std::filesystem::exists(dir)) {
       std::filesystem::create_directories(dir);
     }
-    std::fstream file(SCORES_PATH, std::ios::in | std::ios::out);
-    file.open(SCORES_PATH, std::ios::out);
-    file.close();
 
+    std::ofstream file(SCORES_PATH); // create a file in SCORES_PATH
     std::cerr << SCOREBOARD_CREATED << std::endl;
 
     response = "EMPTY";
