@@ -78,7 +78,6 @@ clean:
 	rm -rf client/assets
 	rm -rf server/assets/games
 	rm -rf server/assets/scores
-	rm -rf tests/tmp
 
 fmt: $(SOURCES) $(HEADERS)
 	clang-format -i $^
