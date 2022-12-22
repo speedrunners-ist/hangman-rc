@@ -3,7 +3,7 @@
 int createGameFile(std::string plid, std::string word, std::string hint) {
   std::filesystem::path dir(GAMES_DIR);
   if (!std::filesystem::exists(dir)) {
-    std::filesystem::create_directory(dir);
+    std::filesystem::create_directories(dir);
   }
   std::ofstream file(ONGOING_GAMES_PATH(plid), std::ios::trunc);
   if (!file.is_open()) {
@@ -44,7 +44,7 @@ int transferGameFile(std::string plid) {
   // create the player's directory if it doesn't exist
   std::filesystem::path dir(PLID_GAMES_DIR(plid));
   if (!std::filesystem::exists(dir)) {
-    std::filesystem::create_directory(dir);
+    std::filesystem::create_directories(dir);
   }
 
   try {
@@ -64,7 +64,7 @@ int appendScoreFile(int score, std::string scoreline) {
   if (file.fail()) {
     std::filesystem::path dir(SCORES_DIR);
     if (!std::filesystem::exists(dir)) {
-      std::filesystem::create_directory(dir);
+      std::filesystem::create_directories(dir);
     }
     file.open(SCORES_PATH, std::ios::in | std::ios::out | std::ios::trunc);
   }
@@ -163,7 +163,7 @@ int createPlaceholderState(std::string plid, std::string filePath) {
 
   try {
     if (!std::filesystem::exists(dir))
-      std::filesystem::create_directory(dir);
+      std::filesystem::create_directories(dir);
   } catch (const std::filesystem::filesystem_error &e) {
     std::cerr << e.what() << std::endl;
     return -1;
