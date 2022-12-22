@@ -113,7 +113,7 @@ int checkPortNumber(std::string port) {
   }
   try {
     int portNum = std::stoi(port);
-    if (portNum < 0 || portNum > 65535) {
+    if (portNum < 1024 || portNum > 65535) {
       std::cerr << PORT_ERROR << std::endl;
       return -1;
     }
