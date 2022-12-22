@@ -41,6 +41,7 @@ int handleRSB(protocolMessage response) {
     fileInfo info;
     const int bytesRead = receiveTCPFile(info, SB_DIR, getSocketFdTCP());
     if (bytesRead == -1) {
+      std::cerr << DISPLAY_ERR << std::endl;
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
@@ -64,6 +65,7 @@ int handleRHL(protocolMessage response) {
     fileInfo info;
     const int bytesRead = receiveTCPFile(info, H_DIR, getSocketFdTCP());
     if (bytesRead == -1) {
+      std::cerr << DISPLAY_ERR << std::endl;
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
@@ -94,7 +96,7 @@ int handleRST(protocolMessage response) {
   fileInfo info;
   const int bytesRead = receiveTCPFile(info, ST_DIR, getSocketFdTCP());
   if (bytesRead == -1) {
-    // FIXME: error message
+    std::cerr << DISPLAY_ERR << std::endl;
     return -1;
   }
 
