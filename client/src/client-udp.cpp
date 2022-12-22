@@ -289,6 +289,11 @@ int sendPWG(messageInfo info) {
     return -1;
   }
 
+  if (!isActive()) {
+    std::cerr << NO_GAME_ERROR << std::endl;
+    return -1;
+  }
+
   const size_t pos1 = info.input.find(' ');
   std::string guess = info.input.substr(pos1 + 1);
   guess.erase(std::remove(guess.begin(), guess.end(), '\n'), guess.end());

@@ -22,7 +22,7 @@
 #define FINISHED_GAMES_PATH(plid, time) PLID_GAMES_DIR(plid) + "GAME_" + time + ".txt"
 
 // Path to the directory where the scoreboard is stored
-#define SCORES_DIR "server/scores/"
+#define SCORES_DIR "server/assets/scores/"
 
 // Path to the scoreboard file
 #define SCORES_PATH "server/assets/scores/scoreboard.txt"
