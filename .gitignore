@@ -69,6 +69,6 @@ server/assets/games/
 build/
 bin/
 
-proj_45*
+proj45*
 
 .vscode
