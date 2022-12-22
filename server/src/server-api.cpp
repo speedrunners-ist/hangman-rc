@@ -378,11 +378,11 @@ int insertScore(std::string plid, GameState &state) {
     "    ",
     plid,
     "",
-    std::to_string(successfulGuesses),
-    "           ",
-    std::to_string(trialsMade),
-    "      ",
     state.getWord(),
+    "           ",
+    std::to_string(successfulGuesses),
+    "      ",
+    std::to_string(trialsMade),
   });
   // clang-format on
 
