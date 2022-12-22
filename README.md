@@ -7,11 +7,11 @@ Hangman implementation in a multi-client server context, using C++.
 In order to compile the project, `c++20` (available since GCC 9) is required.
 There are two ways to compile the project:
 
-- Using `make`, which will generate the server's binary according to the project
+- Using `make prod`, which will generate the server's binary according to the project
   statement's specifications - the `RRV` answer is sent with an `OK` status code,
   instead of the game's associated word, and the word-list reading order is
   **randomized**.
-- Using `make dev`, the project version utilized to run tests and, in a general
+- Using `make`, the project version utilized to run tests and, in a general
   manner, debug the server. This version will send the game's associated word
   instead of the `OK` in an `RRV` answer, and the word-list reading order is
   **sequential** (in order for the tests to be deterministic).
@@ -61,3 +61,8 @@ The project is structured as follows:
 
 - `lib/`: includes the common source code for both client and server, ranging from
   the GameState class, to socket-handling functions and general-purpose methods.
+
+## Teacher's note
+
+Regarding changes that the lab's teacher may want to do in order to further test the project, altering the timeout's associated waiting time can be done via the `SOCKET_TIMEOUT` constant in `lib/common.h` (which is, by default, set to 5 seconds) - if set to 0 seconds, the timer is deactivated (according to the manpage).
+

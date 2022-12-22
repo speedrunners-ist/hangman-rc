@@ -38,10 +38,8 @@ CXXFLAGS = -std=c++20 -O3
 CXXFLAGS += $(INCLUDES)
 # Warnings
 CXXFLAGS += -fdiagnostics-color=always -Wall -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wno-sign-compare
-# Differentiate between dev and prod
-CXXFLAGS += -DPRODUCTION
 
-.PHONY: all dev clean fmt depend test
+.PHONY: all prod clean fmt depend
 
 # Defines the default target
 all: $(BIN_CLIENT) $(BIN_SERVER)
@@ -72,16 +70,17 @@ $(BIN_SERVER): $(OBJECTS_SERVER) $(OBJECTS_LIB)
 
 # In development, we want the rev command to be answered with the actual word
 # Moreover, in dev mode, the file read order (server-side) will be sequential
-dev: CXXFLAGS := $(filter-out -DPRODUCTION,$(CXXFLAGS))
-dev: all
+prod: CXXFLAGS += -DPRODUCTION
+prod: all
 
 # Remove all object files and executables + all generated files during the player and server's execution
 clean:
-	rm -f $(BIN_CLIENT) $(BIN_SERVER) $(OBJECTS_CLIENT)/* $(OBJECTS_SERVER)/* $(OBJECTS_LIB)/*
+	rm -f $(BIN_CLIENT) $(BIN_SERVER) $(OBJ_DIR_CLIENT)/* $(OBJ_DIR_SERVER)/* $(OBJ_DIR_LIB)/*
 	rm -rf client/assets/hints
 	rm -rf client/assets/state
 	rm -rf client/assets/scoreboard
-	rm -rf server/assets/games/*
+	rm -rf server/assets/games
+	rm -rf server/assets/scores
 	rm -rf tests/tmp
 
 fmt: $(SOURCES) $(HEADERS)
@@ -93,6 +92,6 @@ fmt: $(SOURCES) $(HEADERS)
 depend : $(SOURCES)
 	$(CXX) $(INCLUDES) -MM $^ > autodep
 
-# In testing, we want to utilize the dev version of our project
-test: dev
-	./test.sh
+release: clean
+	git archive --format zip --prefix proj_45/ --output proj_45.zip HEAD autodep client lib Makefile README.md server .clang-format
+
