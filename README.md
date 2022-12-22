@@ -64,5 +64,5 @@ The project is structured as follows:
 
 ## Teacher's note
 
-Regarding changes that the lab's teacher may want to do in order to further test the project, altering the timeout's associated waiting time can be done via the `SOCKET_TIMEOUT` constant in `lib/common.h` (which is, by default, set to 5 seconds) - if set to 0 seconds, the timer is deactivated.
+Regarding changes that the lab's teacher may want to do in order to further test the project, altering the timeout's associated waiting time can be done via the `SOCKET_TIMEOUT` constant in `lib/common.h` (which is, by default, set to 5 seconds) - if set to 0 seconds, the timer is deactivated (according to the manpage).
 
