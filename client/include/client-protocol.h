@@ -67,6 +67,7 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 #define NO_GAME_ERROR "[ERR]: There's no game currently ongoing. Please start a game."
 #define UNEXPECTED_MESSAGE "[ERR]: Unexpected message received from server."
 #define UNEXPECTED_COMMAND "[ERR]: The command received is not supported by this client."
+#define INVALID_PLAYER_ID "[ERR]: Invalid player ID. Please try again."
 
 #define RSG_OK(mistakes, word)                                                                               \
   "New game started (max " + std::to_string(mistakes) + " mistakes allowed). Word to guess: " + word
@@ -85,6 +86,7 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 
 #define RWG_ERROR "[ERR]: Response from server does not match RWG protocol."
 #define RWG_WIN(word) "WELL DONE! You guessed: " + word
+#define RWG_DUP "You have already guessed this word."
 #define RWG_NOK(mistakes) "Wrong guess. " + std::to_string(mistakes) + " errors left."
 #define RWG_OVR "GAME OVER! You do not have any more errors left."
 #define RWG_INV "An invalid trial parameter was sent. Try again."
@@ -95,9 +97,11 @@ typedef std::map<std::string, std::function<int(messageInfo info)>> commandHandl
 
 #define RRV_OK(word) "[REV]: Word is " + word
 
+#define RSB_SUCCESS(path, bytes) "[INFO]: Scoreboard stored at " << path << ", " << bytes << " bytes."
 #define RSB_FAIL "[INFO]: The server hasn't held any games yet."
-#define RHL_SUCCESS(filename, bytes) "[HINT]: " << filename << ", " << bytes << " bytes."
+#define RHL_SUCCESS(path, bytes) "[INFO]: Hint stored at " << path << ", " << bytes << " bytes."
 #define RHL_FAIL "[INFO]: The server could not send any hints at the moment."
+#define RST_SUCCESS(path, bytes) "[INFO]: State stored at " << path << ", " << bytes << " bytes."
 #define RST_ACT "[INFO]: Displaying information about the current game."
 #define RST_FIN "[INFO]: Displaying information about the last finished game."
 #define RST_NOK "[INFO]: The server could not find any games (neither active nor finished)."

@@ -76,17 +76,23 @@ void setHint(GameState &state, std::string hint) { state.setHint(hint); }
 /*** General util methods ***/
 
 void displayPeerInfo(struct addrinfo *res, std::string connection) {
+  char addr[INET_ADDRSTRLEN] = {0};
   char host[NI_MAXHOST] = {0};
   char service[NI_MAXSERV] = {0};
-  const int errcode =
-      getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
-  // NI_NUMERICSERV: return numeric form of the service's address
-  if (errcode != 0) {
-    std::cerr << VERBOSE_ERROR(errcode) << std::endl;
+
+  inet_ntop(res->ai_family, &(((struct sockaddr_in *)res->ai_addr)->sin_addr), addr, INET_ADDRSTRLEN);
+  int err = getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
+  if (err != 0) {
+    std::cerr << VERBOSE_ERROR(err) << std::endl;
     return;
   }
-
-  std::cout << VERBOSE_SUCCESS(connection, host, service) << std::endl;
+  
+  if (strcmp(addr, host) == 0) {
+    // If there is no host name, just print the address
+    std::cout << VERBOSE_SUCCESS(connection, addr, service) << std::endl;
+    return;
+  }
+  std::cout << VERBOSE_SUCCESS(connection, addr, service) << " (" << host << ")" << std::endl;
 }
 
 int setupWordList(std::string filePath) {
@@ -245,11 +251,11 @@ int playLetter(std::string plid, std::string letter, std::string trial, std::str
     return TRIAL_MISMATCH;
   }
 
+  toLower(letter);
   if (state.isLetterGuessed(letter.front())) {
     return DUPLICATE_GUESS;
   }
 
-  toLower(letter);
   std::string positions;
   const int occurrences = getLetterOccurrencesPositions(state.getWord(), letter.front(), positions);
   state.addGuessedLetter(letter.front());
@@ -299,11 +305,11 @@ int guessWord(std::string plid, std::string word, std::string trial, std::string
     return TRIAL_MISMATCH;
   }
 
+  toLower(word);
   if (state.isWordGuessed(word)) {
     return DUPLICATE_GUESS;
   }
 
-  toLower(word);
   state.setLastWordGuess(word);
   state.addGuessedWord(word);
   state.incrementTrials();

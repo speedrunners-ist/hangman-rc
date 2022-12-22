@@ -32,7 +32,7 @@ int GameState::getWordLength() { return wordLength; }
 
 std::string GameState::getWord() { return word; }
 
-void GameState::setLastGuess(char guess) { lastGuess = guess; }
+void GameState::setLastGuess(char guess) { lastGuess = (char)std::tolower(guess); }
 
 void GameState::setLastWordGuess(std::string guess) { lastWordGuess = guess; }
 
@@ -305,9 +305,9 @@ int receiveUDPMessage(char *response, size_t maxBytes, struct addrinfo *res, int
 int messageUDPHandler(protocolMessage &message, responseHandler handler, int fd, struct addrinfo *res) {
   try {
     return handler[message.request](message);
-  } catch (const std::bad_function_call &e) {
+  } catch (const std::exception &e) {
     std::cerr << UDP_RESPONSE_ERROR << std::endl;
-    if (fd == -1 || res == NULL) {
+    if (fd == -1 || res == NULL) { // if it's a client call
       return -1;
     }
     return sendUDPMessage(ERR, res, fd);
@@ -398,7 +398,8 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
   }
 
   std::fstream file;
-  file.open(dir + "/" + info.fileName, std::ios::out | std::ios::in | std::ios::trunc);
+  info.filePath = dir + info.fileName;
+  file.open(info.filePath, std::ios::out | std::ios::in | std::ios::trunc);
   if (!file.is_open()) {
     std::cerr << FILE_OPEN_ERROR << std::endl;
     return -1;
@@ -434,9 +435,9 @@ int receiveTCPFile(fileInfo &info, std::string dir, int fd) {
 int messageTCPHandler(protocolMessage &message, responseHandler handler, int fd, struct addrinfo *res) {
   try {
     return handler[message.request](message);
-  } catch (const std::bad_function_call &e) {
+  } catch (const std::exception &e) {
     std::cerr << TCP_RESPONSE_ERROR << std::endl;
-    if (fd == -1 || res == NULL) {
+    if (fd == -1 || res == NULL) { // if it's a client call
       return -1;
     }
     return sendTCPMessage(ERR, res, fd);

@@ -39,11 +39,13 @@ int handleRSB(protocolMessage response) {
 
   if (response.status == "OK") {
     fileInfo info;
-    if (receiveTCPFile(info, SB_DIR, getSocketFdTCP()) == -1) {
+    const int bytesRead = receiveTCPFile(info, SB_DIR, getSocketFdTCP());
+    if (bytesRead == -1) {
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
-    return displayFile(SB_PATH(info.fileName));
+    std::cout << RSB_SUCCESS(info.filePath, bytesRead) << std::endl;
+    return displayFile(info.filePath);
   }
   if (response.status == "EMPTY") {
     std::cout << RSB_FAIL << std::endl;
@@ -65,7 +67,7 @@ int handleRHL(protocolMessage response) {
       return -1;
     }
     std::cout << FILE_RECV_SUCCESS << std::endl;
-    std::cout << RHL_SUCCESS(info.fileName, bytesRead) << std::endl;
+    std::cout << RHL_SUCCESS(info.filePath, bytesRead) << std::endl;
     return 0;
   }
   if (response.status == "NOK") {
@@ -92,17 +94,19 @@ int handleRST(protocolMessage response) {
   fileInfo info;
   const int bytesRead = receiveTCPFile(info, ST_DIR, getSocketFdTCP());
   if (bytesRead == -1) {
+    // FIXME: error message
     return -1;
   }
 
   std::cout << FILE_RECV_SUCCESS << std::endl;
+  std::cout << RST_SUCCESS(info.filePath, bytesRead) << std::endl;
   if (response.status == "ACT") {
     std::cout << RST_ACT << std::endl;
   } else if (response.status == "FIN") {
     std::cout << RST_FIN << std::endl;
     resetGame();
   }
-  return displayFile(ST_PATH(info.fileName));
+  return displayFile(info.filePath);
 }
 
 int sendGSB(messageInfo info) {

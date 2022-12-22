@@ -46,11 +46,13 @@ typedef struct {
  * @brief Struct that represents a file, containing associated relevant information.
  *
  * @param fileName The name of the file.
+ * @param filePath The path where the file is located.
  * @param fileSize The size of the file.
  * @param delimiter The delimiter used in the protocol's message after displaying the file's arguments.
  */
 typedef struct {
   std::string fileName;
+  std::string filePath;
   size_t fileSize;
   char delimiter;
 } fileInfo;
