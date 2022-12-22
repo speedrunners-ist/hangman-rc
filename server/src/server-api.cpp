@@ -86,7 +86,7 @@ void displayPeerInfo(struct addrinfo *res, std::string connection) {
     std::cerr << VERBOSE_ERROR(err) << std::endl;
     return;
   }
-  
+
   if (strcmp(addr, host) == 0) {
     // If there is no host name, just print the address
     std::cout << VERBOSE_SUCCESS(connection, addr, service) << std::endl;
@@ -399,6 +399,14 @@ int getScoreboard(std::string &response) {
   }
   if (ret == -2 || lines.empty()) {
     // if the file did not exist or was empty
+    std::filesystem::path dir(SCORES_DIR);
+    if (!std::filesystem::exists(dir)) {
+      std::filesystem::create_directories(dir);
+    }
+
+    std::fstream file(SCORES_PATH, std::ios::in | std::ios::out);
+    file.close();
+
     response = "EMPTY";
     return SCOREBOARD_EMPTY;
   }
