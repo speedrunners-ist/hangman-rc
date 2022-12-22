@@ -39,7 +39,7 @@ CXXFLAGS += $(INCLUDES)
 # Warnings
 CXXFLAGS += -fdiagnostics-color=always -Wall -Wextra -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wsign-conversion -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wno-sign-compare
 
-.PHONY: all prod clean fmt depend test
+.PHONY: all prod clean fmt depend
 
 # Defines the default target
 all: $(BIN_CLIENT) $(BIN_SERVER)
@@ -80,6 +80,7 @@ clean:
 	rm -rf client/assets/state
 	rm -rf client/assets/scoreboard
 	rm -rf server/assets/games/*
+	rm -rf server/assets/scores
 	rm -rf tests/tmp
 
 fmt: $(SOURCES) $(HEADERS)
@@ -91,6 +92,6 @@ fmt: $(SOURCES) $(HEADERS)
 depend : $(SOURCES)
 	$(CXX) $(INCLUDES) -MM $^ > autodep
 
-# In testing, we want to utilize the dev version of our project
-test: all
-	./test.sh
+release: clean
+	git archive --format zip --prefix proj_45/ --output proj_45.zip HEAD autodep client lib Makefile README.md server .clang-format
+
